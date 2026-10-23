@@ -1,0 +1,150 @@
+# CI (PE, 2026-10-23): backend gates, evals and, when the branch has src/web, the frontend gates and e2e.
+# Gate commands mirror projects[].gates in .mandao/config.yml. Actions are pinned by commit SHA.
+name: CI
+
+on:
+  pull_request:
+  push:
+    branches: [main]
+
+permissions:
+  contents: read
+
+concurrency:
+  group: ci-${{ github.ref }}
+  cancel-in-progress: true
+
+env:
+  # fastembed reads this path; the evals and e2e jobs cache it so the model (~0.22 GB) downloads once.
+  FASTEMBED_CACHE_PATH: /home/runner/.cache/fastembed
+
+jobs:
+  backend:
+    runs-on: ubuntu-24.04
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+      - uses: astral-sh/setup-uv@07a047e608db84b3d8c06cd9a7c7dcc9c355c18e # v10.3.2
+        with:
+          enable-cache: true
+      - name: uv sync
+        run: uv sync --frozen
+      - name: format
+        run: uv run ruff format --check .
+      - name: lint
+        run: uv run ruff check .
+      - name: typecheck
+        run: uv run mypy src
+      - name: test (sin red)
+        # A network namespace without interfaces: any download or external call fails the run.
+        run: |
+          sudo sysctl -w kernel.apparmor_restrict_unprivileged_userns=0
+          unshare --map-root-user --net .venv/bin/pytest
+      - name: secrets
+        run: >-
+          git ls-files -z --cached --others --exclude-standard
+          | xargs -0 uvx --quiet --from detect-secrets detect-secrets-hook
+          --baseline .secrets.baseline --exclude-files '(^|/)_log/'
+      - name: sast
+        run: uvx --quiet bandit -r src -q
+      - name: audit
+        run: >-
+          uvx --quiet pip-audit --path .venv/lib/python3.13/site-packages
+          $(grep -v '^#' .pip-audit-ignore | sed 's/^/--ignore-vuln /')
+
+  evals:
+    runs-on: ubuntu-24.04
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+      - uses: astral-sh/setup-uv@07a047e608db84b3d8c06cd9a7c7dcc9c355c18e # v10.3.2
+        with:
+          enable-cache: true
+      - name: uv sync
+        run: uv sync --frozen
+      - name: Caché del modelo de embeddings
+        uses: actions/cache@55cc8345863c7cc4c66a329aec7e433d2d1c52a9 # v6.1.0
+        with:
+          path: ${{ env.FASTEMBED_CACHE_PATH }}
+          key: fastembed-${{ hashFiles('src/server/config.py', 'uv.lock') }}
+          restore-keys: fastembed-
+      - name: evals
+        run: uv run pytest -m eval
+
+  frontend:
+    runs-on: ubuntu-24.04
+    defaults:
+      run:
+        working-directory: src/web
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+      - name: ¿Existe src/web?
+        id: web
+        working-directory: .
+        run: |
+          if [ -f src/web/package.json ]; then echo "existe=true" >> "$GITHUB_OUTPUT"
+          else echo "existe=false" >> "$GITHUB_OUTPUT"; echo "Sin src/web en esta rama: se omite."; fi
+      - uses: actions/setup-node@949feb2413d6458794dcd2491c4babbbce0c15c1 # v7.1.0
+        if: steps.web.outputs.existe == 'true'
+        with:
+          node-version: 22
+          cache: npm
+          cache-dependency-path: src/web/package-lock.json
+      - name: npm ci
+        if: steps.web.outputs.existe == 'true'
+        run: npm ci
+      - name: format
+        if: steps.web.outputs.existe == 'true'
+        run: npm run format:check
+      - name: lint
+        if: steps.web.outputs.existe == 'true'
+        run: npm run lint
+      - name: typecheck
+        if: steps.web.outputs.existe == 'true'
+        run: npm run typecheck
+      - name: test
+        if: steps.web.outputs.existe == 'true'
+        run: npm test
+      - name: build
+        if: steps.web.outputs.existe == 'true'
+        run: npm run build
+      - name: audit
+        if: steps.web.outputs.existe == 'true'
+        run: npm audit --omit=dev --audit-level=high
+
+      # e2e: the real backend on :8000 without a Gemini key (extractive mode), one worker (D13).
+      - uses: astral-sh/setup-uv@07a047e608db84b3d8c06cd9a7c7dcc9c355c18e # v10.3.2
+        if: steps.web.outputs.existe == 'true'
+        with:
+          enable-cache: true
+      - name: uv sync
+        if: steps.web.outputs.existe == 'true'
+        working-directory: .
+        run: uv sync --frozen
+      - name: Caché del modelo de embeddings
+        if: steps.web.outputs.existe == 'true'
+        uses: actions/cache@55cc8345863c7cc4c66a329aec7e433d2d1c52a9 # v6.1.0
+        with:
+          path: ${{ env.FASTEMBED_CACHE_PATH }}
+          key: fastembed-${{ hashFiles('src/server/config.py', 'uv.lock') }}
+          restore-keys: fastembed-
+      - name: Levantar el backend
+        if: steps.web.outputs.existe == 'true'
+        working-directory: .
+        run: |
+          nohup uv run uvicorn src.server.principal:app --port 8000 --workers 1 > "$RUNNER_TEMP/backend.log" 2>&1 &
+          # uvicorn opens the port only after the lifespan has indexed Data/.
+          for _ in $(seq 1 180); do
+            if curl -s -o /dev/null http://127.0.0.1:8000/; then exit 0; fi
+            sleep 2
+          done
+          cat "$RUNNER_TEMP/backend.log"
+          exit 1
+      - name: Instalar Chromium
+        if: steps.web.outputs.existe == 'true'
+        run: npx playwright install --with-deps chromium
+      - name: e2e
+        if: steps.web.outputs.existe == 'true'
+        run: npm run e2e
+      - name: Log del backend
+        if: failure() && steps.web.outputs.existe == 'true'
+        working-directory: .
+        run: cat "$RUNNER_TEMP/backend.log"
