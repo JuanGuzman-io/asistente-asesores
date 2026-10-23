@@ -47,7 +47,7 @@ from src.server import config
 from src.server.dominio.modelos import Fragmento
 from src.server.dominio.puertos import BuscadorDocumental, ResultadoBusqueda
 from src.server.infraestructura.busqueda.buscador import BuscadorHibrido
-from src.server.infraestructura.busqueda.fts import buscar_fts, consulta_fts
+from src.server.infraestructura.busqueda.fts import buscar_fts, consulta_fts, raices
 from src.server.infraestructura.busqueda.indice import reconstruir_indice
 from src.server.infraestructura.documentos.cargador import hash_normalizado
 
@@ -390,7 +390,8 @@ def test_s81_consulta_fts_cita_cada_palabra_y_quita_palabras_vacias():
         "".join(c for c in unicodedata.normalize("NFD", t) if not unicodedata.combining(c))
         for t in terminos
     }
-    assert {"monto", "maximo", "credito", "productivo", "impulso", "urgente"} <= plano
+    # Desde T16 la consulta lleva raíces (D4), no las palabras completas.
+    assert set(raices("monto máximo crédito productivo impulso urgente")) <= plano
     assert not plano & {"cual", "es", "el", "del", "de", "un"}
     assert not any(c in consulta.replace('"', "") for c in "*:()-¿?\U0001f60a")
 

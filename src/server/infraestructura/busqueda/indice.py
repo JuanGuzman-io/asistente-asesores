@@ -15,6 +15,7 @@ from qdrant_client.models import (
 from src.server.dominio.modelos import Fragmento
 from src.server.infraestructura.busqueda.embeddings import DIMENSION_EMBEDDINGS, Embeddings
 from src.server.infraestructura.busqueda.esquema import crear_esquema
+from src.server.infraestructura.busqueda.fts import raices
 from src.server.infraestructura.documentos.cargador import hash_normalizado
 
 registro = logging.getLogger(__name__)
@@ -93,7 +94,11 @@ def _reconstruir_sqlite(
             )
             conexion.execute(
                 "INSERT INTO fragmentos_fts(rowid, seccion, texto) VALUES (?, ?, ?)",
-                (cursor.lastrowid, fragmento.seccion, texto_indexable(fragmento)),
+                (
+                    cursor.lastrowid,
+                    " ".join(raices(fragmento.seccion)),
+                    " ".join(raices(texto_indexable(fragmento))),
+                ),
             )
     except BaseException:
         conexion.rollback()

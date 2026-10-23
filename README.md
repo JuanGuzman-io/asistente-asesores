@@ -9,6 +9,7 @@ Prueba técnica: asistente interno que responde consultas de asesores comerciale
 ## Limitaciones conocidas
 
 - **El modo extractivo no detecta qué dato falta.** Si se pregunta un dato que no está en la base sobre un producto que sí existe (por ejemplo, la tasa de interés del Crédito Agro Crece), sin Gemini la respuesta muestra la sección del producto con "Esto es lo que encontré en la base documental:" y no afirma el dato, pero tampoco dice que falta. Con Gemini, la respuesta nombra el dato que falta (decisión C-9 de MDO-0001).
+- **El modo extractivo puede mostrar un fragmento relacionado de más.** Por ejemplo, "¿Qué documentos sirven para actualizar datos?" muestra también Solicitud de Crédito. Es una decisión del PE (C-10 de MDO-0001): perder una sección correcta pesa más que mostrar una de sobra.
 
 ## Pruebas
 

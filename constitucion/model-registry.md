@@ -48,10 +48,10 @@ Riesgo: dependencia de un proveedor externo. Mitigación: el modelo está detrá
 ## Prompts
 | Name | Path | Version | Used by | Eval dataset |
 |---|---|---|---|---|
-| Redactor con fuentes | `src/server/infraestructura/redactor/prompt.md` | v1 | `Redactor` (Gemini) | `tests/fixtures/consultas.json` (v2) |
+| Redactor con fuentes | `src/server/infraestructura/redactor/prompt.md` | v1 | `Redactor` (Gemini) | `tests/fixtures/consultas.json` (v3) |
 
 ## Datasets
 | Name | Purpose | Version | Location | Contains personal data |
 |---|---|---|---|---|
 | Base documental | Fuente de las respuestas | v1 (datos irreales del PDF) | `Data/` | No |
-| Casos de prueba de consultas | Validar respuestas, estados y fuentes (EV-1 a EV-7) | v2 (66 preguntas, MDO-0001 C-9) | `tests/fixtures/consultas.json` | No |
+| Casos de prueba de consultas | Validar respuestas, estados y fuentes (EV-1 a EV-7) | v3 (80 preguntas, MDO-0001 C-10; v2: 66, C-9) | `tests/fixtures/consultas.json` | No |

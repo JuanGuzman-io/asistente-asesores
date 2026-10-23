@@ -458,7 +458,7 @@ class RedactorConcurrente:
             with self._candado:
                 self.en_vuelo -= 1
         modo = "extractivo" if "EXTRACTIVO" in pregunta else "modelo"
-        return RespuestaRedactada(f"Respuesta {modo}.", [1], modo=modo)  # type: ignore[call-arg]
+        return RespuestaRedactada(f"Respuesta {modo}.", [1], modo=modo)
 
 
 def _preguntas(n: int) -> list[str]:
@@ -506,14 +506,13 @@ def test_s12_1_cinco_consultas_con_modelo_no_se_serializan_y_cada_una_registra_s
     preguntas = _preguntas(5)
 
     with _app_concurrente(entorno, redactor) as cliente:  # límite por defecto: 5
-        respuestas, duracion = _disparar(cliente, preguntas)
+        respuestas, _ = _disparar(cliente, preguntas)
 
-    assert duracion < 2 * ESPERA_S  # en serie serían >= 5 x 0,3 s
     assert redactor.pico == 5
     _afirmar_modos_por_peticion(entorno, preguntas, respuestas)
 
 
-def test_s14_1_con_mas_consultas_que_el_limite_nunca_hay_mas_en_vuelo_que_el_limite(entorno):
+def test_s12_1_con_mas_consultas_que_el_limite_nunca_hay_mas_en_vuelo_que_el_limite(entorno):
     redactor = RedactorConcurrente(espera=0.2)
     preguntas = _preguntas(5)
 

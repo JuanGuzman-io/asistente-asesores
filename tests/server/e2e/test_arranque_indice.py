@@ -88,7 +88,7 @@ def test_s11_el_arranque_deja_indexados_los_cinco_oficiales(estado, caplog):
     try:
         filas = con.execute("SELECT documento, seccion, texto FROM fragmentos").fetchall()
         encontrados = con.execute(
-            "SELECT count(*) FROM fragmentos_fts WHERE fragmentos_fts MATCH ?", ('"Impulso"',)
+            "SELECT count(*) FROM fragmentos_fts WHERE fragmentos_fts MATCH ?", ('"impuls"',)
         ).fetchone()[0]
     finally:
         con.close()

@@ -1,4 +1,4 @@
-"""T10 (MDO-0001) evals EV-1 a EV-5 y EV-7 en modo extractivo sobre `tests/fixtures/consultas.json@v2`.
+"""T10 (MDO-0001) evals EV-1 a EV-5 y EV-7 en modo extractivo sobre `tests/fixtures/consultas.json@v3`.
 
 Usan el modelo REAL de embeddings (`EmbeddingsFastembed`, ~0,22 GB la primera vez): un doble no sirve
 para calibrar los umbrales `UMBRAL_ALTO` / `UMBRAL_BAJO` (D4, C-5, P5). Es la excepción documentada
@@ -99,7 +99,7 @@ def _decision(app: FastAPI, embeddings: EmbeddingsFastembed, pregunta: str) -> t
 @pytest.fixture(scope="module")
 def mediciones(tmp_path_factory, request) -> list[Medicion]:
     dataset = json.loads(DATASET.read_text(encoding="utf-8"))
-    assert dataset["version"] == "v2"
+    assert dataset["version"] == "v3"
     base = tmp_path_factory.mktemp("evals")
     embeddings = EmbeddingsFastembed()
     app = crear_app(
@@ -211,7 +211,7 @@ def _imprimir_reporte(request, m: list[Medicion]) -> None:
     salida = request.config.pluginmanager.getplugin("terminalreporter")
     escribir = salida.write_line if salida else print
     escribir("")
-    escribir(f"=== EVALS consultas@v2 (umbrales alto={UMBRAL_ALTO} bajo={UMBRAL_BAJO}) ===")
+    escribir(f"=== EVALS consultas@v3 (umbrales alto={UMBRAL_ALTO} bajo={UMBRAL_BAJO}) ===")
     escribir(
         f"EV-1={_ev1(m):.3f} (>=0.90)  EV-2={_ev2(m):.3f} (>=0.90)  EV-3={_ev3(m):.3f} (<=0.10)  "
         f"EV-4={_ev4(m):.3f} (==1.00)  EV-5={_ev5(m):.3f} (==1.00)  EV-7={_ev7(m):.3f} (>=0.90)"
@@ -238,7 +238,7 @@ def _imprimir_reporte(request, m: list[Medicion]) -> None:
         )
 
 
-def test_dataset_v2_cubre_los_cinco_tipos_con_muestra_suficiente():
+def test_dataset_v3_cubre_los_cinco_tipos_con_muestra_suficiente():
     consultas = json.loads(DATASET.read_text(encoding="utf-8"))["consultas"]
     tipos = {
         t: sum(c["tipo"] == t for c in consultas)

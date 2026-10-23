@@ -44,6 +44,7 @@ from pathlib import Path
 import pytest
 
 from src.server.dominio.modelos import Fragmento
+from src.server.infraestructura.busqueda.fts import raices
 from src.server.infraestructura.busqueda.indice import reconstruir_indice
 
 DATA = Path(__file__).resolve().parents[4] / "Data"
@@ -111,7 +112,11 @@ def _hashes_sqlite(conexion: sqlite3.Connection) -> set[str]:
 
 
 def _fts(conexion: sqlite3.Connection, palabra: str) -> int:
-    consulta = '"' + palabra.replace('"', '""') + '"'
+    # FTS indexa raíces (T16, D4): la palabra se reduce igual que en el índice.
+    frase = " ".join(raices(palabra))
+    if not frase:
+        return 0
+    consulta = '"' + frase + '"'
     return conexion.execute(
         "SELECT count(*) FROM fragmentos_fts WHERE fragmentos_fts MATCH ?", (consulta,)
     ).fetchone()[0]
@@ -149,11 +154,17 @@ def test_s11_c1_ningun_termino_ni_punto_del_confidencial_en_el_indice(conexion, 
     restringido = (DATA / RESTRINGIDO).read_text(encoding="utf-8")
     assert "INT-8457" in restringido  # guarda: la prueba no es vacua
     oficial = " ".join(f.texto + " " + f.seccion for f in oficiales).casefold()
+    # Con stemming (T16) un término distinto puede compartir raíz con uno oficial: no es una fuga.
+    raices_oficiales = set(
+        raices(" ".join(f.documento + " " + f.seccion + " " + f.texto for f in oficiales))
+    )
     signos = ".,;:()\"'"
     unicos = {
         p.strip(signos)
         for p in restringido.split()
-        if len(p.strip(signos)) >= 6 and p.strip(signos).casefold() not in oficial
+        if len(p.strip(signos)) >= 6
+        and p.strip(signos).casefold() not in oficial
+        and not set(raices(p.strip(signos))) <= raices_oficiales
     }
     assert "INT-8457-SECRET-782" in unicos
     doble = EmbeddingsDoble()
