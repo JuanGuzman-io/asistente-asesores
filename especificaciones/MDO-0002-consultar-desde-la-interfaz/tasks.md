@@ -89,7 +89,7 @@ parallel_safe: false
 verify: npm --prefix src/web test -- Resultado
 ```
 
-### [ ] T3 — La pantalla consulta, muestra el procesamiento y los errores, y conserva la pregunta
+### [x] T3 — La pantalla consulta, muestra el procesamiento y los errores, y conserva la pregunta
 
 - **What:** `App` con el formulario, `EstadoProcesamiento` y el área de resultado o error, sobre el
   cliente de T1 y el `Resultado` de T2 ([D3](spec.md#d3)); `main.tsx` la monta.
@@ -104,7 +104,7 @@ verify: npm --prefix src/web test -- Resultado
 project: web
 kind: feat
 tier: standard
-files: [src/web/src/App.tsx, src/web/src/main.tsx, tests/web/App.test.tsx]
+files: [src/web/src/App.tsx, src/web/src/main.tsx, tests/web/App.test.tsx, src/web/vite.config.ts, src/web/tsconfig.json, src/web/AGENTS.md]
 exemplar: src/web/src/Resultado.tsx
 ac: [AC-1, AC-1/C1, AC-2, AC-2/C2]
 scenarios: [S-1.1, S-1.2, S-1.2/C1, S-3.1, S-4.1, S-4.1/C2]
