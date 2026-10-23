@@ -244,7 +244,7 @@ parallel_safe: false
 verify: uv run pytest tests/server/aplicacion -q
 ```
 
-### [ ] T6 — Sin modelo, la respuesta es extractiva y no afirma cubrir toda la pregunta
+### [x] T6 — Sin modelo, la respuesta es extractiva y no afirma cubrir toda la pregunta
 
 - **What:** `RedactorExtractivo` arma la respuesta con hasta 2 fragmentos sobre el umbral, precedida por
   "Esto es lo que encontré en la base documental:" ([D12](design.md#d12), [C-1](requirements.md#c-1)).
