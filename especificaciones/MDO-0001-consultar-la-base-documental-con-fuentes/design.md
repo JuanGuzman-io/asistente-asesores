@@ -125,9 +125,11 @@ la misma transacción que decide la respuesta.
 - Un middleware ASGI asigna `requestId` (UUID v4, también en `X-Request-Id`), rechaza con 415 todo
   `Content-Type` distinto de `application/json` (con o sin `charset`) y con 413 un cuerpo de más de
   16.384 bytes, por `Content-Length` o contando los bytes recibidos. Handlers propios para
-  `RequestValidationError` (422), `HTTPException` y `Exception` (500) responden
-  `application/problem+json` con `type`, `title`, `status`, `detail` y `requestId`
-  ([research.md#R4](research.md)).
+  `RequestValidationError` (422) y `HTTPException` responden `application/problem+json` con `type`,
+  `title`, `status`, `detail` y `requestId` ([research.md#R4](research.md)). El 500 lo responde el
+  mismo middleware, que captura la excepción (decisión en T9): un handler de `Exception` deja que
+  `ServerErrorMiddleware` vuelva a lanzarla y el servidor registraría la traza con PII. El log del 500
+  lleva solo `requestId` y el tipo de la excepción.
 - La validación de `pregunta` usa Pydantic: texto obligatorio, normalizado a NFC, `strip()` y luego 1–1.000
   puntos de código ([C-2](requirements.md#c-2)).
 - Rechazadas: `RequestBodyLimitMiddleware` de Starlette (responde texto plano y no se confirmó su

@@ -422,10 +422,10 @@ parallel_safe: true
 verify: uv run pytest tests/server/aplicacion tests/server/e2e -q
 ```
 
-### [ ] T12 — Una falla inesperada responde 500 sin exponer detalles internos
+### [x] T12 — Una falla inesperada responde 500 sin exponer detalles internos
 
-- **What:** el handler de `Exception` responde 500 en RFC 9457 con `requestId` y un `detail` genérico, y
-  deja el detalle solo en el log ([D8](design.md#d8)).
+- **What:** el middleware de la petición responde 500 en RFC 9457 con `requestId` y un `detail` genérico, y
+  deja solo el tipo de la excepción en el log ([D8](design.md#d8)).
 - **Done when:**
   - S-13.1 holds: si la búsqueda lanza una excepción, responde 500 `application/problem+json` con `requestId` y `detail` genérico.
   - S-13.1/C1 holds: el cuerpo no contiene trazas, rutas, nombres de archivos internos, SQL ni el texto de la pregunta.
@@ -434,7 +434,7 @@ verify: uv run pytest tests/server/aplicacion tests/server/e2e -q
 
 ```yaml
 project: asistente-asesores
-kind: feat
+kind: test
 tier: fast
 files: [src/server/http/problemas.py, src/server/http/app.py, tests/server/http/test_errores.py]
 exemplar: src/server/http/problemas.py
