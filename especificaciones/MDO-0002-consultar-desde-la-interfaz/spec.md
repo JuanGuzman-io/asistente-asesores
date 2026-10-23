@@ -172,7 +172,7 @@ elementos se encuentran por rol o etiqueta (`getByRole`, `getByLabelText`), nunc
   (otra dependencia para tres campos).
 
 <a id="d4"></a>
-### D4 — Texto plano, sin Markdown
+### D4 — Texto plano, sin Markdown (enmendado por C-8: Markdown con formato, sin HTML ni enlaces)
 
 - La respuesta y los fragmentos se pintan como nodos de texto de React con `white-space: pre-wrap`;
   `dangerouslySetInnerHTML` está prohibido; lo cubren la prueba S-2.4 y la revisión (la regla
@@ -277,8 +277,8 @@ Propuestas; solo `/mandao-close` las aplica, con aprobación.
 - `standards.md#conventions`: el linter del frontend es ESLint con typescript-eslint (cierra el OPEN); exemplar de cliente `src/web/src/api.ts`.
 - `architecture.md#stack`: versiones del frontend (D7) y el proxy de Vite (D2); módulo `src/web` como proyecto `web` (profile `app`).
 - `critical-flows.md`: suite e2e `tests/web/e2e/` para "Consulta respondida con fuentes y registrada", desde la interfaz.
-- `ux.md#design-tokens`: la paleta de Banco W de `src/web/src/estilos.css` (turquesa `#00b1bb`, naranja `#ff6900`, morado `#5f259f`, negro `#1b1b1b`, fondo `#faf9f6`), con modo oscuro y contraste AA (C-4).
-- `ux.md`: marca Bot-W y dirección visual del mock `mockups/` (orbe animado, fondo degradado de Banco W, modo nocturno), con `prefers-reduced-motion` (C-5).
+- `ux.md#design-tokens`: la paleta de Banco W de `src/web/src/estilos.css` (turquesa `#00b1bb`, naranja `#ff6900`, morado `#5f259f`, negro `#1b1b1b`, fondo `#faf9f6`), con modo oscuro y contraste AA (C-6).
+- `ux.md`: marca Bot-W y dirección visual del mock `mockups/` (orbe animado, fondo degradado de Banco W, modo nocturno), con `prefers-reduced-motion` (C-7).
 
 ## Product Impact
 
@@ -330,6 +330,21 @@ Propuestas; solo `/mandao-close` las aplica, con aprobación.
 - **Answered by:** PE.
 - **Effect:** D6, T1.
 
+### C-6 — ¿Ajuste visual con los colores de Banco W? (2026-10-23)
+- **Answer:** sí, solo visual: la paleta de Banco W (turquesa principal, naranja de acento, morado en los títulos de fuente), sin logos, con CSS propio y sin dependencias nuevas. Histórico y sugerencias de preguntas siguen fuera de alcance.
+- **Answered by:** PE.
+- **Effect:** `src/web/src/estilos.css`; amplía `story.md#out-of-scope` solo en lo visual; Constitution Impact (`ux.md#design-tokens`).
+
+### C-7 — ¿Rediseño Bot-W según el mock? (2026-10-23)
+- **Answer:** sí. La interfaz se llama Bot-W y sigue `mockups/` (exportado de Claude Design): orbe animado al centro sobre la caja, fondo con degradado animado de los colores de Banco W, modo nocturno para `prefers-color-scheme: dark`, sin panel lateral. Se incluyen tres preguntas sugeridas que solo llenan la caja (no envían). El historial sigue fuera de alcance.
+- **Answered by:** PE.
+- **Effect:** `src/web/src/` (estilos y componentes de la pantalla) e `index.html`; amplía C-6 (degradados y sugerencias); Constitution Impact (`ux.md`). Mock registrado como `accepted`, `source: design`.
+
+### C-8 — ¿Respuesta con formato Markdown? (2026-10-23)
+- **Answer:** sí. La respuesta y los fragmentos del servicio traen Markdown (títulos, tablas, listas) y se pintan con formato. Se mantiene AC-1/C3: nunca se interpreta HTML ni se crean enlaces o imágenes.
+- **Answered by:** PE.
+- **Effect:** D4 (enmendado): `react-markdown` 10.1.0 con `remark-gfm` 4.0.1 y `remark-breaks` 4.0.0 (MIT; transitiva ISC `@ungap/structured-clone`, dentro de C-1), sin `rehype-raw`, con lista cerrada de elementos (`allowedElements` y `unwrapDisallowed`): un enlace queda como su texto y una imagen no se pinta; el HTML crudo se ve literal. `src/web/src/TextoMarkdown.tsx` y `markdown.css`; pruebas en `tests/web/Resultado.test.tsx`.
+
 ## Premise Ledger
 
 <a id="p1"></a>
@@ -377,13 +392,3 @@ v22.23.2
 OK: cumple ^22.22.2
 ```
 </details>
-
-### C-4 — ¿Ajuste visual con los colores de Banco W? (2026-10-23)
-- **Answer:** sí, solo visual: la paleta de Banco W (turquesa principal, naranja de acento, morado en los títulos de fuente), sin logos, con CSS propio y sin dependencias nuevas. Histórico y sugerencias de preguntas siguen fuera de alcance.
-- **Answered by:** PE.
-- **Effect:** `src/web/src/estilos.css`; amplía `story.md#out-of-scope` solo en lo visual; Constitution Impact (`ux.md#design-tokens`).
-
-### C-5 — ¿Rediseño Bot-W según el mock? (2026-10-23)
-- **Answer:** sí. La interfaz se llama Bot-W y sigue `mockups/` (exportado de Claude Design): orbe animado al centro sobre la caja, fondo con degradado animado de los colores de Banco W, modo nocturno para `prefers-color-scheme: dark`, sin panel lateral. Se incluyen tres preguntas sugeridas que solo llenan la caja (no envían). El historial sigue fuera de alcance.
-- **Answered by:** PE.
-- **Effect:** `src/web/src/` (estilos y componentes de la pantalla) e `index.html`; amplía C-4 (degradados y sugerencias); Constitution Impact (`ux.md`). Mock registrado como `accepted`, `source: design`.
