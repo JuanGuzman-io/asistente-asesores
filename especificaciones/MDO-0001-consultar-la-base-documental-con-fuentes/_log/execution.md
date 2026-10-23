@@ -517,3 +517,8 @@ spec: MDO-0001-consultar-la-base-documental-con-fuentes
 <!-- mandao:telemetry {"id":"82d10f64-9da1-4c0d-ac53-1f605a3c02f4","type":"gate_start","at":"2026-10-23T17:51:57.640Z","command":"implement","run":"e4add6a8-1c8a-449e-932f-2842c316894d","subject":"metrics"} -->
 <!-- mandao:telemetry {"id":"82d10f64-9da1-4c0d-ac53-1f605a3c02f4","type":"gate_end","at":"2026-10-23T17:52:00.120Z","command":"implement","run":"e4add6a8-1c8a-449e-932f-2842c316894d","subject":"metrics"} -->
 <!-- mandao:telemetry {"id":"9fd9cdc0-84e1-4b64-9c69-f115e78889a8","type":"agent_end","at":"2026-10-23T17:53:39.503Z","command":"implement","run":"c2b09326-b14e-402c-973f-825424197a47"} -->
+<!-- mandao:telemetry {"id":"c2b09326-b14e-402c-973f-825424197a47","type":"command_end","at":"2026-10-23T17:54:21.957Z","command":"implement","run":"c2b09326-b14e-402c-973f-825424197a47"} -->
+<!-- mandao:telemetry {"id":"68db178f-46a6-4523-937f-3877da7edcec","type":"command_start","at":"2026-10-23T18:13:37.214Z","command":"verify","run":"68db178f-46a6-4523-937f-3877da7edcec"} -->
+<!-- mandao:telemetry {"id":"d519b74a-98ba-405c-9575-fd0fb8b9589d","type":"asked","at":"2026-10-23T18:17:33.573Z","command":"verify","run":"68db178f-46a6-4523-937f-3877da7edcec","question":"product","subject":"calibracion-v2-y-bugs-gemini"} -->
+<!-- mandao:telemetry {"id":"d519b74a-98ba-405c-9575-fd0fb8b9589d","type":"answered","at":"2026-10-23T19:04:53.935Z","command":"verify","run":"68db178f-46a6-4523-937f-3877da7edcec","question":"product"} -->
+<!-- mandao:telemetry {"id":"68db178f-46a6-4523-937f-3877da7edcec","type":"command_end","at":"2026-10-23T19:12:54.666Z","command":"verify","run":"68db178f-46a6-4523-937f-3877da7edcec"} -->

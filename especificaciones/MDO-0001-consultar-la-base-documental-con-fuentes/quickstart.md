@@ -5,7 +5,7 @@ spec: MDO-0001-consultar-la-base-documental-con-fuentes
 
 # Quickstart — Consultar la base documental con fuentes
 
-**Before you start:** el servidor corriendo en local según el README (sin `GEMINI_API_KEY` responde en modo extractivo) y `curl`.
+**Before you start:** `uv sync`, el servidor corriendo con `uv run uvicorn src.server.principal:app --port 8000 --workers 1` hasta ver `Application startup complete.` (sin `GEMINI_API_KEY` responde en modo extractivo) y `curl`.
 
 1. `curl -s -X POST localhost:8000/api/consultar -H 'Content-Type: application/json' -d '{"pregunta":"¿Cuál es el monto máximo del Crédito Productivo Impulso?"}'`
    You should see: `estado` "Exitosa", una respuesta con $50.000.000 y una fuente "Productos de Crédito" / "Crédito Productivo Impulso" con su fragmento.

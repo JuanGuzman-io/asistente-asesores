@@ -934,3 +934,12 @@ cut_estimates:
     turns_left: 43
     savings: 3.68
     decision: "go on: below 50"
+  - at: 2026-10-23T17:54:12.023Z
+    task: verify
+    boundary_id: verify
+    suggested: true
+    context: 558494
+    base: 63912
+    turns_left: 28
+    savings: 2.45
+    decision: new session
