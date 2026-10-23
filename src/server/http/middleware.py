@@ -52,6 +52,7 @@ class MiddlewareSolicitud:
             fuentes=int(estado.get("fuentes", 0)),
             estado=estado.get("estado"),
             error=fallo,
+            categoria=estado.get("categoria"),
         )
 
     async def _atender(self, scope: Scope, receive: Receive, send: Send, request_id: str) -> None:

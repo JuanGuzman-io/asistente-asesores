@@ -127,3 +127,22 @@ T2 does what the spec asks. All gates passed: 491 tests, and evals on consultas@
 {"id":"F3","status":"open","severity":"low","lens":"core","title":"Advisory: the three updated test files were already passing when first run, with no red run","file":"especificaciones/MDO-0003-bloquear-consultas-que-comprometen-la-seguridad/_log/execution.md","line":26,"evidence":"Accepted via TEST_REVIEWED; e2e fails if the guardrail is removed."}
 ]}
 ```
+
+## T3 — attempt 1
+
+VERDICT: PASS
+
+T3 does what D5 says: the route stores resultado.categoria.value only for blocked queries, the middleware passes it to registrar_peticion, which adds `categoria` only when set. The question never reaches the log; the category never reaches the HTTP response; no migration. Red run recorded; test file unchanged since red. AGENTS.md updated. Security/pii: category is fixed enum text. The tester's NFR-2 exemption of fixed estado/categoria words is acceptable and matches NFR-2's intent.
+
+## Findings (JSON)
+
+```json
+{"version":1,"findings":[
+{"id":"F1","status":"open","severity":"low","lens":"data","title":"Advisory: the NFR-2 test takes its allowed words from the log line's own estado/categoria values instead of the enum constants","file":"tests/server/http/test_bloqueo_api.py","line":461,"evidence":"Build the list from CategoriaBloqueo and Estado values instead."},
+{"id":"F2","status":"open","severity":"low","lens":"data","title":"Advisory: NFR-2's exemption only names the fixed message, which conflicts with S-4.3's required categoria value","file":"especificaciones/MDO-0003-bloquear-consultas-que-comprometen-la-seguridad/requirements.md","line":157,"evidence":"Amend NFR-2 to also exempt the fixed estado/categoria values."},
+{"id":"F3","status":"open","severity":"medium","lens":"data","title":"Advisory: NFR-2 is to be measured over all bloqueada questions of consultas@v5; T3 checks 4 hardcoded questions","file":"tests/server/http/test_bloqueo_api.py","line":443,"evidence":"Add the dataset-wide NFR-2 check in T4."},
+{"id":"F4","status":"open","severity":"low","lens":"core","title":"Advisory: registrar_peticion takes categoria as a plain str rather than CategoriaBloqueo","file":"src/server/http/logs.py","line":23,"evidence":"Typing it would guarantee only fixed values reach the log."}
+]}
+```
+
+Model: Opus 5.5 (claude-opus-5-5)

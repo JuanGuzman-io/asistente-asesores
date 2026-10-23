@@ -2,7 +2,7 @@
 progress:
   schema_version: 1
   spec: MDO-0003-bloquear-consultas-que-comprometen-la-seguridad
-  updated_at: 2026-10-23T23:29:11.075Z
+  updated_at: 2026-10-23T23:33:01.931Z
   current: null
   open_questions: []
   next_step: ""
@@ -96,6 +96,17 @@ progress:
             - test_f5_las_excepciones_de_ac4_no_reabren_el_bloqueo
             - test_f6_cc_cuenta_como_identificador_de_cliente
             - test_f6_ac4_monto_o_credencial_ajena_no_es_falso_positivo
+    - task: T3
+      files:
+        - path: tests/server/http/test_bloqueo_api.py
+          sha256: 1b8732fd7d56b56f7b193abd2a198cbac19da2882323849b9e288dee9e311671
+          tests:
+            - test_s4_3_pregunta_bloqueada_responde_200_con_el_mensaje_fijo_sin_fuentes
+            - test_s4_3_la_linea_de_log_lleva_estado_y_categoria
+            - test_s4_3_c1_cada_categoria_queda_en_su_linea_de_log
+            - test_s4_3_c1_una_pregunta_no_bloqueada_no_lleva_la_clave_categoria
+            - test_s4_3_c2_el_log_no_contiene_la_pregunta_ni_sus_palabras
+            - test_s4_2_la_consulta_bloqueada_queda_registrada
   pending_commits: []
   approved_manifests:
     - task: T1
@@ -160,6 +171,31 @@ progress:
         - tests/server/evals/test_evals.py
         - tests/server/aplicacion/test_bloqueo.py
       receipts: []
+    - task: T3
+      attempt: 1
+      files:
+        - path: src/server/AGENTS.md
+          status: " M"
+          sha256: 9f6420f0499ea9a3a9ebaade42f003e26ee3522bf78bc30e5d2ef5221f50853c
+        - path: src/server/http/logs.py
+          status: " M"
+          sha256: 1c47b75991d8d97024a3e0dfc1c71e2ed5bf9fd83ca4c2ca69061ce57c584684
+        - path: src/server/http/middleware.py
+          status: " M"
+          sha256: 8c96b9daaaa925876d76960cff8667f5bea97a641126678f05f0ed7a334a17bc
+        - path: src/server/http/rutas.py
+          status: " M"
+          sha256: 1703ae88e3b6eec2fe6add3a998809e702dd8e9a4b7337e6e012badf7e08c023
+        - path: tests/server/http/test_bloqueo_api.py
+          status: ??
+          sha256: 1b8732fd7d56b56f7b193abd2a198cbac19da2882323849b9e288dee9e311671
+      reviewed:
+        - src/server/AGENTS.md
+        - src/server/http/logs.py
+        - src/server/http/middleware.py
+        - src/server/http/rutas.py
+        - tests/server/http/test_bloqueo_api.py
+      receipts: []
 approvals:
   - step: shown
     by: Juan D. Guzmán
@@ -191,4 +227,12 @@ cut_estimates:
     base: 64554
     turns_left: 73
     savings: 2.75
+    decision: "go on: below 50"
+  - at: 2026-10-23T23:29:33.517Z
+    task: T3
+    boundary_id: implement:T3
+    context: 319276
+    base: 64554
+    turns_left: 58
+    savings: 2.63
     decision: "go on: below 50"

@@ -55,6 +55,8 @@ def consultar_api(entrada: ConsultaEntrada, request: Request) -> ConsultaSalida:
         )
     request.state.fuentes = len(resultado.fuentes)
     request.state.estado = resultado.estado.value
+    if resultado.categoria is not None:
+        request.state.categoria = resultado.categoria.value
     return ConsultaSalida(
         respuesta=resultado.respuesta,
         fuentes=[
