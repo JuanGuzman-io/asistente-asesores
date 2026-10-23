@@ -18,12 +18,15 @@ solo pinta; las pruebas usan un backend simulado y tres e2e con Playwright contr
 
 <a id="fr1"></a>
 ### FR-1 — Enviar la consulta y mostrar el procesamiento
-Serves: AC-1, AC-1/C1
+Serves: AC-1, AC-1/C1, AC-1/C4
 Projects: web
 
 La pantalla tiene un campo de pregunta con etiqueta y un botón `Consultar`. Al enviar, el estado de
 procesamiento pasa de `inactivo` a `procesando`, visible en pantalla, y el botón queda deshabilitado
-hasta que la consulta termina en `completado` o `error`.
+hasta que la consulta termina en `completado` o `error`. El envío también queda desactivado mientras la
+pregunta no es válida: vacía, solo con espacios o de más de 1.000 caracteres, contados como el backend
+(NFC, sin espacios a los lados, en puntos de código; [D8](#d8)). Un contador "N/1.000" muestra ese largo.
+La validación del backend no cambia (MDO-0001 AC-7).
 
 #### S-1.1 — Procesamiento visible
 - **Given** la interfaz abierta en `inactivo`
@@ -34,6 +37,18 @@ hasta que la consulta termina en `completado` o `error`.
 - **Given** una consulta en `procesando`
 - **When** el asesor pulsa `Consultar` otra vez o envía el formulario con el teclado
 - **Then** **BUT it must NOT** salir una segunda petición a `/api/consultar` (C1)
+
+#### S-1.3 — Pregunta vacía sin envío
+- **Given** el campo vacío, o con solo espacios, tabulaciones o saltos de línea
+- **When** el asesor mira el botón, lo pulsa o pulsa Enter en el campo
+- **Then** el botón está deshabilitado y el contador dice "0/1.000"; al escribir un carácter que no sea espacio, el botón se habilita
+- **BUT it must NOT** salir ninguna petición a `/api/consultar` (C4)
+
+#### S-1.4 — Límite de 1.000 caracteres
+- **Given** una pregunta que, sin espacios a los lados y normalizada a NFC, tiene 1.001 puntos de código
+- **When** el asesor mira el contador, pulsa el botón o pulsa Enter
+- **Then** el contador dice "1.001/1.000", marcado como excedido, y el botón está deshabilitado; con exactamente 1.000 puntos de código el envío se permite, aunque haya espacios a los lados, una "é" escrita como "e" más tilde combinable o emojis, que cuentan 1 cada uno
+- **BUT it must NOT** salir ninguna petición a `/api/consultar` (C4)
 
 <a id="fr2"></a>
 ### FR-2 — Mostrar respuesta, estado y fuentes
@@ -109,8 +124,11 @@ cuando el servicio lo envía; el estado de procesamiento queda en `error`. Mensa
 Serves: AC-2/C2
 Projects: web
 
-Ni el error ni el fin de la consulta borran el campo de pregunta; un nuevo envío limpia el resultado o
-el error anterior antes de mostrar `procesando`.
+Al enviar, la caja se vacía y la pregunta enviada queda visible en la conversación; si la consulta
+termina en error, la pregunta vuelve a la caja para corregirla o reintentar, salvo que el asesor ya haya
+escrito otra. Un nuevo envío limpia el resultado o el error anterior antes de mostrar `procesando`
+(enmendado por [C-9](#c-9) para el diseño de chat de C-6 y C-7; antes, ni el error ni el fin de la
+consulta borraban el campo).
 
 #### S-4.1 — Reintento tras un error
 - **Given** una consulta que terminó en error
@@ -134,6 +152,7 @@ elementos se encuentran por rol o etiqueta (`getByRole`, `getByLabelText`), nunc
 | AC-1 | C1: sin doble envío | FR-1 / S-1.2 | covered |
 | AC-1 | C2: estado visible y distinguible | FR-2 / S-2.2, S-2.3 | covered |
 | AC-1 | C3: texto, no HTML | FR-2 / S-2.4 | covered |
+| AC-1 | C4: sin envío vacío ni de más de 1.000 caracteres | FR-1 / S-1.3, S-1.4 | covered |
 | AC-2 | main | FR-3 / S-3.1, S-3.2, S-3.3 | covered |
 | AC-2 | C1: sin detalles técnicos | FR-3 / S-3.4 | covered |
 | AC-2 | C2: conservar la pregunta | FR-4 / S-4.1 | covered |
@@ -174,19 +193,27 @@ elementos se encuentran por rol o etiqueta (`getByRole`, `getByLabelText`), nunc
 <a id="d4"></a>
 ### D4 — Texto plano, sin Markdown (enmendado por C-8: Markdown con formato, sin HTML ni enlaces)
 
-- La respuesta y los fragmentos se pintan como nodos de texto de React con `white-space: pre-wrap`;
-  `dangerouslySetInnerHTML` está prohibido; lo cubren la prueba S-2.4 y la revisión (la regla
+- Original: la respuesta y los fragmentos se pintaban como nodos de texto de React con `white-space: pre-wrap`.
+- Enmienda ([C-8](#c-8)): pasan por `src/web/src/TextoMarkdown.tsx` (`react-markdown` con `remark-gfm` y
+  `remark-breaks`, sin `rehype-raw`, con lista cerrada de elementos y `unwrapDisallowed`): títulos, tablas y
+  listas con formato; un enlace queda como su texto, una imagen no se pinta y el HTML crudo se ve literal.
+- En los dos casos `dangerouslySetInnerHTML` está prohibido; lo cubren S-2.4 y la revisión (la regla
   `react/no-danger` necesitaría otro plugin de ESLint).
-- Rechazado: renderizar Markdown (otra dependencia y una vía de HTML desde documentos, que son datos).
+- Rechazado en la enmienda: `rehype-raw` o un sanitizador de HTML (abre la vía de HTML que AC-1/C3 cierra).
 
 <a id="d5"></a>
 ### D5 — Pruebas: backend simulado, y tres e2e al final
 
 - Vitest + Testing Library + jsdom con `fetch` reemplazado por `vi.stubGlobal` y respuestas armadas
   según el contrato (decisión del PE). Rechazado MSW: otra dependencia para un solo endpoint.
-- Playwright (decisión del PE, 2026-10-23), solo tres escenarios contra el backend real de MDO-0001:
-  consulta exitosa con fuentes, pregunta vacía con error visible y pregunta sin información. Corren al
-  final y necesitan MDO-0001 en `main`.
+- Playwright (decisión del PE, 2026-10-23) contra el backend real de MDO-0001: consulta exitosa con
+  fuentes y pregunta sin información. Corren al final y necesitan MDO-0001 en `main`.
+- Enmienda ([C-9](#c-9)): el caso "pregunta vacía con error visible" se reemplaza por dos, porque con D8
+  la interfaz ya no envía una pregunta inválida:
+  1. **Caja vacía:** el botón está deshabilitado y no sale ninguna petición a `/api/consultar` (S-1.3).
+  2. **Error visible:** una pregunta válida con la respuesta forzada a 422 con `page.route` (problem+json
+     con `detail` y `requestId`); se ven el mensaje y el código de referencia (S-3.1 en pantalla).
+- El 422 real del backend queda cubierto por MDO-0001 (AC-7, pruebas de la API) y por `tests/web/api.test.ts` (S-3.1).
 
 <a id="d6"></a>
 ### D6 — Gates del proyecto `web`
@@ -224,19 +251,37 @@ Versiones de npm del 2026-10-23, fijadas en `package-lock.json`:
   modificar: MPL-2.0 (p. ej. `lightningcss`, de Vite 8), PSF-2.0, ISC, BlueOak-1.0.0 y CC-BY-4.0. T1
   adjunta el informe real de licencias y `npm audit`.
 
+<a id="d8"></a>
+### D8 — Validar el largo de la pregunta en la interfaz, igual que el backend
+
+- `src/web/src/pregunta.ts` exporta `MAXIMO_PREGUNTA = 1000`, `largoPregunta(texto)` =
+  `[...texto.normalize("NFC").trim()].length` (puntos de código, como `len()` en Python) y
+  `preguntaValida(texto)` = largo entre 1 y 1.000. Es la misma regla que `ConsultaEntrada` de MDO-0001
+  (`unicodedata.normalize("NFC", valor).strip()` y `len(texto) > 1000`; [P4](#p4)).
+- `Compositor` deshabilita el botón cuando `procesando` o la pregunta no es válida, y muestra el contador
+  "N/1.000" (miles con punto) asociado al campo con `aria-describedby`; al pasarse lo marca como excedido.
+  El manejador de `App` también retorna sin enviar si la pregunta no es válida: con el botón deshabilitado
+  el navegador ya no envía con Enter, y el manejador lo garantiza igual (como con `procesando`, S-1.2).
+- Se envía el texto tal como se escribió; el backend normaliza y valida, y sigue siendo la autoridad
+  (S-3.1 con un 422 forzado y `api.test.ts`).
+- Rechazadas: `maxLength` del `<input>` (cuenta unidades UTF-16, corta en silencio y no deja ver el
+  exceso); el atributo `required` (acepta solo espacios y muestra el globo del navegador, fuera del
+  diseño); contar con `texto.length` (un emoji cuenta 2 y la interfaz bloquearía preguntas que el
+  backend acepta).
+
 ## Principle check
 
 | ID | Applies? | Application or reason not applicable |
 |---|---|---|
-| DP-1 | yes | El texto del servicio se pinta como texto (D4, S-2.4); la pregunta no se guarda en el navegador; la validación de la entrada sigue en el backend. |
+| DP-1 | yes | El texto del servicio no se interpreta como HTML ni crea enlaces (D4, S-2.4); la pregunta no se guarda en el navegador; la interfaz bloquea la pregunta inválida (D8) y la validación de la entrada sigue en el backend. |
 | DP-2 | yes | La interfaz muestra solo lo que devuelve la API, con sus fuentes y estado, sin reescribirlo (FR-2). |
-| DP-3 | yes | Cada escenario empieza con una prueba roja en Vitest; las e2e de D5 cubren AC-1 (crítico) y el caso de pregunta vacía. |
+| DP-3 | yes | Cada escenario empieza con una prueba roja en Vitest; las e2e de D5 cubren AC-1 (crítico), la caja vacía sin petición y el error visible con un 422 forzado. |
 | DP-4 | no | La interfaz no llama a ningún modelo. |
 | DP-5 | yes | Cliente de la API (D3), pantalla y resultado separados; la pantalla no conoce HTTP. |
-| DP-6 | yes | Sin servicios pagos; sin doble envío (S-1.2) no se duplican consultas al backend ni al modelo. |
+| DP-6 | yes | Sin servicios pagos; sin doble envío (S-1.2) ni preguntas inválidas (S-1.3, S-1.4) no salen consultas inútiles al backend. |
 | DP-7 | yes | El `requestId` se muestra como código de referencia (FR-3) para cruzarlo con el log del backend; el registro es del backend. |
 | DP-8 | no | La interfaz no escribe datos (`writes_data: no`). |
-| DP-9 | yes | Sin librerías de UI, estado, peticiones, Markdown ni mocks HTTP (D3, D4, D5). |
+| DP-9 | yes | Sin librerías de UI, estado, peticiones ni mocks HTTP (D3, D5); Markdown con `react-markdown` por decisión del PE (D4, C-8); la validación de D8 es una función propia, sin librería. |
 
 ## Justified exceptions
 
@@ -256,6 +301,8 @@ No aplica: la interfaz no escribe datos; el registro de la consulta es de MDO-00
 | web | `src/web/src/api.ts` | Cliente de la API y tipos del contrato (D3) | ninguno (nuevo; será el exemplar de cliente) |
 | web | `src/web/src/App.tsx`, `Resultado.tsx`, `main.tsx` | Formulario, estado de procesamiento, resultado y error (FR-1, FR-2, FR-4) | ninguno (nuevo) |
 | web | `tests/web/` | Pruebas Vitest por escenario y `tests/web/e2e/` con Playwright | ninguno (nuevo) |
+| web | `src/web/src/pregunta.ts` (nuevo), `Compositor.tsx`, `App.tsx`, `estilos.css` | Validación del largo, botón deshabilitado y contador (D8, S-1.3, S-1.4) | `src/web/src/api.ts` |
+| web | `tests/web/pregunta.test.ts` (nuevo), `tests/web/App.test.tsx`, `tests/web/e2e/consultar.spec.ts` | S-1.3 y S-1.4 en unidad y pantalla; S-3.1 en pantalla con una pregunta válida; las dos e2e de C-9 | `tests/web/App.test.tsx` |
 | — | `.gitignore` | `node_modules/`, `src/web/dist/`, resultados de Playwright | `.gitignore` |
 
 ## Risks and impacts
@@ -265,8 +312,9 @@ No aplica: la interfaz no escribe datos; el registro de la consulta es de MDO-00
 | Resultado | `ui`, `security` | Texto de documentos interpretado como HTML: React lo escapa, D4 y la prueba S-2.4. |
 | Cliente de la API | `input`, `public-api` | El contrato cambia en MDO-0001 y la interfaz no se entera: validación del 200 (S-3.4) y e2e contra el backend real. |
 | Dependencias | `security` | Licencias transitivas fuera de la lista y vulnerabilidades: informe de licencias y `npm audit` en T1. |
+| Validación en la interfaz | `input`, `ui` | La interfaz y el backend cuentan distinto y se bloquea una pregunta válida, o se deja pasar una inválida: misma fórmula (P4, comprobada con ambos), casos de borde en S-1.4 y el backend sigue validando. Solo difieren caracteres de control que `str.strip()` y `trim()` tratan distinto; ahí manda el 422 del backend. |
 
-- **R-1:** las e2e dependen de que MDO-0001 esté en `main`; si se retrasa, T5 espera y la spec no llega a `verified`.
+- **R-1:** las e2e dependen de que MDO-0001 esté en `main`; si se retrasa, T4 y T6 esperan y la spec no llega a `verified`.
 - **R-2:** el proxy (D2) solo existe en `vite dev` y `vite preview`; servir `dist/` en otro lado necesita el mismo origen o CORS (fuera de alcance).
 
 ## Constitution Impact
@@ -288,6 +336,7 @@ Propuestas; solo `/mandao-close` las aplica, con aprobación.
 ## Module Docs Impact
 
 - `src/web/AGENTS.md`: cómo correr (`npm run dev` con el backend en el puerto 8000), los gates y las e2e.
+- `src/web/AGENTS.md` (C-9): la pregunta vacía ya no llega al backend; `pregunta.ts` (D8), el contador y las dos e2e nuevas.
 - `AGENTS.md` (raíz), Module index: `src/web` existe y es el proyecto `web`.
 - MDO-0001 `story.md` y `design.md#contract`: MDO-0002 es la interfaz y MDO-0003 la seguridad (se corrige en esa spec).
 
@@ -297,6 +346,7 @@ Propuestas; solo `/mandao-close` las aplica, con aprobación.
 |---|---|---|---|---|---|
 | CC-1 | CONTRACT | MDO-0001 `story.md` y `design.md#contract` llaman MDO-0003 a la interfaz y MDO-0002 a la seguridad; esta spec es MDO-0002 interfaz (PE). | normal | PO | resolved 2026-10-23: decisión del PE; se corrige en MDO-0001 |
 | CC-2 | RULE | `standards.md#dependencies` solo permite MIT, Apache-2.0 y BSD; Vite 8 trae `lightningcss` (MPL-2.0) y otras transitivas. | normal | PO | resolved 2026-10-23: excepción del PE (D7, Justified exceptions) |
+| CC-3 | DRIFT | FR-4 dice "ni el error ni el fin de la consulta borran el campo"; desde el rediseño de chat (C-6, C-7) `src/web/src/App.tsx` vacía la caja al enviar y la devuelve solo si hay error, y tras una respuesta queda vacía. S-4.1 (tras error) sí se cumple. | normal | PO | resolved 2026-10-23: el PE enmienda FR-4 al comportamiento actual (C-9) |
 
 ## Open items
 
@@ -345,6 +395,11 @@ Propuestas; solo `/mandao-close` las aplica, con aprobación.
 - **Answered by:** PE.
 - **Effect:** D4 (enmendado): `react-markdown` 10.1.0 con `remark-gfm` 4.0.1 y `remark-breaks` 4.0.0 (MIT; transitiva ISC `@ungap/structured-clone`, dentro de C-1), sin `rehype-raw`, con lista cerrada de elementos (`allowedElements` y `unwrapDisallowed`): un enlace queda como su texto y una imagen no se pinta; el HTML crudo se ve literal. `src/web/src/TextoMarkdown.tsx` y `markdown.css`; pruebas en `tests/web/Resultado.test.tsx`.
 
+### C-9 — ¿Bloquear en la interfaz la pregunta vacía o de más de 1.000 caracteres? (2026-10-23)
+- **Answer:** sí. El botón queda desactivado y Enter no envía con la pregunta vacía o solo espacios, y con más de 1.000 caracteres; un contador "N/1.000" cuenta como el backend (NFC, `strip()`, puntos de código). La validación del backend se mantiene. La e2e "pregunta vacía con error visible" de C-3 se reemplaza por "caja vacía sin petición" y "error visible con un 422 (o 500) forzado con `page.route`"; el 422 real queda en MDO-0001 (AC-7) y en `api.test.ts`.
+- **Answered by:** PE.
+- **Effect:** AC-1/C4 en `story.md`; FR-1 (S-1.3, S-1.4); D5 y D8; T5 y T6; `src/web/AGENTS.md`; `quickstart.md`. Además, el PE resuelve CC-3: FR-4 se enmienda al comportamiento del chat (la caja se vacía al enviar y la pregunta vuelve si hay error; S-4.1 no cambia).
+
 ## Premise Ledger
 
 <a id="p1"></a>
@@ -361,6 +416,13 @@ Su `peerDependencies` exige `typescript >=4.8.4 <6.1.0`. Si es falso, se usa Typ
 ### P3 — El Node local cumple los motores de Vite, Vitest y jsdom (High)
 Node 22.23.2 cumple `^22.12.0` (Vite, Vitest) y `^22.22.2` (jsdom). Si es falso, hay que fijar otra versión
 de Node o bajar versiones (D7).
+
+<a id="p4"></a>
+### P4 — La interfaz cuenta el largo de la pregunta igual que el backend (High)
+`ConsultaEntrada` de MDO-0001 acepta `1 ≤ len(unicodedata.normalize("NFC", texto).strip()) ≤ 1000` y
+`[...texto.normalize("NFC").trim()].length` da lo mismo en el navegador para vacía, solo espacios, NBSP,
+"é" descompuesta, emojis, 1.000 con espacios a los lados y 1.001. Si es falso, D8 bloquearía preguntas
+válidas o dejaría pasar inválidas, y habría que cambiar la fórmula.
 
 ## Evidence
 

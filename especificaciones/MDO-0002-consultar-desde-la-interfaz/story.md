@@ -63,6 +63,7 @@ critical: true
 - **BUT it must NOT** enviar otra consulta mientras la anterior está en procesamiento (C1)
 - **AND IT MUST** mostrar el estado de la respuesta (`Exitosa`, `Sin información suficiente` o `Bloqueada por seguridad`) visible y distinguible, también cuando no hay fuentes (C2)
 - **BUT it must NOT** interpretar como HTML ni como enlace el texto de la respuesta o de las fuentes (C3)
+- **BUT it must NOT** enviar una pregunta vacía, solo con espacios o de más de 1.000 caracteres: el envío queda desactivado y un contador muestra el largo; decisión del PE del 2026-10-23, spec C-9 (C4)
 
 ### AC-2 — Ver errores
 critical: false

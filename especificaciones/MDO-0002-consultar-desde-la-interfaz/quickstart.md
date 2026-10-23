@@ -13,8 +13,8 @@ spec: MDO-0002-consultar-desde-la-interfaz
    You should see: "Procesando consulta…" y el botón deshabilitado; luego la respuesta con $50.000.000, el estado "Exitosa" y la fuente "Productos de Crédito > Crédito Productivo Impulso" con su fragmento.
 3. Cambia la pregunta por "¿Va a llover mañana en Bogotá?" y consulta.
    You should see: "No tengo información suficiente para responder.", el estado "Sin información suficiente" y "Sin fuentes".
-4. Borra la pregunta, escribe solo espacios y consulta.
-   You should see: un error claro con "Código de referencia: …", y los espacios siguen en el campo.
+4. Borra la pregunta o escribe solo espacios.
+   You should see: el botón de enviar desactivado, el contador en "0/1.000" y que Enter no hace nada. Pega un texto de más de 1.000 caracteres: el contador marca el exceso y el envío sigue desactivado.
 5. Detén el backend y consulta otra vez.
    You should see: "No se pudo conectar con el servicio. Verifica que esté en ejecución."
 

@@ -56,3 +56,30 @@ npm notice
 ^22.22.2 || ^24.15.0 || >=26.0.0
 OK: cumple ^22.22.2
 ```
+
+## P4 — run
+
+- Claim: La interfaz cuenta el largo de la pregunta igual que el backend
+- Command: `bash -c 'cd /Users/jguzman/GitHub/Projects/asistente-asesores.worktrees/MDO-0001-consultar-la-base-documental-con-fuentes && uv run python -c '\''
+import json
+from pydantic import ValidationError
+from src.server.http.esquemas import ConsultaEntrada
+casos = {"vacia": "", "espacios": "  \t\n ", "nbsp": "\u00a0", "e_descompuesta_1000": "e\u0301" * 1000, "emoji_1000": "\U0001F600" * 1000, "a_1000_con_espacios": "  " + "a" * 1000 + "\n", "a_1001": "a" * 1001}
+r = {}
+for k, v in casos.items():
+    try: ConsultaEntrada(pregunta=v); r[k] = "acepta"
+    except ValidationError: r[k] = "rechaza"
+print("backend", json.dumps(r, sort_keys=True))
+'\'' && node -e '\''
+const casos = {vacia: "", espacios: "  \t\n ", nbsp: "\u00a0", e_descompuesta_1000: "e\u0301".repeat(1000), emoji_1000: "\u{1F600}".repeat(1000), a_1000_con_espacios: "  " + "a".repeat(1000) + "\n", a_1001: "a".repeat(1001)};
+const largo = (t) => [...t.normalize("NFC").trim()].length;
+const r = {}; for (const k of Object.keys(casos).sort()) { const n = largo(casos[k]); r[k] = n >= 1 && n <= 1000 ? "acepta" : "rechaza"; }
+console.log("interfaz", JSON.stringify(r));
+'\'''` (from the worktree root)
+- Ran at: 2026-10-23T20:05:45.645Z on aba941b
+- Exit: 0
+
+```
+backend {"a_1000_con_espacios": "acepta", "a_1001": "rechaza", "e_descompuesta_1000": "acepta", "emoji_1000": "acepta", "espacios": "rechaza", "nbsp": "rechaza", "vacia": "rechaza"}
+interfaz {"a_1000_con_espacios":"acepta","a_1001":"rechaza","e_descompuesta_1000":"acepta","emoji_1000":"acepta","espacios":"rechaza","nbsp":"rechaza","vacia":"rechaza"}
+```

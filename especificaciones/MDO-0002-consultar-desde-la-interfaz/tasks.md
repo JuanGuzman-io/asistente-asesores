@@ -31,6 +31,13 @@ tres primeras usan un backend simulado según el contrato y empiezan con pruebas
 
 **Checkpoint:** `npm --prefix src/web test -- App` and `npm --prefix src/web run e2e` passes (T3, T4); this confirms AC-1, AC-2 before the next group.
 
+### AC-1, AC-2 — Enmienda C-9: sin envío inválido
+
+- [ ] T5 [AC-1] La pregunta vacía o de más de 1.000 caracteres no se envía y un contador muestra el largo — `src/web/src/pregunta.ts`
+- [ ] T6 [AC-1, AC-2] Las e2e de caja vacía y error visible reemplazan la de pregunta vacía — `tests/web/e2e/consultar.spec.ts`
+
+**Checkpoint:** `npm --prefix src/web test -- pregunta App` and `npm --prefix src/web run e2e` passes (T5, T6); this confirms AC-1/C4 and AC-2 before the next group.
+
 ## Details
 
 ### [x] T1 — El proyecto web existe y el cliente de la API traduce cada respuesta del servicio
@@ -147,3 +154,62 @@ verify: npm --prefix src/web run e2e
 ```
 
 **Notes:** T4 necesita MDO-0001 en `main` y esta rama actualizada con él (R-1). Sin TDD rojo: prueba un comportamiento que T1–T3 ya construyeron contra el backend simulado.
+
+### [ ] T5 — La pregunta vacía o de más de 1.000 caracteres no se envía y un contador muestra el largo
+
+- **What:** `pregunta.ts` con la regla de largo de [D8](spec.md#d8); `Compositor` deshabilita el envío y
+  muestra el contador; el manejador de `App` no envía una pregunta inválida ([C-9](spec.md#c-9)).
+- **Done when:**
+  - S-1.3 se cumple: con el campo vacío o solo espacios el botón está deshabilitado, el contador dice "0/1.000" y ni el clic ni Enter sacan una petición; al escribir un carácter el botón se habilita.
+  - S-1.4 se cumple: con 1.001 puntos de código el contador dice "1.001/1.000", marcado como excedido, y no sale ninguna petición; con exactamente 1.000, aunque haya espacios a los lados, "é" descompuesta o emojis, se envía.
+  - `largoPregunta` y `preguntaValida` dan los mismos resultados que el backend en los casos de P4.
+  - S-3.1 en pantalla usa una pregunta válida con el 422 simulado; S-1.1, S-1.2 y S-4.1 siguen pasando.
+  - El contador se encuentra por texto y está asociado al campo con `aria-describedby` (NFR-1).
+  - `src/web/AGENTS.md` ya no dice que la pregunta vacía llega al backend.
+
+```yaml
+project: web
+kind: feat
+tier: standard
+files: [src/web/src/pregunta.ts, src/web/src/Compositor.tsx, src/web/src/App.tsx, src/web/src/estilos.css, tests/web/pregunta.test.ts, tests/web/App.test.tsx, src/web/AGENTS.md]
+exemplar: src/web/src/api.ts
+ac: [AC-1, AC-1/C4]
+scenarios: [S-1.3, S-1.3/C4, S-1.4, S-1.4/C4]
+test_levels: { S-1.3: unit, S-1.3/C4: unit, S-1.4: unit, S-1.4/C4: unit }
+partial_failure_tests: []
+evidence: tdd
+risk_tags: [input, ui]
+decisions: [D8]
+depends_on: [T3]
+parallel_safe: false
+verify: npm --prefix src/web test -- pregunta App
+```
+
+### [ ] T6 — Las e2e de caja vacía y error visible reemplazan la de pregunta vacía
+
+- **What:** en `tests/web/e2e/consultar.spec.ts`, la prueba de pregunta vacía se reemplaza por las dos de
+  [D5](spec.md#d5) (enmienda C-9).
+- **Done when:**
+  - Caja vacía: el botón está deshabilitado y no sale ninguna petición a `/api/consultar` (S-1.3).
+  - Error visible: con una pregunta válida y la respuesta forzada a 422 con `page.route`, se ven el `detail` y "Código de referencia: …" (S-3.1).
+  - Las e2e de consulta exitosa y sin información siguen pasando contra el backend real.
+
+```yaml
+project: web
+kind: test
+tier: standard
+files: [tests/web/e2e/consultar.spec.ts, src/web/AGENTS.md]
+exemplar: tests/web/e2e/consultar.spec.ts
+ac: [AC-1/C4, AC-2]
+scenarios: [S-1.3, S-3.1]
+test_levels: { S-1.3: e2e, S-3.1: e2e }
+partial_failure_tests: []
+evidence: none
+risk_tags: [ui]
+decisions: [D5]
+depends_on: [T5]
+parallel_safe: false
+verify: npm --prefix src/web run e2e
+```
+
+**Notes:** T6 necesita el backend de MDO-0001 corriendo (R-1). Sin TDD rojo: prueba contra el backend lo que T5 ya construyó con pruebas rojas.
