@@ -8,15 +8,15 @@ owner: PE
 
 # Architecture (TRD)
 
-Proyecto nuevo: no hay código todavía. Lo que sigue es la arquitectura elegida (decisiones del equipo,
-2026-10-23); las versiones se fijan en el lockfile al crear cada proyecto.
+Lo que sigue es la arquitectura elegida (decisiones del equipo, 2026-10-23); las versiones se fijan en
+el lockfile de cada proyecto (`uv.lock`, `src/web/package-lock.json`).
 
 ## Stack
 | Project | Language | Frameworks (versions) | Style-defining libraries |
 |---|---|---|---|
 | backend | Python 3.13 (fijado en `.python-version`; entorno e instalación con `uv`) | FastAPI 0.161.1 | Pydantic (validación), `sqlite3` + FTS5, `qdrant-client` 1.20.0 (modo local), `fastembed` 0.9.0, `google-genai` 2.33.0 |
-| frontend | TypeScript | React + Vite | — (el diseño visual no se evalúa) |
-| pruebas | Python / TypeScript | pytest + `TestClient` de FastAPI; Vitest + Testing Library | — |
+| frontend (proyecto `web`, `src/web`, profile `app`) | TypeScript 6.0.3 | React 19.3.1 + Vite 8.3.5 | `react-markdown` 10.1.0 con `remark-gfm` y `remark-breaks`; `@phosphor-icons/react` (íconos); sin librería de UI |
+| pruebas | Python / TypeScript | pytest + `TestClient` de FastAPI; Vitest 5.0.5 + Testing Library; Playwright 1.64.1 (e2e del frontend) | — |
 
 ## Chosen architecture
 **Monolito modular en un repositorio, con arquitectura hexagonal en el backend.** El caso de uso
@@ -56,6 +56,9 @@ SQLite, embeddings, Gemini). `dominio` no importa nada de las demás capas; `web
   Sin clave, o si la API falla, la respuesta es extractiva (fragmento y fuente). Ver `model-registry.md`.
 - Los embeddings son locales: se calculan una vez al indexar y solo se recalculan si cambia un documento.
 - Los guardrails son código y corren antes de buscar y antes de responder.
+- **Frontend en el mismo origen:** el cliente llama a la ruta relativa `/api/consultar` y el proxy de Vite
+  la reenvía a `http://127.0.0.1:8000` (`API_URL` la cambia), en `vite dev` y en `vite preview`. Sin CORS
+  y sin servir `dist/` desde FastAPI (MDO-0002 D2).
 
 ## Integrations
 Gemini API (Google), opcional por configuración. Qdrant corre embebido en el proceso (modo local), no
