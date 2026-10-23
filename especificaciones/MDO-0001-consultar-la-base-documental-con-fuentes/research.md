@@ -11,7 +11,7 @@ entries:
     alternatives: ["paraphrase-multilingual-mpnet-base-v2 (768, 1,00 GB, 512 tokens)", "intfloat/multilingual-e5-large (1024, 2,24 GB, prefijos query/passage)"]
     premise_ids: [P3]
     checked_on: "2026-10-23"
-    expires: "2027-01-21"
+    expires: "2027-04-23"
     claims:
       - id: C1
         key: "fastembed version"
@@ -33,7 +33,7 @@ entries:
           - { tier: manufacturer, url: "https://github.com/qdrant/fastembed/blob/main/fastembed/text/pooled_embedding.py", checked_on: "2026-10-23", value: "lista de modelos (rama main)" }
           - { tier: manufacturer, url: "https://qdrant.github.io/fastembed/examples/Supported_Models/", checked_on: "2026-10-23", value: "misma lista" }
     contradictions:
-      - "fastembed declara Python 3.15, pero su dependencia onnxruntime no publica wheel cp315: se resuelve usando Python 3.13."
+      - { claim_id: C2, resolution: "fastembed declara Python 3.15, pero su dependencia onnxruntime no publica wheel cp315: se usa Python 3.13." }
   - id: R2
     topic: "sqlite-vec 0.1.9 loading and vec0 KNN"
     topic_type: library
@@ -44,7 +44,7 @@ entries:
     alternatives: ["sqlite-vec 0.1.9 con un Python que permita extensiones (Homebrew)", "pysqlite3"]
     premise_ids: []
     checked_on: "2026-10-23"
-    expires: "2027-01-21"
+    expires: "2027-04-23"
     claims:
       - id: C1
         key: "sqlite-vec version"
@@ -70,7 +70,7 @@ entries:
     alternatives: ["porter (solo inglés)", "trigram (índice mayor, más ruido)"]
     premise_ids: [P2]
     checked_on: "2026-10-23"
-    expires: "2027-01-21"
+    expires: "2027-04-23"
     claims:
       - id: C1
         key: "fts5 tokenizer and quoting"
@@ -89,7 +89,7 @@ entries:
     alternatives: ["RequestBodyLimitMiddleware de Starlette 1.6+ (responde 413 en texto plano y no está confirmado junto a FastAPI 0.161.1)", "strict_content_type=False"]
     premise_ids: []
     checked_on: "2026-10-23"
-    expires: "2027-01-21"
+    expires: "2027-04-23"
     claims:
       - id: C1
         key: "fastapi version and content type"
@@ -116,8 +116,7 @@ entries:
           - { tier: manufacturer, url: "https://googleapis.github.io/python-genai/", checked_on: "2026-10-23", value: "salida estructurada" }
           - { tier: official, url: "https://ai.google.dev/gemini-api/docs/models", checked_on: "2026-10-23", value: "gemini-3.5-flash-lite Stable" }
     contradictions:
-      - "Ejemplos de Vertex muestran attempts=5: es el valor por defecto al fijar retry_options, no el del cliente (sin reintentos)."
-      - "google-genai 2.33.0 se publicó el 2026-10-23, el mismo día: se fija 2.33.0 pero conviene esperar o usar 2.32.0 si aparece un problema (riesgo R-5 en design.md)."
+      - { claim_id: C3, resolution: "Ejemplos de Vertex muestran attempts=5: es el valor por defecto al fijar retry_options, no el del cliente (sin reintentos); se sigue el código de _api_client.py." }
 ---
 
 # Research

@@ -8,3 +8,27 @@ approvals:
       requirements.md: sha256-5P8cacoG7DLJxZilfWQLXhWgXQfNDyAU4KtP2pIA8Pw=
       design.md: sha256-/gLZ1pKvwi8pzOQevdffa1QqskXUzxcQDRohY6xpBD8=
       research.md: sha256-Co47YL+gctr+Awiz3XVEe5HWSrNLpUPta0XGgb1v8u4=
+  - step: shown
+    by: Juan D. Guzmán
+    at: 2026-10-23T15:02:01.356Z
+    sha256:
+      story.md: sha256-vuoxSZOUvnLk7tEsF/V+ByP9TzMCTSVrhOCGr8oaz9M=
+      requirements.md: sha256-0W6tFkbZSbs78Tn3gd4QQVkwxbWGfPDAWaG/Qf/n/rU=
+      design.md: sha256-sTuqbMljftdPbT+AWyOFvLIDuwQoV4/B172/1js0/VQ=
+      research.md: sha256-gSxWwOyLbisys7mSZPuF5z2nDjqZJmdMLYu1iFewAhI=
+  - step: shown
+    by: Juan D. Guzmán
+    at: 2026-10-23T15:02:44.181Z
+    sha256:
+      story.md: sha256-vuoxSZOUvnLk7tEsF/V+ByP9TzMCTSVrhOCGr8oaz9M=
+      requirements.md: sha256-0W6tFkbZSbs78Tn3gd4QQVkwxbWGfPDAWaG/Qf/n/rU=
+      design.md: sha256-sTuqbMljftdPbT+AWyOFvLIDuwQoV4/B172/1js0/VQ=
+      research.md: sha256-OX0XfABAQ8ssM1sDtHc1O2X1BlhonXJpcr+O+Vqf0uQ=
+  - step: shown
+    by: Juan D. Guzmán
+    at: 2026-10-23T15:03:01.685Z
+    sha256:
+      story.md: sha256-vuoxSZOUvnLk7tEsF/V+ByP9TzMCTSVrhOCGr8oaz9M=
+      requirements.md: sha256-0W6tFkbZSbs78Tn3gd4QQVkwxbWGfPDAWaG/Qf/n/rU=
+      design.md: sha256-sTuqbMljftdPbT+AWyOFvLIDuwQoV4/B172/1js0/VQ=
+      research.md: sha256-yU0on2kPgBGftgr/cpcQprPPuMuctr2WxUzyre31DFY=
