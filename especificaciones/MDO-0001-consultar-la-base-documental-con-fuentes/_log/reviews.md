@@ -870,3 +870,21 @@ VERDICT: PASS
 {"id":"F4","status":"resolved","severity":"low","lens":"core","title":"Wall-clock assertion in the concurrency test replaced by the peak check","file":"tests/server/http/test_consultar_api.py","line":511,"evidence":"'duracion < 2 * ESPERA_S' removed; 'redactor.pico == 5' proves all five calls overlapped; the limit test was renamed from s14_1 to s12_1, as T16 asked."}
 ]}
 ```
+
+## T17 — attempt 1
+
+VERDICT: PASS
+
+## Findings (JSON)
+
+```json
+{"version":1,"findings":[{"id":"F1","status":"open","severity":"low","lens":"core","title":"Unicode-whitespace-only case is not checked against its exact message","file":"tests/server/http/test_consultar_api.py","line":157,"evidence":"CUERPOS_INVALIDOS includes 'solo_espacios_unicode' (NBSP, tab, newline, em space), but MENSAJES_422 leaves it out, so its exact detail 'La pregunta no puede estar vacía.' is never checked. str.strip() removes these characters, so the code should already return the right message. Advisory: add the entry to the map."},{"id":"F2","status":"open","severity":"low","lens":"core","title":"Matching the validator message depends on Pydantic's 'Value error, ' prefix","file":"src/server/http/problemas.py","line":41,"evidence":"manejar_validacion uses removeprefix('Value error, ') and checks the result against MENSAJES_PREGUNTA. If a Pydantic upgrade changes the prefix, the handler falls back to DETALLE_CUERPO. That fails safe (no input or PII leaks), and the exact-message tests would catch it. Advisory only: raising PydanticCustomError, or reading ctx['error'] inside the handler without echoing it, would avoid the string coupling."}]}
+```
+
+Spec conformance: S-7.1/AC-7 fixed texts per C-11 and D8; S-7.1/C2 no loc/msg, input or ctx in detail; S-7.1/C1, AC-7/C1, S-7.2 no query/logging (_sin_efectos); S-7.2/AC-9 exact limit message, 1.000 cases unchanged.
+Tests: exact messages per cause, absence of Pydantic phrasing, planted marker never echoed; S-7.2 tightened to exact match; nothing removed.
+TDD: loop.tdd.red true, evidence red; redTests.changed empty.
+Gates: format, lint, typecheck, test (55 passed), secrets, sast, metrics (9 passed) PASS; build and audit skipped.
+AGENTS.md: src/server/AGENTS.md updated.
+Lenses: security tighter (no input in detail); data unchanged; module boundaries: one-way import within http.
+Files reviewed: src/server/http/problemas.py, src/server/http/esquemas.py, tests/server/http/test_consultar_api.py, src/server/AGENTS.md

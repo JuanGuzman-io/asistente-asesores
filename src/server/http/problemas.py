@@ -5,6 +5,9 @@ from fastapi.exceptions import RequestValidationError
 from starlette.exceptions import HTTPException as StarletteHTTPException
 from starlette.responses import JSONResponse
 
+from src.server.http.esquemas import MENSAJES_PREGUNTA
+
+DETALLE_CUERPO = "El cuerpo debe ser un JSON con el campo pregunta de tipo texto."
 DETALLES = {
     404: "El recurso solicitado no existe.",
     405: "El método no está permitido para este recurso.",
@@ -36,12 +39,13 @@ def _request_id(request: Request) -> str:
 async def manejar_validacion(request: Request, exc: Exception) -> JSONResponse:
     if not isinstance(exc, RequestValidationError):
         raise exc
-    # Solo `loc` y `msg`: los errores de Pydantic incluyen la entrada (la pregunta, PII).
-    partes = [
-        f"{'.'.join(str(p) for p in e['loc'] if p != 'body') or 'cuerpo'}: {e['msg']}"
-        for e in exc.errors()
-    ]
-    return problema(422, "La petición no es válida. " + "; ".join(partes), _request_id(request))
+    # Texto fijo: los errores de Pydantic incluyen la entrada (la pregunta, PII) y no se copian.
+    detalle = DETALLE_CUERPO
+    for error in exc.errors():
+        mensaje = str(error["msg"]).removeprefix("Value error, ")
+        if error["type"] == "value_error" and mensaje in MENSAJES_PREGUNTA:
+            detalle = mensaje
+    return problema(422, detalle, _request_id(request))
 
 
 async def manejar_http(request: Request, exc: Exception) -> JSONResponse:

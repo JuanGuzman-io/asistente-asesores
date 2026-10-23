@@ -4,6 +4,9 @@ from typing import Annotated
 from pydantic import BaseModel, BeforeValidator
 
 MAXIMO_PREGUNTA = 1000
+PREGUNTA_VACIA = "La pregunta no puede estar vacía."
+PREGUNTA_LARGA = "La pregunta no puede superar los 1.000 caracteres."
+MENSAJES_PREGUNTA = {PREGUNTA_VACIA, PREGUNTA_LARGA}
 
 
 def _normalizar(valor: object) -> object:
@@ -11,9 +14,9 @@ def _normalizar(valor: object) -> object:
         return valor  # Pydantic lo rechaza como no texto
     texto = unicodedata.normalize("NFC", valor).strip()
     if not texto:
-        raise ValueError("la pregunta no puede estar vacía")
+        raise ValueError(PREGUNTA_VACIA)
     if len(texto) > MAXIMO_PREGUNTA:
-        raise ValueError("la pregunta no puede superar 1.000 caracteres")
+        raise ValueError(PREGUNTA_LARGA)
     return texto
 
 

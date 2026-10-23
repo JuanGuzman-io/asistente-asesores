@@ -2,7 +2,7 @@
 progress:
   schema_version: 1
   spec: MDO-0001-consultar-la-base-documental-con-fuentes
-  updated_at: 2026-10-23T20:08:43.474Z
+  updated_at: 2026-10-23T20:27:06.751Z
   current: null
   open_questions: []
   next_step: ""
@@ -492,6 +492,47 @@ progress:
             - test_s_6_2_con_puntaje_080_del_mejor_muestra_los_dos
             - test_s_6_2_sin_puntaje_no_filtra
             - test_s_6_2_los_ids_son_las_posiciones_en_la_lista_original
+    - task: T17
+      files:
+        - path: tests/server/http/test_consultar_api.py::test_s7_1_el_422_responde_el_mensaje_fijo_exacto_de_su_causa
+          sha256: missing
+          tests: []
+        - path: tests/server/http/test_consultar_api.py::test_s7_1_c2_el_detail_del_422_no_lleva_texto_de_pydantic
+          sha256: missing
+          tests: []
+        - path: tests/server/http/test_consultar_api.py::test_s7_1_c2_el_detail_del_422_no_repite_el_texto_enviado
+          sha256: missing
+          tests: []
+        - path: tests/server/http/test_consultar_api.py::test_s7_2_1001_puntos_de_codigo_responde_422_con_el_limite_sin_consultar_ni_registrar
+          sha256: missing
+          tests: []
+        - path: tests/server/http/test_consultar_api.py
+          sha256: 9cdbd5eca7234c3367be987607df96f2e8eeab7311f6eb3bdad4e14095467bbc
+          tests:
+            - test_s14_1_consulta_valida_responde_200_con_exactamente_respuesta_fuentes_estado
+            - test_s14_1_la_respuesta_lleva_x_request_id_uuid_v4_distinto_en_cada_peticion
+            - test_ac3_monto_maximo_del_credito_impulso_cita_el_documento_con_el_monto_que_dice
+            - test_s14_1_una_consulta_valida_queda_registrada_con_el_request_id_de_la_cabecera
+            - test_una_ruta_inexistente_o_con_metodo_no_permitido_responde_problema_con_request_id
+            - test_s7_1_cuerpo_invalido_responde_422_problema_sin_consultar_ni_registrar
+            - test_s7_1_el_422_responde_el_mensaje_fijo_exacto_de_su_causa
+            - test_s7_1_c2_el_detail_del_422_no_lleva_texto_de_pydantic
+            - test_s7_1_c2_el_detail_del_422_no_repite_el_texto_enviado
+            - test_s7_2_1001_puntos_de_codigo_responde_422_con_el_limite_sin_consultar_ni_registrar
+            - test_s7_2_1001_tras_quitar_espacios_exteriores_tambien_se_rechaza
+            - test_s7_2_1001_en_nfc_enviada_en_nfd_con_mas_puntos_de_codigo_se_rechaza
+            - test_s7_2_c1_mil_puntos_de_codigo_tras_normalizar_se_procesa_con_la_pregunta_normalizada
+            - test_el_arranque_crea_la_tabla_consultas_vacia_con_wal
+            - test_acid_cada_peticion_abre_su_propia_conexion_sqlite_y_la_cierra
+            - test_dos_peticiones_concurrentes_registran_cada_una_su_propio_modo
+            - test_500_inesperado_responde_problema_sin_detalles_y_sin_la_pregunta_en_logs
+            - test_500_por_fallo_al_registrar_no_deja_pregunta_ni_resultado_en_logs
+            - test_nfr4_cada_peticion_valida_emite_una_linea_json_sin_el_texto_de_la_pregunta
+            - test_nfr4_una_peticion_rechazada_emite_su_linea_json_sin_el_texto_de_la_pregunta
+            - test_s12_1_cinco_consultas_con_modelo_no_se_serializan_y_cada_una_registra_su_modo
+            - test_s12_1_con_mas_consultas_que_el_limite_nunca_hay_mas_en_vuelo_que_el_limite
+            - test_la_variable_gemini_max_concurrencia_fija_el_limite_cuando_no_se_pasa_parametro
+            - test_s12_1_un_429_del_api_responde_200_extractivo_y_el_log_lleva_el_429_sin_contenido
   pending_commits: []
   approved_manifests:
     - task: T1
@@ -1026,12 +1067,27 @@ progress:
         - uv.lock
         - tests/server/infraestructura/busqueda/test_fts.py
       receipts: []
-  loop_brake:
-    task: T16
-    action: commit
-    execution_rows: 115
-    approval_rows: 8
-    repeats: 1
+    - task: T17
+      attempt: 1
+      files:
+        - path: src/server/AGENTS.md
+          status: " M"
+          sha256: 2eddb08479696a1f655e10d3dc48f83a2335f3db1d603fcc09188f56030aa75c
+        - path: src/server/http/esquemas.py
+          status: " M"
+          sha256: a5468d724eb9b77d30c86ace79d05591445a47ac93e6b3dde2783a3845206985
+        - path: src/server/http/problemas.py
+          status: " M"
+          sha256: 54ee8c490b323649555892e65797bbbd989d655920d3294186b02c9553f41731
+        - path: tests/server/http/test_consultar_api.py
+          status: " M"
+          sha256: 9cdbd5eca7234c3367be987607df96f2e8eeab7311f6eb3bdad4e14095467bbc
+      reviewed:
+        - src/server/AGENTS.md
+        - src/server/http/esquemas.py
+        - src/server/http/problemas.py
+        - tests/server/http/test_consultar_api.py
+      receipts: []
 approvals:
   - step: shown
     by: Juan D. Guzmán
@@ -1269,3 +1325,11 @@ cut_estimates:
     turns_left: 28
     savings: 0.76
     decision: "go on: suggestion already shown at boundary"
+  - at: 2026-10-23T20:23:24.964Z
+    task: T17
+    boundary_id: implement:T17
+    context: 145636
+    base: 61621
+    turns_left: 43
+    savings: 0.41
+    decision: "go on: below 50"

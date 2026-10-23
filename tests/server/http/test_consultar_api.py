@@ -123,6 +123,11 @@ def test_una_ruta_inexistente_o_con_metodo_no_permitido_responde_problema_con_re
     _afirmar_problema(cliente.get("/api/no-existe"), 404)
 
 
+MENSAJE_VACIA = "La pregunta no puede estar vacía."
+MENSAJE_LARGA = "La pregunta no puede superar los 1.000 caracteres."
+MENSAJE_CUERPO = "El cuerpo debe ser un JSON con el campo pregunta de tipo texto."
+FRASES_TECNICAS = ("La petición no es válida", "Value error", "pregunta:")
+
 # --- S-7.1 -------------------------------------------------------------------------------------
 
 CUERPOS_INVALIDOS = {
@@ -149,6 +154,59 @@ def test_s7_1_cuerpo_invalido_responde_422_problema_sin_consultar_ni_registrar(
     _sin_efectos(entorno)
 
 
+MENSAJES_422 = {
+    "vacia": MENSAJE_VACIA,
+    "solo_espacios": MENSAJE_VACIA,
+    "sin_pregunta": MENSAJE_CUERPO,
+    "pregunta_numero": MENSAJE_CUERPO,
+    "pregunta_nula": MENSAJE_CUERPO,
+    "pregunta_lista": MENSAJE_CUERPO,
+    "cuerpo_no_objeto": MENSAJE_CUERPO,
+    "json_mal_formado": MENSAJE_CUERPO,
+    "cuerpo_vacio": MENSAJE_CUERPO,
+}
+
+
+@pytest.mark.parametrize("nombre", MENSAJES_422)
+def test_s7_1_el_422_responde_el_mensaje_fijo_exacto_de_su_causa(cliente, entorno, nombre):
+    respuesta = cliente.post(
+        RUTA, content=CUERPOS_INVALIDOS[nombre], headers={"Content-Type": "application/json"}
+    )
+
+    cuerpo = _afirmar_problema(respuesta, 422)
+    assert cuerpo["detail"] == MENSAJES_422[nombre]
+    _sin_efectos(entorno)
+
+
+@pytest.mark.parametrize("cuerpo", CUERPOS_INVALIDOS.values(), ids=CUERPOS_INVALIDOS.keys())
+def test_s7_1_c2_el_detail_del_422_no_lleva_texto_de_pydantic(cliente, cuerpo):
+    respuesta = cliente.post(RUTA, content=cuerpo, headers={"Content-Type": "application/json"})
+
+    detail = _afirmar_problema(respuesta, 422)["detail"]
+    for frase in FRASES_TECNICAS:
+        assert frase not in detail
+
+
+@pytest.mark.parametrize(
+    "cuerpo",
+    [
+        {"pregunta": ["texto-secreto-xyz"]},
+        {"pregunta": {"texto-secreto-xyz": 1}},
+        {"pregunta": "texto-secreto-xyz " + "x" * 1001},
+        {"texto-secreto-xyz": "hola"},
+    ],
+    ids=["lista", "objeto", "demasiado_larga", "campo_desconocido"],
+)
+def test_s7_1_c2_el_detail_del_422_no_repite_el_texto_enviado(cliente, entorno, cuerpo):
+    respuesta = cliente.post(RUTA, json=cuerpo)
+
+    problema = _afirmar_problema(respuesta, 422)
+    assert "texto-secreto-xyz" not in problema["detail"]
+    for frase in FRASES_TECNICAS:
+        assert frase not in problema["detail"]
+    _sin_efectos(entorno)
+
+
 # --- S-7.2 -------------------------------------------------------------------------------------
 
 
@@ -166,7 +224,7 @@ def test_s7_2_1001_puntos_de_codigo_responde_422_con_el_limite_sin_consultar_ni_
     respuesta = cliente.post(RUTA, json={"pregunta": pregunta})
 
     cuerpo = _afirmar_problema(respuesta, 422)
-    assert "1.000" in cuerpo["detail"] or "1000" in cuerpo["detail"]
+    assert cuerpo["detail"] == MENSAJE_LARGA
     _sin_efectos(entorno)
 
 

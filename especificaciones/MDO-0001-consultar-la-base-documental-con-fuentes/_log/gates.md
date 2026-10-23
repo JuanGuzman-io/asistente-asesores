@@ -348,3 +348,20 @@ A gate failed; declared none: build.
 ERROR: not found: /Users/jguzman/GitHub/Projects/asistente-asesores.worktrees/MDO-0001-consultar-la-base-documental-con-fuentes/tests/fixtures/consultas.json
 configfile: pyproject.toml
 ```
+
+## T17 — attempt 1
+
+Every configured gate passed; declared none: build.
+
+| Gate | Status | Exit |
+|---|---|---|
+| scan-markers | PASS | — |
+| format | PASS | 0 |
+| lint | PASS | 0 |
+| typecheck | PASS | 0 |
+| test | PASS | 0 |
+| build | SKIPPED | — |
+| secrets | PASS | 0 |
+| audit | SKIPPED | — |
+| sast | PASS | 0 |
+| metrics | PASS | 0 |
