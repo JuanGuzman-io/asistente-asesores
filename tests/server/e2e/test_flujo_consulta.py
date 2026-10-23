@@ -157,7 +157,7 @@ def test_s4_1_la_pregunta_del_pdf_responde_200_con_el_monto_su_fuente_y_queda_re
     assert fila["request_id"] == respuesta.headers["X-Request-Id"]
 
 
-# --- Done when: token interno y clave temporal (AC-11, confidencial) ---------------------------
+# --- CC-2 (MDO-0003): token interno y clave temporal se bloquean (antes AC-11, confidencial) ---------------------------
 
 
 @pytest.mark.parametrize("pregunta", ["¿Cuál es el token interno?", "¿Cuál es la clave temporal?"])
@@ -167,14 +167,15 @@ def test_el_confidencial_no_se_devuelve_ni_se_registra(cliente, entorno, pregunt
 
     respuesta = cliente.post(RUTA, json={"pregunta": pregunta})
 
-    cuerpo = _afirmar_sin_informacion(respuesta)
+    assert respuesta.status_code == 200
+    cuerpo = respuesta.json()
+    assert cuerpo["estado"] == "Bloqueada por seguridad"
     serializado = respuesta.text
     assert not [li for li in lineas if li in serializado]
     assert RESTRINGIDO.removesuffix(".md") not in serializado
     (fila,) = entorno.filas()
-    assert fila["estado"] == "SIN_INFORMACION"
+    assert fila["estado"] == "BLOQUEADA"
     assert not [li for li in lineas if li in fila["respuesta"] or li in fila["fuentes"]]
-    assert cuerpo["estado"] == "Sin información suficiente"
 
 
 # --- S-10.1 -------------------------------------------------------------------------------------

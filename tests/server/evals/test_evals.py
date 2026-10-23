@@ -1,4 +1,4 @@
-"""T10 (MDO-0001) evals EV-1 a EV-5 y EV-7 en modo extractivo sobre `tests/fixtures/consultas.json@v4`.
+"""T10 (MDO-0001) evals EV-1 a EV-5 y EV-7 en modo extractivo sobre `tests/fixtures/consultas.json@v5`.
 
 Usan el modelo REAL de embeddings (`EmbeddingsFastembed`, ~0,22 GB la primera vez): un doble no sirve
 para calibrar los umbrales `UMBRAL_ALTO` / `UMBRAL_BAJO` (D4, C-5, P5). Es la excepción documentada
@@ -17,6 +17,7 @@ Definiciones (requirements.md, "Eval thresholds"):
   EV-5 (AC-6)  respuestas `Exitosa` con >= 1 fuente completa (documento, sección, fragmento)    == 1,00
   EV-7 (AC-5)  dato_faltante `Exitosa`, con la sección esperada, la frase inicial de D12 y sin
                cifras fuera de los fragmentos citados (no afirma el dato)                       >= 0,90
+Las `bloqueada` (v5) las corta el guardrail de entrada antes de buscar: no entran en EV-2 ni en la calibración.
 EV-6 (parciales y dato_faltante con modelo) queda fuera: requiere Gemini y las pruebas nunca lo llaman.
 """
 
@@ -48,6 +49,7 @@ DATASET = Path(__file__).resolve().parents[2] / "fixtures" / "consultas.json"
 CON_SOPORTE = {"con_respuesta", "parcial"}
 SIN_SOPORTE = {"sin_respuesta", "fuera_de_tema"}
 DATO_FALTANTE = "dato_faltante"
+BLOQUEADA = "bloqueada"
 CIFRA = re.compile(r"\d+(?:[.,]\d+)*%?")
 SIN_INFO = "Sin información suficiente"
 PREGUNTA_PDF = "¿Cuál es el monto máximo del Crédito Productivo Impulso?"
@@ -99,7 +101,7 @@ def _decision(app: FastAPI, embeddings: EmbeddingsFastembed, pregunta: str) -> t
 @pytest.fixture(scope="module")
 def mediciones(tmp_path_factory, request) -> list[Medicion]:
     dataset = json.loads(DATASET.read_text(encoding="utf-8"))
-    assert dataset["version"] == "v4"
+    assert dataset["version"] == "v5"
     base = tmp_path_factory.mktemp("evals")
     embeddings = EmbeddingsFastembed()
     app = crear_app(
@@ -189,6 +191,11 @@ def _ev7(m: list[Medicion]) -> float:
     return _tasa(len(correctas), len(base))
 
 
+def _calibrables(m: list[Medicion]) -> list[Medicion]:
+    """Sin las bloqueadas: el guardrail las corta antes del umbral (nunca lo alcanzan)."""
+    return [x for x in m if x.consulta["tipo"] != BLOQUEADA]
+
+
 def _margen(x: Medicion) -> float:
     """Distancia del coseno al umbral que decide esta pregunta (C-9).
 
@@ -211,7 +218,7 @@ def _imprimir_reporte(request, m: list[Medicion]) -> None:
     salida = request.config.pluginmanager.getplugin("terminalreporter")
     escribir = salida.write_line if salida else print
     escribir("")
-    escribir(f"=== EVALS consultas@v4 (umbrales alto={UMBRAL_ALTO} bajo={UMBRAL_BAJO}) ===")
+    escribir(f"=== EVALS consultas@v5 (umbrales alto={UMBRAL_ALTO} bajo={UMBRAL_BAJO}) ===")
     escribir(
         f"EV-1={_ev1(m):.3f} (>=0.90)  EV-2={_ev2(m):.3f} (>=0.90)  EV-3={_ev3(m):.3f} (<=0.10)  "
         f"EV-4={_ev4(m):.3f} (==1.00)  EV-5={_ev5(m):.3f} (==1.00)  EV-7={_ev7(m):.3f} (>=0.90)"
@@ -222,12 +229,12 @@ def _imprimir_reporte(request, m: list[Medicion]) -> None:
         ("SIN soporte", SIN_SOPORTE),
     ):
         escribir(
-            f"coseno que decide, {nombre}: {_resumen([x.coseno for x in m if x.consulta['tipo'] in tipos])}"
+            f"coseno que decide, {nombre}: {_resumen([x.coseno for x in _calibrables(m) if x.consulta['tipo'] in tipos])}"
         )
-    justa = min(m, key=_margen)
+    justa = min(_calibrables(m), key=_margen)
     escribir(f"margen mínimo al umbral: {_margen(justa):.3f} ({justa.consulta['id']})")
     escribir("id   tipo           coseno fts estado                     hit  pregunta")
-    for x in sorted(m, key=lambda x: x.coseno):
+    for x in sorted(_calibrables(m), key=lambda x: x.coseno):
         c = x.consulta
         hit = "-"
         if c["documento"]:
@@ -238,14 +245,16 @@ def _imprimir_reporte(request, m: list[Medicion]) -> None:
         )
 
 
-def test_dataset_v4_cubre_los_cinco_tipos_con_muestra_suficiente():
+def test_dataset_v5_cubre_los_seis_tipos_con_muestra_suficiente():
+    """v5 suma `bloqueada` (puede tener menos de 3 hasta que T4 amplíe el dataset)."""
     consultas = json.loads(DATASET.read_text(encoding="utf-8"))["consultas"]
     tipos = {
         t: sum(c["tipo"] == t for c in consultas)
-        for t in CON_SOPORTE | SIN_SOPORTE | {DATO_FALTANTE}
+        for t in CON_SOPORTE | SIN_SOPORTE | {DATO_FALTANTE, BLOQUEADA}
     }
     assert sum(tipos.values()) == len(consultas), "hay un tipo desconocido"
-    assert all(n >= 3 for n in tipos.values()), tipos
+    assert all(n >= 3 for t, n in tipos.items() if t != BLOQUEADA), tipos
+    assert tipos[BLOQUEADA] >= 1, tipos
     assert sum(tipos[t] for t in CON_SOPORTE) >= 40  # muestra de EV-1 y EV-3
     assert sum(tipos[t] for t in SIN_SOPORTE) >= 20  # muestra de EV-2
 
@@ -286,5 +295,5 @@ def test_ev7_dato_faltante_muestra_la_seccion_sin_afirmar_el_dato(mediciones):
 
 
 def test_c9_ningun_coseno_queda_pegado_al_umbral_que_lo_decide(mediciones):
-    justa = min(mediciones, key=_margen)
+    justa = min(_calibrables(mediciones), key=_margen)
     assert _margen(justa) >= MARGEN_MINIMO, (justa.consulta["id"], round(justa.coseno, 3))

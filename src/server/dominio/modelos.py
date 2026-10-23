@@ -1,6 +1,6 @@
 from dataclasses import dataclass
 
-from src.server.dominio.estados import Estado
+from src.server.dominio.estados import CategoriaBloqueo, Estado
 
 
 @dataclass(frozen=True)
@@ -22,3 +22,4 @@ class Resultado:
     respuesta: str
     fuentes: list[Fuente]
     estado: Estado
+    categoria: CategoriaBloqueo | None = None

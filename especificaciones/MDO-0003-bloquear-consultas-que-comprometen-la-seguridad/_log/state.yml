@@ -2,7 +2,7 @@
 progress:
   schema_version: 1
   spec: MDO-0003-bloquear-consultas-que-comprometen-la-seguridad
-  updated_at: 2026-10-23T23:18:52.638Z
+  updated_at: 2026-10-23T23:29:11.075Z
   current: null
   open_questions: []
   next_step: ""
@@ -35,6 +35,67 @@ progress:
             - test_f5_las_excepciones_de_ac4_no_reabren_el_bloqueo
             - test_f6_cc_cuenta_como_identificador_de_cliente
             - test_f6_ac4_monto_o_credencial_ajena_no_es_falso_positivo
+    - task: T2
+      files:
+        - path: tests/server/aplicacion/test_bloqueo.py
+          sha256: 4e42e7aed2deda865e46028ca82958ef6d739e22f6189af5be4643179d4d790a
+          tests:
+            - test_mensaje_de_bloqueo_es_exactamente_el_del_diseno
+            - test_s11_pregunta_restringida_se_bloquea_con_mensaje_fijo_sin_fuentes_y_con_categoria
+            - test_s11_bloqueada_no_llama_ni_al_buscador_ni_al_redactor
+            - test_s41_cada_categoria_se_bloquea_y_se_clasifica_sin_tocar_buscador_ni_redactor
+            - test_s41_c1_las_tres_categorias_dan_respuesta_fuentes_y_estado_identicos
+            - test_s12_c1_la_respuesta_no_revela_la_categoria_ni_el_motivo
+            - test_s42_el_repositorio_recibe_pregunta_resultado_con_categoria_y_modo_ninguno
+            - test_s42_si_el_registro_de_una_bloqueada_falla_el_error_se_propaga
+            - test_s51_consultas_legitimas_llegan_al_buscador_y_no_se_bloquean
+            - test_s52_c1_pregunta_ajena_sin_soporte_es_sin_informacion_y_sin_categoria
+        - path: tests/server/e2e/test_flujo_consulta.py
+          sha256: 08aa8caa0e3ba5d372590be29d83ea3ba9b2201eb0588a89f9088adede28b228
+          tests:
+            - test_s4_1_la_pregunta_del_pdf_responde_200_con_el_monto_su_fuente_y_queda_registrada
+            - test_el_confidencial_no_se_devuelve_ni_se_registra
+            - test_s10_1_una_pregunta_sin_soporte_responde_el_mensaje_fijo_y_queda_registrada
+            - test_s10_3_fuera_de_tema_no_es_bloqueada_por_seguridad
+            - test_s11_1_cada_consulta_procesada_tiene_su_registro_y_las_rechazadas_ninguno
+            - test_s5_2_sin_modelo_la_pregunta_de_monto_y_tasa_trae_el_fragmento_con_su_fuente
+        - path: tests/server/evals/test_evals.py
+          sha256: e7b6f32920a660a49576d7103bbd7649947c5daa0ceb49d02b2b93d72718a3d1
+          tests:
+            - test_dataset_v5_cubre_los_seis_tipos_con_muestra_suficiente
+            - test_s3_1_la_pregunta_del_pdf_trae_primero_el_credito_productivo_impulso
+            - test_ev1_recuperacion_hit_at_3
+            - test_ev2_precision_de_sin_informacion
+            - test_ev3_falsos_sin_informacion
+            - test_ev4_fidelidad_de_las_cifras
+            - test_ev5_fuentes_completas
+            - test_ev7_dato_faltante_muestra_la_seccion_sin_afirmar_el_dato
+            - test_c9_ningun_coseno_queda_pegado_al_umbral_que_lo_decide
+        - path: tests/server/dominio/test_guardrail_entrada.py
+          sha256: 519a2c4ace02f3c054915d7487818d53db86e803f7c247697c65ed7807d38657
+          tests:
+            - test_la_categoria_es_un_strenum_con_los_tres_valores_del_diseno
+            - test_d4_normalizar_quita_tildes_pasa_a_minusculas_y_colapsa_espacios
+            - test_d4_normalizar_hace_strip_y_conserva_la_puntuacion
+            - test_d4_normalizar_pasa_enie_a_n_y_aplica_casefold
+            - test_d4_normalizar_es_idempotente
+            - test_s11_s12_pregunta_de_informacion_restringida
+            - test_s13_variantes_de_escritura_se_bloquean_igual
+            - test_s21_s22_s23_pregunta_de_prompt_injection
+            - test_orden_de_d2_injection_gana_a_credencial
+            - test_orden_de_d2_injection_gana_a_datos_de_clientes
+            - test_orden_de_d2_restringida_gana_a_datos_de_clientes
+            - test_s31_s32_pregunta_de_datos_de_clientes
+            - test_s51_pregunta_legitima_no_se_bloquea
+            - test_s51_el_dataset_conserva_las_preguntas_a_evaluar
+            - test_s51_ninguna_pregunta_del_dataset_v5_se_bloquea
+            - test_nfr1_pregunta_adversarial_de_mil_caracteres_tarda_menos_de_50_ms
+            - test_f1_la_puntuacion_dentro_de_la_ventana_de_palabras_no_evade
+            - test_f2_tratamiento_abreviado_con_punto_es_dato_de_cliente
+            - test_f3_ac4_pregunta_legitima_no_es_falso_positivo
+            - test_f5_las_excepciones_de_ac4_no_reabren_el_bloqueo
+            - test_f6_cc_cuenta_como_identificador_de_cliente
+            - test_f6_ac4_monto_o_credencial_ajena_no_es_falso_positivo
   pending_commits: []
   approved_manifests:
     - task: T1
@@ -57,6 +118,47 @@ progress:
         - src/server/dominio/estados.py
         - src/server/dominio/guardrail_entrada.py
         - tests/server/dominio/test_guardrail_entrada.py
+      receipts: []
+    - task: T2
+      attempt: 1
+      files:
+        - path: src/server/AGENTS.md
+          status: " M"
+          sha256: aaf9dfc90d5a001ff5f15fd5cb3893945564c8918411e6169ebfd49e9d5a103c
+        - path: src/server/aplicacion/consultar.py
+          status: " M"
+          sha256: e6144d1995989ef3383bab1ae2f981860eca68b49616845ae30bf5a250807421
+        - path: src/server/dominio/modelos.py
+          status: " M"
+          sha256: c7a8baa1bf42733b8be318f3c70d2399a0fca67058ef8381226acea6e54e2e5a
+        - path: src/server/dominio/reglas.py
+          status: " M"
+          sha256: f20145cffeaa06f15a349bf95fa36f8533aa33d3b64fb346679b1b95b48d7c0f
+        - path: tests/fixtures/consultas.json
+          status: " M"
+          sha256: edf1be62d2161cfc055e47551e49b5bc34d81eeee39577b5ac91b1059677488c
+        - path: tests/server/aplicacion/test_bloqueo.py
+          status: ??
+          sha256: 4e42e7aed2deda865e46028ca82958ef6d739e22f6189af5be4643179d4d790a
+        - path: tests/server/dominio/test_guardrail_entrada.py
+          status: " M"
+          sha256: 519a2c4ace02f3c054915d7487818d53db86e803f7c247697c65ed7807d38657
+        - path: tests/server/e2e/test_flujo_consulta.py
+          status: " M"
+          sha256: 08aa8caa0e3ba5d372590be29d83ea3ba9b2201eb0588a89f9088adede28b228
+        - path: tests/server/evals/test_evals.py
+          status: " M"
+          sha256: e7b6f32920a660a49576d7103bbd7649947c5daa0ceb49d02b2b93d72718a3d1
+      reviewed:
+        - src/server/AGENTS.md
+        - src/server/aplicacion/consultar.py
+        - src/server/dominio/modelos.py
+        - src/server/dominio/reglas.py
+        - tests/fixtures/consultas.json
+        - tests/server/dominio/test_guardrail_entrada.py
+        - tests/server/e2e/test_flujo_consulta.py
+        - tests/server/evals/test_evals.py
+        - tests/server/aplicacion/test_bloqueo.py
       receipts: []
 approvals:
   - step: shown
@@ -81,4 +183,12 @@ cut_estimates:
     base: 64554
     turns_left: 88
     savings: 2.04
+    decision: "go on: below 50"
+  - at: 2026-10-23T23:19:52.212Z
+    task: T2
+    boundary_id: implement:T2
+    context: 274735
+    base: 64554
+    turns_left: 73
+    savings: 2.75
     decision: "go on: below 50"

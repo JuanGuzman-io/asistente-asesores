@@ -71,3 +71,59 @@ F5 and F6 are both fixed, and the code matches the amended D2. No new bypass or 
 {"id":"F9","status":"open","severity":"low","lens":"core","title":"Advisory: `_DATO[2:]` slices the regex string to drop a leading `\\b`","file":"src/server/dominio/guardrail_entrada.py","line":460,"evidence":"A named constant without the word boundary would be clearer."}
 ]}
 ```
+
+## T2 — test review 1 (via claude)
+
+TEST REVIEW: PASS
+
+## Assertions
+
+Inspected test files:
+- tests/server/e2e/test_flujo_consulta.py
+- tests/server/evals/test_evals.py
+- tests/server/dominio/test_guardrail_entrada.py
+- tests/server/aplicacion/test_bloqueo.py (cross-check: fixed message, fuentes == [], category, no buscador/redactor calls, modo ninguno, error propagation; recorded red before T2 code)
+
+
+- tests/server/e2e/test_flujo_consulta.py::test_el_confidencial_no_se_devuelve_ni_se_registra (token interno, clave temporal): CC-2, S-1.1, S-1.2/C1. Asserts 200, estado "Bloqueada por seguridad", non-empty restricted-line guard, no restricted line nor file name in the whole response body, one row with estado BLOQUEADA and no restricted line in respuesta/fuentes. Fails if the guardrail is removed from consultar (falls back to Sin información suficiente / SIN_INFORMACION).
+- tests/server/evals/test_evals.py: version == "v5" pinned; EV-2 keeps SIN_SOPORTE = {sin_respuesta, fuera_de_tema} so s04/s05/s14 leave EV-2 (CC-1); EV-4/EV-5 filter on Exitosa; _calibrables + C-9 exclude only `bloqueada` (D6); dataset-type test still catches unknown types, requires >= 1 bloqueada, keeps CON_SOPORTE >= 40 and SIN_SOPORTE >= 20.
+- tests/server/dominio/test_guardrail_entrada.py::test_s51_ninguna_pregunta_del_dataset_v5_se_bloquea: S-5.3/AC-4; exclusion changed from fixed ids to tipo != "bloqueada", equivalent on v5; s04/s05/s14 still asserted positively in test_s11_s12_pregunta_de_informacion_restringida.
+- tests/fixtures/consultas.json (v5): s04, s05, s14 tipo bloqueada, estado "Bloqueada por seguridad", categoria informacion_restringida (CC-1, D6); questions only, no confidential content.
+
+## Findings
+
+- F1 (medium, advisory): the e2e confidential test dropped the fixed-message and empty-fuentes assertions instead of switching to MENSAJE_BLOQUEO; T3/T4 cover them over HTTP.
+- F2 (low, advisory): stale module docstring traceability in test_flujo_consulta.py line 8.
+- F3 (low, advisory): tipo-keyed filter could skip a mislabeled legitimate question until EV-8 (T4).
+
+Static inspection only; no test was run by the reviewer.
+
+Model: Opus 5.5 (claude-opus-5-5)
+
+## T2 — attempt 1
+
+VERDICT: PASS
+
+I'm Opus 5.5 (claude-opus-5-5).
+
+T2 does what the spec asks. All gates passed: 491 tests, and evals on consultas@v5 (EV-2 = 1.000; closest margin 0.008, c53). Only three low-severity advisories.
+
+- D1: `_resolver` calls `evaluar_entrada` before `buscador.buscar`; blocked questions never reach search nor redactor.
+- D3: `MENSAJE_BLOQUEO` matches the design text; names no category; the HTTP response never exposes `Resultado.categoria`.
+- D5: `Resultado.categoria` defaults to None; blocked query stored as BLOQUEADA, modo ninguno; no migration.
+- S-4.2 partial failure: error propagates, no result; test asserts no search/redactor.
+- S-5.1, S-5.2/C1: legitimate and off-topic questions reach the search with categoria None.
+- CC-1/CC-2: dataset v5, EV-2/C-9 exclude bloqueada, e2e expects Bloqueada and no restricted line.
+- TDD: test_bloqueo.py red first, sha matches; other three files covered by TEST_REVIEWED.
+- Security/PII: question stored only in local DB; no log line with the question; boundaries hold.
+- AGENTS.md updated.
+
+## Findings (JSON)
+
+```json
+{"version":1,"findings":[
+{"id":"F1","status":"open","severity":"low","lens":"core","title":"Advisory: AGENTS.md still says the thresholds are valid with consultas@v4","file":"src/server/AGENTS.md","line":14,"evidence":"Mention v5; metrics gate passed on v5."},
+{"id":"F2","status":"open","severity":"low","lens":"security","title":"Advisory: the e2e confidential test checks the state but not the fixed message or empty sources","file":"tests/server/e2e/test_flujo_consulta.py","line":170,"evidence":"Unit tests cover both; T3/T4 cover them over HTTP."},
+{"id":"F3","status":"open","severity":"low","lens":"core","title":"Advisory: the three updated test files were already passing when first run, with no red run","file":"especificaciones/MDO-0003-bloquear-consultas-que-comprometen-la-seguridad/_log/execution.md","line":26,"evidence":"Accepted via TEST_REVIEWED; e2e fails if the guardrail is removed."}
+]}
+```

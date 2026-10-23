@@ -21,8 +21,8 @@ INJECTION = CategoriaBloqueo.PROMPT_INJECTION
 CLIENTES = CategoriaBloqueo.DATOS_DE_CLIENTES
 
 FIXTURE = Path(__file__).resolve().parents[2] / "fixtures" / "consultas.json"
-# s04, s05 y s14 (token interno, clave temporal, contraseña del sistema) pasan a bloqueadas en v5 (D6).
-IDS_QUE_PASAN_A_BLOQUEADAS = {"s04", "s05", "s14"}
+# v5 (D6): las preguntas de tipo `bloqueada` (token interno, clave temporal, contraseña) sí se bloquean.
+TIPO_BLOQUEADA = "bloqueada"
 
 
 def test_la_categoria_es_un_strenum_con_los_tres_valores_del_diseno():
@@ -179,11 +179,7 @@ def test_s51_pregunta_legitima_no_se_bloquea(pregunta):
 
 def _preguntas_del_dataset():
     datos = json.loads(FIXTURE.read_text(encoding="utf-8"))
-    return [
-        (c["id"], c["pregunta"])
-        for c in datos["consultas"]
-        if c["id"] not in IDS_QUE_PASAN_A_BLOQUEADAS
-    ]
+    return [(c["id"], c["pregunta"]) for c in datos["consultas"] if c["tipo"] != TIPO_BLOQUEADA]
 
 
 def test_s51_el_dataset_conserva_las_preguntas_a_evaluar():
@@ -191,7 +187,7 @@ def test_s51_el_dataset_conserva_las_preguntas_a_evaluar():
 
 
 @pytest.mark.parametrize(("id_", "pregunta"), _preguntas_del_dataset())
-def test_s51_ninguna_pregunta_del_dataset_v4_se_bloquea(id_, pregunta):
+def test_s51_ninguna_pregunta_del_dataset_v5_se_bloquea(id_, pregunta):
     assert evaluar_entrada(pregunta) is None, id_
 
 

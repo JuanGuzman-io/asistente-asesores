@@ -1,9 +1,10 @@
 import uuid
 
 from src.server.dominio.estados import Estado
+from src.server.dominio.guardrail_entrada import evaluar_entrada
 from src.server.dominio.modelos import Resultado
 from src.server.dominio.puertos import BuscadorDocumental, Redactor, RepositorioConsultas
-from src.server.dominio.reglas import MENSAJE_SIN_INFORMACION, deduplicar_fuentes
+from src.server.dominio.reglas import MENSAJE_BLOQUEO, MENSAJE_SIN_INFORMACION, deduplicar_fuentes
 
 MODO_SIN_REDACCION = "ninguno"
 
@@ -30,6 +31,12 @@ def consultar(
 def _resolver(
     pregunta: str, buscador: BuscadorDocumental, redactor: Redactor
 ) -> tuple[Resultado, str]:
+    # D1: el guardrail corre antes de buscar; si bloquea, no se toca buscador ni redactor.
+    categoria = evaluar_entrada(pregunta)
+    if categoria is not None:
+        bloqueo = Resultado(MENSAJE_BLOQUEO, [], Estado.BLOQUEADA, categoria=categoria)
+        return bloqueo, MODO_SIN_REDACCION
+
     busqueda = buscador.buscar(pregunta)
     if not busqueda.hay_soporte or not busqueda.fragmentos:
         return Resultado(MENSAJE_SIN_INFORMACION, [], Estado.SIN_INFORMACION), MODO_SIN_REDACCION
