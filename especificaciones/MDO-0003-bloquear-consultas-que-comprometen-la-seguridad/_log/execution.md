@@ -238,3 +238,7 @@ spec: MDO-0003-bloquear-consultas-que-comprometen-la-seguridad
 <!-- mandao:telemetry {"id":"4e3619d4-10f6-4ba0-b0e7-7e16704dccb8","type":"agent_start","at":"2026-10-23T23:41:15.564Z","command":"implement","run":"92627007-feda-4660-bca4-afd8d94de5e5","subject":"reviewer"} -->
 <!-- mandao:telemetry {"id":"4e3619d4-10f6-4ba0-b0e7-7e16704dccb8","type":"agent_end","at":"2026-10-23T23:42:25.247Z","command":"implement","run":"92627007-feda-4660-bca4-afd8d94de5e5"} -->
 <!-- mandao:telemetry {"id":"92627007-feda-4660-bca4-afd8d94de5e5","type":"command_end","at":"2026-10-23T23:42:30.032Z","command":"implement","run":"92627007-feda-4660-bca4-afd8d94de5e5"} -->
+<!-- mandao:telemetry {"id":"d9136d5a-37a6-4126-bdc8-b0cd78ebf5ad","type":"command_start","at":"2026-10-23T23:42:52.172Z","command":"verify","run":"d9136d5a-37a6-4126-bdc8-b0cd78ebf5ad"} -->
+<!-- mandao:telemetry {"id":"391489b0-9a45-47a7-8517-80da485c8f49","type":"agent_start","at":"2026-10-23T23:42:58.372Z","command":"verify","run":"d9136d5a-37a6-4126-bdc8-b0cd78ebf5ad","subject":"tester"} -->
+<!-- mandao:telemetry {"id":"391489b0-9a45-47a7-8517-80da485c8f49","type":"agent_end","at":"2026-10-23T23:44:55.122Z","command":"verify","run":"d9136d5a-37a6-4126-bdc8-b0cd78ebf5ad"} -->
+<!-- mandao:telemetry {"id":"d9136d5a-37a6-4126-bdc8-b0cd78ebf5ad","type":"command_end","at":"2026-10-23T23:45:27.684Z","command":"verify","run":"d9136d5a-37a6-4126-bdc8-b0cd78ebf5ad"} -->
