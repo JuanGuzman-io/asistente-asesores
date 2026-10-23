@@ -288,3 +288,34 @@ T5 cumple su "Done when". El caso de uso respeta las capas de `architecture.md` 
 {"id":"F5","status":"open","severity":"low","lens":"core","title":"Warning de QdrantClient.__del__ en la suite: cierre de SQLite desde otro hilo (de T4, no de T5)","file":"tests/server/infraestructura/busqueda/test_buscador.py","line":1,"evidence":"La salida de la suite completa trae PytestUnraisableExceptionWarning: 'SQLite objects created in a thread can only be used in that same thread' en test_s31_rrf_conserva_el_orden_y_limita_a_tres_candidatos. El cliente no se cierra explícitamente en la prueba; D13 pide cerrarlo. Es advisory y pertenece a T4."}
 ]}
 ```
+
+## T6 — attempt 1
+
+VERDICT: PASS
+
+## Findings (JSON)
+
+```json
+{"version":1,"findings":[{"id":"F1","status":"open","severity":"low","lens":"core","title":"OPEN: D12 says 'fragmentos que superan el umbral', but D4 only defines a threshold for the best fragment","file":"src/server/infraestructura/redactor/extractivo.py","line":10,"evidence":"D4 (design.md:61-64) only decides whether there is support by looking at the best fragment. BuscadorHibrido returns up to 3 fragments, and nothing filters each one by the threshold. RedactorExtractivo takes `fragmentos[:2]` and assumes 'El umbral ya lo aplicó el buscador' (AGENTS.md). So the second fragment may be below the threshold. Under D4 as written the code is consistent and this does not block. Advisory: confirm in D12 or D4 that the threshold applies to the query and not to each fragment, or move per-fragment filtering to the buscador (T10 calibration)."}]}
+```
+
+T6 passes. The extractive answer meets D12, and the ids are 1-based, the same convention confirmed in T5. All gates passed and the full suite gives 82 passed. The one open finding is advisory and does not block.
+
+**What you asked me to check:**
+
+- **D12, fixed phrase:** the answer always starts with the fixed phrase "Esto es lo que encontré en la base documental:". The tests check this.
+- **D12, at most 2 fragments:** the code uses `MAXIMO_FRAGMENTOS = 2` (a named constant) and keeps the first two fragments. The test with 3 fragments confirms that `Requisitos.md` and its heading do not appear.
+- **D12, `Documento > Sección` heading:** each fragment's text comes after its `Documento > Sección` heading. The test checks the order with indexes.
+- **D12, never claims to cover the whole question:** the code adds no text of its own beyond the fixed phrase and the fragments, and `partes_sin_soporte` is always empty. The S-5.2/C1 test checks there is no "tasa", no "%" and no phrases claiming a full answer.
+- **1-based ids:** `fragmentos_usados = range(1, len(usados)+1)` matches `consultar` (`enumerate(..., start=1)`) and the comment in `puertos.py`. With 0-based ids the S-4.1/C1 and S-5.2 assertions on `fuentes` would fail.
+
+**Other checks:**
+
+- **Scenarios and acceptance criteria:** S-4.1, S-4.1/C1, S-5.2 and S-5.2/C1 have unit tests that check something real. AC-3, AC-3/C1 and AC-5/C2 are covered.
+- **TDD:** I have no output of the red run; relying on the Leader's account (collection failure, module missing). The only later change to the red test is the import order fix (I001), which does not weaken any assertion.
+- **AGENTS.md:** has the new `redactor/extractivo.py` entry, and the T5 F1 warning is fixed (T6 changed to T7).
+- **Module boundaries:** infrastructure depends only on the domain. No violations.
+- **Lenses:** no risk tags, no active lens.
+- **Full suite:** "82 passed, 2 warnings" (Qdrant/SQLite thread warning on GC and a Starlette deprecation), neither from this task.
+
+**OPEN (F1):** D12 says to use the fragments "that pass the threshold", but D4 only defines a threshold for the best fragment. Under D4 as written, the implementation is consistent. Clear it up in the design or in the T10 calibration.

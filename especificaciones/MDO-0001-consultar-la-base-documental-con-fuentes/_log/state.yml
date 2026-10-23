@@ -2,7 +2,7 @@
 progress:
   schema_version: 1
   spec: MDO-0001-consultar-la-base-documental-con-fuentes
-  updated_at: 2026-10-23T16:35:36.264Z
+  updated_at: 2026-10-23T16:38:44.649Z
   current: null
   open_questions: []
   next_step: ""
@@ -111,6 +111,19 @@ progress:
             - test_s61_las_fuentes_se_deduplican_por_documento_y_seccion
             - test_s61_c1_solo_los_fragmentos_declarados_usados_son_fuentes
             - test_s61_c1_las_fuentes_siguen_el_orden_de_los_fragmentos_recuperados
+    - task: T6
+      files:
+        - path: tests/server/infraestructura/redactor/test_extractivo.py
+          sha256: 1bd52953bf2f8f565f4a80f0bc230c1cf0eee9b4d061a4d1ea5049443f81131f
+          tests:
+            - test_s_4_1_la_respuesta_extractiva_contiene_el_monto_maximo_del_documento
+            - test_s_4_1_c1_declara_usado_al_menos_un_fragmento_y_consultar_trae_fuente_exitosa
+            - test_s_5_2_la_respuesta_empieza_con_la_frase_fija
+            - test_s_5_2_trae_el_fragmento_del_credito_productivo_impulso_con_su_fuente
+            - test_s_5_2_c1_no_afirma_responder_toda_la_pregunta_ni_da_una_tasa
+            - test_cada_fragmento_va_precedido_por_documento_mayor_que_seccion
+            - test_usa_como_maximo_dos_fragmentos_de_los_tres_recibidos
+            - test_con_un_solo_fragmento_declara_solo_el_id_uno
   pending_commits: []
   approved_manifests:
     - task: T1
@@ -290,10 +303,31 @@ progress:
         - src/server/dominio/estados.py
         - tests/server/aplicacion/test_consultar.py
       receipts: []
+    - task: T6
+      attempt: 1
+      files:
+        - path: src/server/AGENTS.md
+          status: " M"
+          sha256: 6440048dd01f07eb86bf5514af1114ded87968ffbcaf645aaea6c210aeed1ee6
+        - path: src/server/infraestructura/redactor/__init__.py
+          status: ??
+          sha256: e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855
+        - path: src/server/infraestructura/redactor/extractivo.py
+          status: ??
+          sha256: 0cf8e11ae63b2e4ca0bf4aeff8f5009967eaf1798fbcba34960f71045cee3073
+        - path: tests/server/infraestructura/redactor/test_extractivo.py
+          status: ??
+          sha256: 8d585ef5452e113f1dc0ec0c5cdc9046b175846f9c702747207f39ba6d61d084
+      reviewed:
+        - src/server/AGENTS.md
+        - src/server/infraestructura/redactor/__init__.py
+        - src/server/infraestructura/redactor/extractivo.py
+        - tests/server/infraestructura/redactor/test_extractivo.py
+      receipts: []
   loop_brake:
-    task: T5
+    task: T6
     action: commit
-    execution_rows: 37
+    execution_rows: 41
     approval_rows: 6
     repeats: 1
 approvals:
@@ -403,4 +437,12 @@ cut_estimates:
     base: 63912
     turns_left: 148
     savings: 5.04
+    decision: "go on: below 50"
+  - at: 2026-10-23T16:35:56.121Z
+    task: T6
+    boundary_id: implement:T6
+    context: 268828
+    base: 63912
+    turns_left: 133
+    savings: 5.13
     decision: "go on: below 50"
