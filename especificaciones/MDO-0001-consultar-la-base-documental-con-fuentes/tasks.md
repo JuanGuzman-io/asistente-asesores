@@ -111,6 +111,12 @@ tarea empieza con pruebas rojas; el modelo y los embeddings se reemplazan por do
 
 **Checkpoint:** `uv run pytest tests/server/http -q` passes (T15); this confirms AC-3, AC-16 before the next group.
 
+#### AC-16 — Falla del modelo
+
+- [ ] T16 [AC-16] El proveedor del modelo se elige por configuración y está apagado por defecto — `src/server/infraestructura/redactor/proveedores.py`
+
+**Checkpoint:** `uv run pytest tests/server -q` passes (T16); this confirms AC-16 before the next group.
+
 **Delivery checkpoint:** run `mandao run verify-plan <spec> --delivery 4`; it passes when `scope.clear` is true.
 
 ## Details
@@ -548,7 +554,7 @@ verify: uv run pytest tests/server/infraestructura/redactor -q
 project: asistente-asesores
 kind: fix
 tier: standard
-files: [src/server/http/rutas.py, src/server/http/app.py, src/server/infraestructura/redactor/gemini.py, src/server/dominio/puertos.py, tests/server/http/test_consultar_api.py]
+files: [src/server/http/rutas.py, src/server/http/app.py, src/server/infraestructura/redactor/gemini.py, src/server/dominio/puertos.py, src/server/aplicacion/consultar.py, src/server/infraestructura/redactor/extractivo.py, tests/server/http/test_consultar_api.py]
 exemplar: src/server/http/rutas.py
 ac: [AC-3, AC-16]
 scenarios: [S-12.1, S-14.1]
@@ -561,4 +567,41 @@ depends_on: [T14]
 delivery: 4
 parallel_safe: false
 verify: uv run pytest tests/server/http -q
+```
+
+### [ ] T16 — El proveedor del modelo se elige por configuración y está apagado por defecto
+
+- **What:** cambios del PE del 2026-10-23 ([C-10](requirements.md#c-10), [C-11](requirements.md#c-11)).
+  `LLM_PROVIDER` (`ninguno` por defecto, `gemini`) elige el `Redactor` al arrancar desde el registro de
+  `proveedores.py` ([D14](design.md#d14)); con `ninguno` o sin clave, extractivo. La espera por un cupo del
+  semáforo se acota a 1 s ([D9](design.md#d9)). Además, los avisos abiertos de las revisiones de T14 y T15:
+  `prompt.md` explica la línea `documento > sección` (v2); `src/server/AGENTS.md` describe el flujo actual
+  (`consultar.py`, `extractivo.py`, proveedores); prueba del arranque con `GEMINI_MAX_CONCURRENCIA`
+  inválido; la prueba del límite deja de llamarse `s14_1`; se quita la aserción de tiempo frágil en CI y el
+  `type: ignore` sobrante. `model-registry.md` justifica Gemini como proveedor incluido e intercambiable.
+- **Done when:**
+  - Prueba roja primero (S-12.3): con `GEMINI_API_KEY` definida y `LLM_PROVIDER` sin definir o `ninguno`, `crear_app(redactor=None)` no crea el cliente de Gemini y la respuesta es extractiva con `modo` `extractivo`.
+  - `LLM_PROVIDER=gemini` con clave arma `RedactorGemini`; sin clave, extractivo (S-12.2). Un valor desconocido y un `GEMINI_MAX_CONCURRENCIA` no entero o menor que 1 (`abc`, `0`) lanzan `ValueError` al crear la app.
+  - Con el semáforo lleno, una consulta que no consigue cupo en `ESPERA_CUPO_S` responde 200 extractivo, registra `modo` `extractivo` y no espera más que ese plazo (S-12.1).
+  - La prueba de concurrencia prueba el solapamiento por el pico del doble, sin una cota de tiempo de pared estrecha.
+  - `prompt.md` dice que la primera línea de cada fragmento es `documento > sección`; `VERSION_PROMPT` = `v2`; `model-registry.md` registra v2 y la justificación de C-10.
+  - `.env.example`, el `AGENTS.md` de la raíz (cómo activar el modelo y cómo agregar un proveedor) y `src/server/AGENTS.md` quedan al día; el README no contradice el apagado por defecto.
+
+```yaml
+project: asistente-asesores
+kind: feat
+tier: standard
+files: [src/server/infraestructura/redactor/proveedores.py, src/server/infraestructura/redactor/gemini.py, src/server/infraestructura/redactor/prompt.md, src/server/http/app.py, src/server/http/rutas.py, src/server/config.py, tests/server/infraestructura/redactor/test_proveedores.py, tests/server/http/test_consultar_api.py, tests/server/e2e/test_respaldo_e2e.py, src/server/AGENTS.md, AGENTS.md, README.md, .env.example, constitucion/model-registry.md]
+exemplar: src/server/http/app.py
+ac: [AC-16]
+scenarios: [S-12.1, S-12.2, S-12.3]
+test_levels: { S-12.1: unit, S-12.2: unit, S-12.3: unit }
+partial_failure_tests: []
+evidence: tdd
+risk_tags: [ai-prompt, security]
+decisions: [D9, D14, D7]
+depends_on: [T15]
+delivery: 4
+parallel_safe: false
+verify: uv run pytest tests/server -q
 ```

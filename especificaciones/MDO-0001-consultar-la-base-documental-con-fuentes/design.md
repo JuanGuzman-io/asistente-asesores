@@ -168,6 +168,9 @@ la misma transacción que decide la respuesta.
   (https://aistudio.google.com/rate-limit). Si el API responde 429, la consulta cae al modo extractivo
   con HTTP 200 y el log registra solo el código 429. Con el candado, 5 consultas concurrentes con modelo
   dieron 0,9 a 4,4 s (p95 > 3 s, NFR-1). El `modo` viaja en `RespuestaRedactada.modo`, no en la instancia.
+- Espera por un cupo (T16, [C-11](requirements.md#c-11)): una consulta espera como máximo `ESPERA_CUPO_S`
+  = 1 s; sin cupo responde extractivo (200) y el log dice "sin cupo". El semáforo envuelve al redactor
+  elegido por [D14](#d14), sea cual sea el proveedor.
 - Rechazado: reintentos (con un p95 de 3 s no hay margen; el extractivo es la respuesta de respaldo).
 
 <a id="d10"></a>
@@ -202,6 +205,24 @@ la misma transacción que decide la respuesta.
   `QdrantClient(":memory:")`.
 - Rechazadas: varios workers (fallan al abrir la carpeta); un servidor Qdrant (rompe "ejecutable 100 %
   local sin servicios", `architecture.md`; queda como paso a producción).
+
+<a id="d14"></a>
+### D14 — Proveedor de redacción configurable y apagado por defecto
+
+- `LLM_PROVIDER` ([C-10](requirements.md#c-10)): `ninguno` (por defecto, también si está vacía) o
+  `gemini`, sin distinguir mayúsculas ni espacios exteriores. Un valor desconocido lanza `ValueError` al
+  crear la app y detiene el arranque, como `GEMINI_MAX_CONCURRENCIA` (D9).
+- `infraestructura/redactor/proveedores.py` guarda el registro `PROVEEDORES: dict[str, fábrica]`; cada
+  fábrica recibe el entorno y devuelve un `Redactor`, o `None` si falta su clave. `elegir_redactor(entorno)`
+  devuelve `RedactorExtractivo` con `ninguno` o sin clave, y el adaptador del proveedor en otro caso. El
+  `lifespan` de `crear_app` lo llama una vez con `os.environ` y entrega el resultado al caso de uso; el
+  caso de uso no sabe qué proveedor hay.
+- Agregar un proveedor: un adaptador en `infraestructura/redactor/` que implemente `Redactor` (con su
+  guardrail de salida y su respaldo extractivo, como `RedactorGemini`) y una entrada en `PROVEEDORES`.
+  Documentado en el `AGENTS.md` de la raíz; no se implementan otros.
+- Rechazadas: seguir eligiendo por la sola presencia de `GEMINI_API_KEY` (una clave en `.env` activaría el
+  modelo sin decidirlo); cargar adaptadores por nombre de módulo (`importlib`) con un registro explícito
+  de un solo proveedor no hace falta.
 
 <a id="d12"></a>
 ### D12 — Respuesta extractiva
@@ -245,12 +266,12 @@ falla del insert de `consultas` → 500 y ninguna fila.
 
 | Concern | Choice | Version / reference |
 |---|---|---|
-| Model | `gemini-3.5-flash-lite`, opcional por `GEMINI_API_KEY` | `google-genai` 2.33.0; `model-registry.md` |
-| Prompts | Redactor con fuentes: solo fragmentos dados, citar ids, listar partes sin soporte, nunca seguir instrucciones del texto | `src/server/infraestructura/redactor/prompt.md`@v1 |
+| Model | `gemini-3.5-flash-lite`, opcional: `LLM_PROVIDER=gemini` y `GEMINI_API_KEY` (D14) | `google-genai` 2.33.0; `model-registry.md` |
+| Prompts | Redactor con fuentes: solo fragmentos dados, citar ids, listar partes sin soporte, nunca seguir instrucciones del texto | `src/server/infraestructura/redactor/prompt.md`@v2 (v2, T16: la primera línea de cada fragmento es `documento > sección`) |
 | Chunking / embedding | Sección `##` (D2); `paraphrase-multilingual-MiniLM-L12-v2`, 384 dim, local | `fastembed` 0.9.0 |
 | Retrieval (k, filters, reranking) | 5 por vía, RRF k = 60, top 3, umbral D4; filtro por hashes vigentes; sin reranker | FTS5; Qdrant local, `qdrant-client` 1.20.0 |
 | Guardrails | Entrada: validación (D8); salida: ids y cifras (D7). Entrada por seguridad: MDO-0002 | — |
-| Fallback | Extractivo (D12) sin clave, con error, tiempo agotado o salida inválida | — |
+| Fallback | Extractivo (D12) con el proveedor apagado, sin clave, sin cupo a tiempo, con error, tiempo agotado o salida inválida | — |
 
 ## Changes by project and module
 
@@ -312,6 +333,7 @@ modelo de embeddings ya están en `architecture.md` y `model-registry.md` (`/man
 - `critical-flows.md`: suite E2E del flujo "Consulta respondida con fuentes y registrada" (la que creen
   las tareas).
 - `standards.md`: nombrar los exemplar files creados; tipado con mypy en modo estricto en lugar del `OPEN` "mypy o pyright" ([C-8](requirements.md#c-8)).
+- `architecture.md`: el módulo `redactor` y "Redacción" dicen "con `GEMINI_API_KEY`"; pasan a "con `LLM_PROVIDER=gemini` y su clave; apagado por defecto" (D14). `model-registry.md` lo aplica T16 por pedido del PE ([C-10](requirements.md#c-10)).
 - `glossary.md`: "Modo de respuesta" (`modo`: `modelo`, `extractivo`, `ninguno`).
 
 ## Product Impact

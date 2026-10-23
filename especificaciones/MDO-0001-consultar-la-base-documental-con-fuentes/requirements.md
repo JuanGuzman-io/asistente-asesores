@@ -233,8 +233,9 @@ fuentes y estado antes de responder.
 Serves: AC-16
 Projects: asistente-asesores
 
-Sin modelo configurado, o si el modelo falla, excede el tiempo o su salida no pasa la validación, la
-respuesta es extractiva: los fragmentos relevantes con sus fuentes, estado `Exitosa` y código 200.
+Sin modelo configurado (el proveedor está apagado por defecto o falta su clave, [C-10](#c-10)), o si el
+modelo falla, excede el tiempo, no consigue cupo a tiempo ([C-11](#c-11)) o su salida no pasa la validación,
+la respuesta es extractiva: los fragmentos relevantes con sus fuentes, estado `Exitosa` y código 200.
 
 #### S-12.1 — Modelo caído
 - **Given** el modelo configurado pero respondiendo con error o sin responder antes del tiempo límite
@@ -244,6 +245,11 @@ respuesta es extractiva: los fragmentos relevantes con sus fuentes, estado `Exit
 #### S-12.2 — Sin clave
 - **Given** que `GEMINI_API_KEY` no está definida
 - **When** se consulta
+- **Then** no se intenta llamar al modelo y la respuesta es extractiva
+
+#### S-12.3 — Proveedor apagado por defecto
+- **Given** que `LLM_PROVIDER` no está definida o vale `ninguno`, aunque `GEMINI_API_KEY` esté definida
+- **When** se consulta una pregunta con soporte
 - **Then** no se intenta llamar al modelo y la respuesta es extractiva
 
 <a id="fr13"></a>
@@ -356,7 +362,7 @@ no hacen llamadas de red (verificado ejecutándolas sin red).
 | AC-14 | C1: sin registrar rechazos | FR-11 / S-11.1 C1 | covered |
 | AC-15 | main | FR-13 / S-13.1 | covered |
 | AC-15 | C1: sin detalles internos | FR-13 / S-13.1 C1 | covered |
-| AC-16 | main | FR-12 / S-12.1, S-12.2 | covered |
+| AC-16 | main | FR-12 / S-12.1, S-12.2, S-12.3 | covered |
 
 ## Clarifications
 
@@ -407,6 +413,18 @@ no hacen llamadas de red (verificado ejecutándolas sin red).
 - **Answer:** son iniciales y se ajustan con el dataset en las tareas.
 - **Answered by:** PE (Product Engineer).
 - **Effect:** design.md D4 y P5; una tarea calibra contra EV-2 y EV-3.
+
+<a id="c-10"></a>
+### C-10 — ¿El modelo de redacción es obligatorio y está atado a Gemini? (2026-10-23)
+- **Answer:** no. El LLM es opcional y está apagado por defecto: el PDF no lo exige y el modo extractivo cumple el contrato. `LLM_PROVIDER` elige el proveedor (`ninguno` por defecto, `gemini`); el caso de uso recibe el `Redactor` elegido al arrancar y, con `ninguno` o sin la clave del proveedor, usa el extractivo. `AGENTS.md` explica cómo agregar otro proveedor (un adaptador que implemente `Redactor` y su registro), sin implementar otros. `model-registry.md` justifica Gemini como el proveedor incluido: costo (nivel gratuito, Flash-Lite), política de datos (gratuito solo con datos irreales, pago en producción) y tamaño justo; el proveedor es intercambiable por configuración.
+- **Answered by:** PE (Product Engineer).
+- **Effect:** FR-12 y S-12.3; design.md D14 (nueva), D9, Model and prompts, Constitution Impact; tasks.md T16.
+
+<a id="c-11"></a>
+### C-11 — ¿Cuánto espera una consulta por un cupo del semáforo del modelo? (2026-10-23)
+- **Answer:** como máximo 1 s (`ESPERA_CUPO_S` en `config.py`); si no consigue cupo, responde en modo extractivo con 200 y el log dice "sin cupo", sin contenido. Así una consulta en cola no suma una espera ilimitada al presupuesto de 3 s de p95 (NFR-1): 1 s de espera más una llamada típica de 0,9 a 1,7 s (medición de T15) queda por debajo.
+- **Answered by:** resuelto técnicamente (base: NFR-1, D9 "el extractivo es la respuesta de respaldo", AC-16; pedido de acotar la espera del PE, 2026-10-23). Rechazadas: espera sin límite (rompe NFR-1 con más de 5 consultas simultáneas), rechazar con 429 o 503 (AC-16 exige 200 extractivo), hacer la espera configurable (sin un caso que lo pida).
+- **Effect:** FR-12; design.md D9; tasks.md T16.
 
 <a id="c-9"></a>
 ### C-9 — ¿Qué es una pregunta por un dato que no está, de un producto que sí existe? (2026-10-23, verify)

@@ -594,3 +594,5 @@ spec: MDO-0001-consultar-la-base-documental-con-fuentes
 <!-- mandao:telemetry {"id":"a0d1b957-2457-413d-b897-5a3c76ae0bc2","type":"gate_start","at":"2026-10-23T19:36:31.412Z","command":"implement","run":"9df14b2f-9396-41f0-9228-82dd45f068b5","subject":"metrics"} -->
 <!-- mandao:telemetry {"id":"a0d1b957-2457-413d-b897-5a3c76ae0bc2","type":"gate_end","at":"2026-10-23T19:36:34.856Z","command":"implement","run":"9df14b2f-9396-41f0-9228-82dd45f068b5","subject":"metrics"} -->
 <!-- mandao:telemetry {"id":"233e0b3e-5243-40df-affa-1a6be1f98511","type":"command_end","at":"2026-10-23T19:38:28.456Z","command":"implement","run":"233e0b3e-5243-40df-affa-1a6be1f98511"} -->
+<!-- mandao:telemetry {"id":"17248f98-087a-46cd-84bf-84ef74dfeb3d","type":"command_start","at":"2026-10-23T19:44:29.408Z","command":"clarify","run":"17248f98-087a-46cd-84bf-84ef74dfeb3d"} -->
+<!-- mandao:telemetry {"id":"17248f98-087a-46cd-84bf-84ef74dfeb3d","type":"command_end","at":"2026-10-23T19:46:11.908Z","command":"clarify","run":"17248f98-087a-46cd-84bf-84ef74dfeb3d"} -->
