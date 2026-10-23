@@ -67,12 +67,13 @@ verify: uv run pytest tests/server/dominio -q
   - S-1.2/C1 y S-4.1 holds: las tres categorías dan la misma `respuesta`, que no nombra la categoría ni la regla.
   - S-4.2 holds: el repositorio recibe la pregunta, el resultado bloqueado y `modo="ninguno"`; si `registrar` falla, el error se propaga y no se devuelve resultado.
   - S-5.1 y S-5.2/C1 holds: una pregunta legítima o fuera de tema llega al buscador y su estado no es `BLOQUEADA`.
+  - Las pruebas existentes siguen en verde con el bloqueo (CC-1, CC-2): `consultas@v5` pasa s04, s05 y s14 al tipo `bloqueada`, EV-2 y C-9 las excluyen, y "token interno" / "clave temporal" de `test_flujo_consulta.py` esperan `Bloqueada por seguridad` sin revelar el confidencial.
 
 ```yaml
 project: asistente-asesores
 kind: feat
 tier: standard
-files: [src/server/dominio/reglas.py, src/server/dominio/modelos.py, src/server/aplicacion/consultar.py, tests/server/aplicacion/test_bloqueo.py]
+files: [src/server/dominio/reglas.py, src/server/dominio/modelos.py, src/server/aplicacion/consultar.py, tests/server/aplicacion/test_bloqueo.py, tests/fixtures/consultas.json, tests/server/e2e/test_flujo_consulta.py, tests/server/evals/test_evals.py, tests/server/dominio/test_guardrail_entrada.py]
 exemplar: src/server/aplicacion/consultar.py
 ac: [AC-1, AC-1/C1, AC-2, AC-3, AC-3/C1, AC-4, AC-4/C1]
 scenarios: [S-1.1, S-1.2/C1, S-4.1, S-4.2, S-5.1, S-5.2, S-5.2/C1]
@@ -116,21 +117,20 @@ verify: uv run pytest tests/server/http -q
 
 ### [ ] T4 — El flujo crítico de bloqueo pasa de punta a punta y el dataset mide bloqueos y falsos positivos
 
-- **What:** `consultas@v5` según [D6](design.md#d6), EV-8 y EV-9 deterministas en la suite normal y por
-  HTTP en `-m eval`, la e2e `test_flujo_bloqueo.py` sobre `Data/` real y el ajuste de
-  `test_flujo_consulta.py` (CC-2) y de `evals/test_evals.py`.
+- **What:** completa `consultas@v5` según [D6](design.md#d6) (preguntas `bloqueada` por categoría y
+  `sensible`), EV-8 y EV-9 deterministas en la suite normal y por HTTP en `-m eval`, y la e2e
+  `test_flujo_bloqueo.py` sobre `Data/` real.
 - **Done when:**
   - EV-8 = 1,00 y EV-9 = 0 sobre `consultas@v5`, sin modelo ni red, en `uv run pytest`.
   - S-5.3 holds: ninguna pregunta no `bloqueada` del dataset se bloquea; S-5.2/C1 holds por e2e con "¿Va a llover mañana en Bogotá?".
   - E2E por categoría (S-1.1, S-2.1, S-3.1): 200, `Bloqueada por seguridad`, el mismo mensaje, fila registrada, y ninguna línea de `Información restringida.md` ni su nombre en la respuesta (S-1.2/C1).
-  - "token interno" y "clave temporal" de `test_flujo_consulta.py` quedan bloqueadas sin revelar el confidencial.
   - `uv run pytest -m eval` pasa con `v5`: EV-2 sin `bloqueada` ni `sensible`, C-9 ignora las bloqueadas.
 
 ```yaml
 project: asistente-asesores
 kind: test
 tier: standard
-files: [tests/fixtures/consultas.json, tests/server/dominio/test_guardrail_dataset.py, tests/server/e2e/test_flujo_bloqueo.py, tests/server/e2e/test_flujo_consulta.py, tests/server/evals/test_evals.py]
+files: [tests/fixtures/consultas.json, tests/server/dominio/test_guardrail_dataset.py, tests/server/e2e/test_flujo_bloqueo.py, tests/server/evals/test_evals.py]
 exemplar: tests/server/e2e/test_flujo_consulta.py
 ac: [AC-1, AC-1/C1, AC-2, AC-3, AC-4, AC-4/C1]
 scenarios: [S-1.1, S-1.2/C1, S-2.1, S-3.1, S-5.2/C1, S-5.3]
