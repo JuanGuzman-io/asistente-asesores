@@ -2,12 +2,8 @@
 progress:
   schema_version: 1
   spec: MDO-0001-consultar-la-base-documental-con-fuentes
-  updated_at: 2026-10-23T15:59:51.754Z
-  current:
-    task: T3
-    phase: implementing
-    harness: claude
-    model: claude-opus-5-5
+  updated_at: 2026-10-23T16:13:26.324Z
+  current: null
   open_questions: []
   next_step: ""
   deferred_to_ci: []
@@ -44,6 +40,26 @@ progress:
             - test_s21_c1_ninguna_fuente_repite_el_mismo_contenido
             - test_s21_una_seccion_repetida_en_dos_documentos_se_indexa_una_sola_vez
             - test_s21_secciones_parecidas_pero_distintas_se_conservan_ambas
+    - task: T3
+      files:
+        - path: tests/server/infraestructura/busqueda/test_indice.py
+          sha256: 4de28d1d75cc76a0576befea36eee76992d6df5ecc6ea79ae6b326df4afa76e9
+          tests:
+            - test_s11_indexa_los_fragmentos_oficiales_en_sqlite_y_qdrant
+            - test_s11_c1_ningun_termino_ni_punto_del_confidencial_en_el_indice
+            - test_segundo_arranque_sin_cambios_calcula_cero_embeddings
+            - test_solo_se_calculan_los_embeddings_de_los_hashes_nuevos
+            - test_cambiar_el_nombre_del_modelo_recrea_la_coleccion
+            - test_falla_sqlite_tras_upsert_qdrant_conserva_indice_anterior
+            - test_puntos_huerfanos_no_aparecen_en_busqueda
+        - path: tests/server/e2e/test_arranque_indice.py
+          sha256: 6434a7a5f0d24f91258df9d00c34cab36a3ec39096904f05672c7b5e817c60fe
+          tests:
+            - test_s11_el_arranque_deja_indexados_los_cinco_oficiales
+            - test_s11_c1_el_arranque_no_indexa_nada_del_confidencial
+            - test_la_app_abre_un_solo_qdrant_client_y_lo_cierra_al_apagar
+            - test_nfr2_segundo_arranque_sin_cambios_no_calcula_embeddings_y_tarda_menos_de_2_s
+            - test_d13_si_falla_la_conexion_sqlite_el_cliente_qdrant_se_cierra
   pending_commits: []
   approved_manifests:
     - task: T1
@@ -92,10 +108,67 @@ progress:
         - tests/server/dominio/test_fuentes.py
         - tests/server/infraestructura/documentos/test_duplicados.py
       receipts: []
+    - task: T3
+      attempt: 2
+      files:
+        - path: pyproject.toml
+          status: " M"
+          sha256: 7e0bfe7ea49ac4411f9710243aadb37b282fc5490019a0ae11706f8819ab3594
+        - path: src/server/AGENTS.md
+          status: " M"
+          sha256: e135c4578ccb6c89e15758e544f93267fa891b3d502409400e2d1e9c8435039f
+        - path: src/server/config.py
+          status: " M"
+          sha256: a9bf7a226eef34d57a76a70a79819a17c6629d6d26bfc4a3ae6dea71fa6bb6b7
+        - path: src/server/http/__init__.py
+          status: ??
+          sha256: e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855
+        - path: src/server/http/app.py
+          status: ??
+          sha256: 2b75abe5466506238c411445210c10d515068f71fff8e2f74115b7b618b1bc44
+        - path: src/server/infraestructura/busqueda/__init__.py
+          status: ??
+          sha256: e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855
+        - path: src/server/infraestructura/busqueda/embeddings.py
+          status: ??
+          sha256: 9aa6700ca3a107ba2b5a56cbeabd82fd4046de437f543b09cb6c9c8ff779f1a5
+        - path: src/server/infraestructura/busqueda/esquema.py
+          status: ??
+          sha256: 86d46b81044f8171948592213b6b7a4d748a28206e2e1e0caab9c32ac983a142
+        - path: src/server/infraestructura/busqueda/indice.py
+          status: ??
+          sha256: 30739732bff4af5a216e28293d851c9a86ab701cf756ffe846f4ccf3b93c6b0b
+        - path: src/server/infraestructura/documentos/cargador.py
+          status: " M"
+          sha256: 8c2a0cea9bc1e9b1ae409d29a9033a20875663f7bbb8231da3a587d7cbc6b38a
+        - path: tests/server/e2e/test_arranque_indice.py
+          status: ??
+          sha256: 6434a7a5f0d24f91258df9d00c34cab36a3ec39096904f05672c7b5e817c60fe
+        - path: tests/server/infraestructura/busqueda/test_indice.py
+          status: ??
+          sha256: 4de28d1d75cc76a0576befea36eee76992d6df5ecc6ea79ae6b326df4afa76e9
+        - path: uv.lock
+          status: " M"
+          sha256: f903021d2bca4e52151b524c97a34d23ea225028ec3e81463e930252f31852ce
+      reviewed:
+        - pyproject.toml
+        - src/server/AGENTS.md
+        - src/server/config.py
+        - src/server/infraestructura/documentos/cargador.py
+        - uv.lock
+        - src/server/http/__init__.py
+        - src/server/http/app.py
+        - src/server/infraestructura/busqueda/__init__.py
+        - src/server/infraestructura/busqueda/embeddings.py
+        - src/server/infraestructura/busqueda/esquema.py
+        - src/server/infraestructura/busqueda/indice.py
+        - tests/server/e2e/test_arranque_indice.py
+        - tests/server/infraestructura/busqueda/test_indice.py
+      receipts: []
   loop_brake:
-    task: T2
+    task: T3
     action: commit
-    execution_rows: 18
+    execution_rows: 26
     approval_rows: 6
     repeats: 1
 approvals:
@@ -181,4 +254,12 @@ cut_estimates:
     base: 63912
     turns_left: 193
     savings: 0.93
+    decision: "go on: below 50"
+  - at: 2026-10-23T16:00:46.912Z
+    task: T3
+    boundary_id: implement:T3
+    context: 126773
+    base: 63912
+    turns_left: 178
+    savings: 1.92
     decision: "go on: below 50"

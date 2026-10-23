@@ -27,6 +27,14 @@ spec: MDO-0001-consultar-la-base-documental-con-fuentes
 | 2026-10-23 | T2 | 1 | standard | claude | claude-sonnet-5-5 | — | RED | red tests by mandao-implementer: tests/server/infraestructura/documentos/test_duplicados.py; `pytest tests/server/infraestructura/documentos/test_duplicados.py` failed (exit 1) |
 | 2026-10-23 | T2 | 1 | standard | claude | claude-sonnet-5-5 | — | REPORTED | red test changed: tests/server/dominio/test_fuentes.py; Leader aplicó ruff --fix (I001, orden de imports) en tests/server/dominio/test_fuentes.py; sin cambio de aserciones |
 | 2026-10-23 | T2 | 1 | standard | claude | — | claude-opus-5-5 | PASS | red test changed: tests/server/dominio/test_fuentes.py |
+| 2026-10-23 | T3 | 1 | fast | claude | — | — | STARTED |  |
+| 2026-10-23 | T3 | 1 | fast | claude | claude-sonnet-5-5 | — | RED | red tests by mandao-tester: tests/server/infraestructura/busqueda/test_indice.py; `pytest tests/server/infraestructura/busqueda/test_indice.py` failed (exit 2) |
+| 2026-10-23 | T3 | 1 | fast | claude | claude-sonnet-5-5 | — | RED | red tests by mandao-tester: tests/server/e2e/test_arranque_indice.py; `pytest tests/server/e2e/test_arranque_indice.py` failed (exit 2) |
+| 2026-10-23 | T3 | 1 | fast | claude | claude-sonnet-5-5 | — | REPORTED |  |
+| 2026-10-23 | T3 | 1 | fast | claude | — | claude-opus-5-5 | FAIL | FAIL: F1: indice.py re-implements the content hash rule owned by the loader |
+| 2026-10-23 | T3 | 2 | fast | claude | claude-sonnet-5-5 | — | RED | red tests by mandao-tester: tests/server/e2e/test_arranque_indice.py; `pytest tests/server/e2e/test_arranque_indice.py` failed (exit 1) |
+| 2026-10-23 | T3 | 2 | fast | claude | claude-sonnet-5-5 | — | REPORTED | PE 2026-10-23: deps aprobadas; excepción de licencias MPL-2.0/PSF-2.0 en transitivas sin modificar (py_rust_stemmers es MIT). pip-audit (uvx pip-audit --path .venv/...): 35 CVE en pillow 12.3.0 (transitiva de fastembed 0.9.0, que exige pillow<13; fix en 13.0.0); PE acepta el riesgo documentado: pillow solo procesa imágenes y la app solo embebe texto de Data/. |
+| 2026-10-23 | T3 | 2 | fast | claude | — | claude-opus-5-5 | PASS |  |
 
 ## Telemetry
 
@@ -120,3 +128,35 @@ spec: MDO-0001-consultar-la-base-documental-con-fuentes
 <!-- mandao:telemetry {"id":"aa1e3d0a-0a55-4666-8ebe-521235c3ce83","type":"gate_end","at":"2026-10-23T15:58:22.397Z","command":"implement","run":"7972982f-e209-4902-b06c-b118df845a11","subject":"test"} -->
 <!-- mandao:telemetry {"id":"4be011dc-6b0e-4af2-b622-237f6f85273b","type":"agent_start","at":"2026-10-23T15:58:27.219Z","command":"implement","run":"c2b09326-b14e-402c-973f-825424197a47","subject":"reviewer"} -->
 <!-- mandao:telemetry {"id":"4be011dc-6b0e-4af2-b622-237f6f85273b","type":"agent_end","at":"2026-10-23T15:59:51.268Z","command":"implement","run":"c2b09326-b14e-402c-973f-825424197a47"} -->
+<!-- mandao:telemetry {"id":"3cfb163f-69f9-48d6-bf54-9b5c14f7d082","type":"agent_start","at":"2026-10-23T16:00:58.004Z","command":"implement","run":"c2b09326-b14e-402c-973f-825424197a47","subject":"tester"} -->
+<!-- mandao:telemetry {"id":"3cfb163f-69f9-48d6-bf54-9b5c14f7d082","type":"agent_end","at":"2026-10-23T16:03:56.142Z","command":"implement","run":"c2b09326-b14e-402c-973f-825424197a47"} -->
+<!-- mandao:telemetry {"id":"d1eca1f1-14c1-4af2-a317-5e359b5fc3b6","type":"agent_start","at":"2026-10-23T16:03:56.652Z","command":"implement","run":"c2b09326-b14e-402c-973f-825424197a47","subject":"implementer"} -->
+<!-- mandao:telemetry {"id":"d1eca1f1-14c1-4af2-a317-5e359b5fc3b6","type":"agent_end","at":"2026-10-23T16:05:40.386Z","command":"implement","run":"c2b09326-b14e-402c-973f-825424197a47"} -->
+<!-- mandao:telemetry {"id":"ce83a1d0-d010-4efd-8b67-49c1b5e3f537","type":"gate_start","at":"2026-10-23T16:05:41.213Z","command":"implement","run":"1a7676a8-1474-4f3a-8e31-2e99f2cf987c","subject":"format"} -->
+<!-- mandao:telemetry {"id":"ce83a1d0-d010-4efd-8b67-49c1b5e3f537","type":"gate_end","at":"2026-10-23T16:05:41.351Z","command":"implement","run":"1a7676a8-1474-4f3a-8e31-2e99f2cf987c","subject":"format"} -->
+<!-- mandao:telemetry {"id":"fb5446d4-c172-4557-adc9-f288629eb01f","type":"gate_start","at":"2026-10-23T16:05:41.363Z","command":"implement","run":"121e77c0-a8f8-49f6-9e13-add618a060fa","subject":"lint"} -->
+<!-- mandao:telemetry {"id":"fb5446d4-c172-4557-adc9-f288629eb01f","type":"gate_end","at":"2026-10-23T16:05:41.392Z","command":"implement","run":"121e77c0-a8f8-49f6-9e13-add618a060fa","subject":"lint"} -->
+<!-- mandao:telemetry {"id":"168b9151-c51e-43d8-9abc-cc450650a3b6","type":"gate_start","at":"2026-10-23T16:05:41.403Z","command":"implement","run":"11feec56-7533-4f6f-aa3a-3ad37d9b5d95","subject":"typecheck"} -->
+<!-- mandao:telemetry {"id":"168b9151-c51e-43d8-9abc-cc450650a3b6","type":"gate_end","at":"2026-10-23T16:05:41.757Z","command":"implement","run":"11feec56-7533-4f6f-aa3a-3ad37d9b5d95","subject":"typecheck"} -->
+<!-- mandao:telemetry {"id":"0e6c6100-2d95-42dd-bf9c-c50f21e621a4","type":"gate_start","at":"2026-10-23T16:05:41.869Z","command":"implement","run":"40b7e37c-a3b8-4787-bacd-0b91a56cc37e","subject":"test"} -->
+<!-- mandao:telemetry {"id":"0e6c6100-2d95-42dd-bf9c-c50f21e621a4","type":"gate_end","at":"2026-10-23T16:05:43.164Z","command":"implement","run":"40b7e37c-a3b8-4787-bacd-0b91a56cc37e","subject":"test"} -->
+<!-- mandao:telemetry {"id":"e0cda6db-1d9b-4590-b358-84bbd5c7ca4b","type":"agent_start","at":"2026-10-23T16:05:49.177Z","command":"implement","run":"c2b09326-b14e-402c-973f-825424197a47","subject":"reviewer"} -->
+<!-- mandao:telemetry {"id":"e0cda6db-1d9b-4590-b358-84bbd5c7ca4b","type":"agent_end","at":"2026-10-23T16:07:46.136Z","command":"implement","run":"c2b09326-b14e-402c-973f-825424197a47"} -->
+<!-- mandao:telemetry {"id":"1046292b-509f-4e4f-9e37-41908c9c06f9","type":"agent_start","at":"2026-10-23T16:08:13.460Z","command":"implement","run":"c2b09326-b14e-402c-973f-825424197a47","subject":"tester"} -->
+<!-- mandao:telemetry {"id":"155113ac-bee7-41c9-adde-41ae924de54b","type":"asked","at":"2026-10-23T16:08:25.460Z","command":"implement","run":"c2b09326-b14e-402c-973f-825424197a47","question":"technical","subject":"licencias-transitivas"} -->
+<!-- mandao:telemetry {"id":"155113ac-bee7-41c9-adde-41ae924de54b","type":"answered","at":"2026-10-23T16:09:31.600Z","command":"implement","run":"c2b09326-b14e-402c-973f-825424197a47","question":"technical"} -->
+<!-- mandao:telemetry {"id":"1046292b-509f-4e4f-9e37-41908c9c06f9","type":"agent_end","at":"2026-10-23T16:09:31.818Z","command":"implement","run":"c2b09326-b14e-402c-973f-825424197a47"} -->
+<!-- mandao:telemetry {"id":"446cfd50-afb7-4390-a133-fcfe9fd29478","type":"agent_start","at":"2026-10-23T16:09:50.184Z","command":"implement","run":"c2b09326-b14e-402c-973f-825424197a47","subject":"implementer"} -->
+<!-- mandao:telemetry {"id":"624d842a-138b-4902-bc95-7575866b86b1","type":"asked","at":"2026-10-23T16:10:15.889Z","command":"implement","run":"c2b09326-b14e-402c-973f-825424197a47","question":"technical","subject":"pillow-cves"} -->
+<!-- mandao:telemetry {"id":"624d842a-138b-4902-bc95-7575866b86b1","type":"answered","at":"2026-10-23T16:10:54.340Z","command":"implement","run":"c2b09326-b14e-402c-973f-825424197a47","question":"technical"} -->
+<!-- mandao:telemetry {"id":"446cfd50-afb7-4390-a133-fcfe9fd29478","type":"agent_end","at":"2026-10-23T16:11:11.165Z","command":"implement","run":"c2b09326-b14e-402c-973f-825424197a47"} -->
+<!-- mandao:telemetry {"id":"c027245a-5a9d-4544-99fd-8f7460537eca","type":"gate_start","at":"2026-10-23T16:11:11.861Z","command":"implement","run":"36f18422-c367-4478-a818-58b645dfcdcb","subject":"format"} -->
+<!-- mandao:telemetry {"id":"c027245a-5a9d-4544-99fd-8f7460537eca","type":"gate_end","at":"2026-10-23T16:11:12.018Z","command":"implement","run":"36f18422-c367-4478-a818-58b645dfcdcb","subject":"format"} -->
+<!-- mandao:telemetry {"id":"2a13d1a0-edd0-4e2a-929a-ff5a3dfbaf17","type":"gate_start","at":"2026-10-23T16:11:12.031Z","command":"implement","run":"80132755-20fd-4586-b836-a27456eb95f5","subject":"lint"} -->
+<!-- mandao:telemetry {"id":"2a13d1a0-edd0-4e2a-929a-ff5a3dfbaf17","type":"gate_end","at":"2026-10-23T16:11:12.063Z","command":"implement","run":"80132755-20fd-4586-b836-a27456eb95f5","subject":"lint"} -->
+<!-- mandao:telemetry {"id":"5fe3135c-9fc7-447c-b87f-060c92dd79e8","type":"gate_start","at":"2026-10-23T16:11:12.074Z","command":"implement","run":"f0dc13a0-65f9-4c3d-9c02-b7e4b119b637","subject":"typecheck"} -->
+<!-- mandao:telemetry {"id":"5fe3135c-9fc7-447c-b87f-060c92dd79e8","type":"gate_end","at":"2026-10-23T16:11:12.410Z","command":"implement","run":"f0dc13a0-65f9-4c3d-9c02-b7e4b119b637","subject":"typecheck"} -->
+<!-- mandao:telemetry {"id":"4ca1f9e0-c800-4ff4-af25-1cf0688bb1e4","type":"gate_start","at":"2026-10-23T16:11:12.529Z","command":"implement","run":"5c80b305-5499-436f-81d4-f31dc4d39859","subject":"test"} -->
+<!-- mandao:telemetry {"id":"4ca1f9e0-c800-4ff4-af25-1cf0688bb1e4","type":"gate_end","at":"2026-10-23T16:11:13.930Z","command":"implement","run":"5c80b305-5499-436f-81d4-f31dc4d39859","subject":"test"} -->
+<!-- mandao:telemetry {"id":"2bbf108c-2a9c-4832-b3b6-c2781cff70a8","type":"agent_start","at":"2026-10-23T16:11:18.407Z","command":"implement","run":"c2b09326-b14e-402c-973f-825424197a47","subject":"reviewer"} -->
+<!-- mandao:telemetry {"id":"2bbf108c-2a9c-4832-b3b6-c2781cff70a8","type":"agent_end","at":"2026-10-23T16:13:25.927Z","command":"implement","run":"c2b09326-b14e-402c-973f-825424197a47"} -->

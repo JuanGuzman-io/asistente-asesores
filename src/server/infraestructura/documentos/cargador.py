@@ -16,7 +16,7 @@ def _nfc(texto: str) -> str:
     return unicodedata.normalize("NFC", texto)
 
 
-def _hash_normalizado(texto: str) -> str:
+def hash_normalizado(texto: str) -> str:
     normalizado = " ".join(texto.casefold().split())
     return hashlib.sha256(normalizado.encode("utf-8")).hexdigest()
 
@@ -59,13 +59,13 @@ def cargar_documentos(directorio: Path, excluidos: Sequence[str]) -> list[Fragme
         if _es_confidencial(texto):
             registro.info("Documento excluido por CONFIDENCIAL: %s", nombre)
             continue
-        hash_documento = _hash_normalizado(texto)
+        hash_documento = hash_normalizado(texto)
         if hash_documento in hashes_documento:
             registro.info("Documento duplicado omitido: %s", nombre)
             continue
         hashes_documento.add(hash_documento)
         for fragmento in _fragmentar(nombre.removesuffix(".md"), texto):
-            hash_fragmento = _hash_normalizado(fragmento.texto)
+            hash_fragmento = hash_normalizado(fragmento.texto)
             if hash_fragmento not in hashes_fragmento:
                 hashes_fragmento.add(hash_fragmento)
                 fragmentos.append(fragmento)

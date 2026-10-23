@@ -2,10 +2,19 @@
 name = "asistente-asesores"
 version = "0.1.0"
 requires-python = ">=3.11,<3.15"
-dependencies = []
+dependencies = [
+    "fastapi>=0.161.1",
+    "fastembed==0.9.0",
+    "qdrant-client>=1.20.0",
+]
 
 [dependency-groups]
-dev = ["pytest>=8", "ruff", "mypy"]
+dev = [
+    "pytest>=8",
+    "ruff",
+    "mypy",
+    "httpx>=0.28.1",
+]
 
 [tool.pytest.ini_options]
 pythonpath = ["."]
