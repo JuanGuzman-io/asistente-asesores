@@ -7,7 +7,7 @@ url:
 parent:
 projects: [web]
 lane: normal
-status: in-progress
+status: verified
 sources:
   - { ref: "docs/product/intake/prueba-tecnica-2026-10-23.md#I-8 (E-2; C-4; Q-2)", kind: intake, date: 2026-10-23 }
   - { ref: "Prueba técnica.pdf (sha256 ea559182d0cbe46540d0bbd994fa163b6633b42d03100c29632446a0267746b7), p. 5", kind: document, date: 2026-10-23 }

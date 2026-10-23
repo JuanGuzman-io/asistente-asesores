@@ -1,66 +1,71 @@
 ---
 schema_version: 1
 spec: MDO-0002-consultar-desde-la-interfaz
-verdict: blocked        # pending | verified | blocked
+verdict: verified       # pending | verified | blocked
 date: 2026-10-23
 ---
 
 # Verify — Consultar desde la interfaz
 
-Lo construido cumple AC-1 (crítico) y AC-2 con evidencia: 67 pruebas de unidad y 4 e2e en verde; el
-flujo crítico corrió contra el backend real de MDO-0001. Los secretos quedaron cubiertos con
-detect-secrets (00f6c57); el SAST del proyecto `web` es un hueco aceptado por el PE. No hay `PRODUCT_BUG`.
-Queda `blocked` solo porque las e2e de T4 siguen diferidas a CI y el repositorio aún no tiene CI.
+Verificado. AC-1 (crítico) y AC-2 cumplen con evidencia: 67/67 pruebas de unidad, build, format, lint y
+typecheck en verde sobre HEAD (509aa7f). La CI del PR #2 corrió las e2e diferidas de T4 contra el
+backend real y pasaron 4/4 (corrida 40024670663, commit 0f66689). No hay `PRODUCT_BUG` ni bloqueos.
+Hay una salvedad: el merge local 509aa7f (renombre a W+IA, solo texto) todavía no pasó por CI.
 
 ## Acceptance criteria → tests
 
 | AC / clause | Critical | Tests | Level | Result |
 |---|---|---|---|---|
-| AC-1 | yes | `App.test.tsx` (S-1.1), `Resultado.test.tsx` (S-2.1), `api.test.ts` (200 válido); e2e "consulta exitosa muestra respuesta, estado y fuente" (S-1.1, S-2.1) | unit + e2e (backend real) | PASS |
-| AC-1/C1 | yes | `App.test.tsx`: el botón y Enter no envían otra petición mientras está `procesando` (S-1.2) | unit | PASS |
-| AC-1/C2 | yes | `Resultado.test.tsx`: "Sin información suficiente" con "Sin fuentes" (S-2.2) y "Bloqueada por seguridad" (S-2.3); e2e "pregunta sin información muestra estado y sin fuentes" (S-2.2) | unit + e2e (backend real) | PASS |
-| AC-1/C3 | yes | `Resultado.test.tsx`: `<b>` y `<a>` salen literales y no crean elementos; Markdown con formato, sin enlaces ni imágenes (S-2.4) | unit | PASS |
-| AC-1/C4 | yes | `pregunta.test.ts` (vacía, espacios, 1.000 y 1.001 con NFC y emojis); `App.test.tsx` (botón deshabilitado, contador "0/1.000" y "1.001/1.000", envío de exactamente 1.000) (S-1.3, S-1.4); e2e "caja vacía: botón deshabilitado y ninguna petición" (S-1.3) | unit + e2e | PASS |
-| AC-2 | no | `api.test.ts`: 422 con `detail` y `requestId`, 422 sin `detail`, 413 (S-3.1); 500, 415, 503, 404 (S-3.2); sin conexión y tiempo agotado (S-3.3); `App.test.tsx`: 422 con `role=alert` y código de referencia; e2e "error visible con un 422 forzado" (S-3.1) | unit + e2e (422 simulado, D5) | PASS |
-| AC-2/C1 | no | `api.test.ts`: 500 con HTML o texto, problem+json, `estado` inválido, fuentes inválidas o cuerpo no JSON no muestran cuerpo, campos ni trazas (S-3.4) | unit | PASS |
-| AC-2/C2 | no | `App.test.tsx`: tras un error la pregunta sigue en el campo, editable y con el botón activo; un envío nuevo limpia el error y el resultado anterior (S-4.1) | unit | PASS |
+| AC-1 | yes | `App.test.tsx` (S-1.1: procesando → completado), `Resultado.test.tsx` (S-2.1: respuesta, Exitosa, fuente "documento > sección"), `api.test.ts` (S-2.1: 200 válido); e2e `@S-1.1 @S-2.1` "consulta exitosa muestra respuesta, estado y fuente" | unit + e2e (backend real, CI) | PASS |
+| AC-1/C1 | yes | `App.test.tsx`: S-1.2/C1, ni el botón ni Enter envían otra petición mientras está `procesando` | unit | PASS |
+| AC-1/C2 | yes | `Resultado.test.tsx`: S-2.2 "Sin información suficiente" con "Sin fuentes", S-2.2/C2 rótulo distinto de Exitosa, S-2.3 y S-2.3/C2 "Bloqueada por seguridad" y un solo rótulo por estado; e2e `@S-2.2` "pregunta sin información muestra estado y sin fuentes" | unit + e2e (backend real, CI) | PASS |
+| AC-1/C3 | yes | `Resultado.test.tsx`: S-2.4 y S-2.4/C3, `<b>` y `<a>` salen literales y no crean elementos (también en documento y sección); AC-1/C3, enlaces, URL e imágenes Markdown quedan como texto | unit | PASS |
+| AC-1/C4 | yes | `pregunta.test.ts` (S-1.4: 1.000 en NFC y NFD, emojis, espacios laterales, 1.001 inválido); `App.test.tsx` (S-1.3/C4 botón deshabilitado y Enter sin petición, S-1.4 contador "1.001/1.000" y campo marcado, S-1.4/C4); e2e `@S-1.3` "caja vacía: botón deshabilitado y ninguna petición" | unit + e2e (CI) | PASS |
+| AC-2 | no | `api.test.ts`: S-3.1 (422 con `detail` y `requestId`, 422 sin `detail`, 413), S-3.2 (500), S-3.3 (sin conexión y tiempo agotado); `App.test.tsx`: S-3.1 con `role=alert` y código de referencia; e2e `@S-3.1` "error visible con un 422 forzado" | unit + e2e (422 simulado, D5; CI) | PASS |
+| AC-2/C1 | no | `api.test.ts`: S-3.4 y S-3.4/C1, un 500 con HTML, texto o problem+json, un `estado` inválido, fuentes inválidas o un cuerpo no JSON no muestran cuerpo, campos ni trazas | unit | PASS |
+| AC-2/C2 | no | `App.test.tsx`: S-4.1/C2, tras un error la pregunta sigue editable y el botón activo; S-4.1, un envío nuevo limpia el error y el resultado anteriores | unit | PASS |
 
-NFR-1 (accesibilidad básica): `App.test.tsx` comprueba la etiqueta "Pregunta", la región
-`aria-live=polite` y el contador enlazado con `aria-describedby`. `mandao run trace` no da hallazgos.
+NFR-1 (accesibilidad básica): `App.test.tsx` (pruebas NFR-1) comprueba la etiqueta "Pregunta", la región
+`aria-live=polite` y el contador enlazado con `aria-describedby`. `verify-plan` da `findings: []`.
 
-### AC-1 — flujo crítico de punta a punta
+### AC-1: flujo crítico de punta a punta
 
-La e2e del flujo crítico usa `page.route` solo para retener la petición hasta ver "Procesando consulta…"
-y luego llama a `route.continue()`: la respuesta que se pinta es la del backend real. La e2e de S-3.1
-fuerza un 422 con `route.fulfill` a propósito (D5, C-9); el 422 real lo cubren MDO-0001 (AC-7) y
+En CI, el job `frontend` levanta el backend real de MDO-0001 en :8000 (modo extractivo, un worker) y
+corre `npm run e2e`. La e2e del flujo crítico usa `page.route` solo para retener la petición hasta ver
+"Procesando consulta…". Después llama a `route.continue()`, así que lo que se pinta es la respuesta real.
+La e2e de S-3.1 fuerza un 422 a propósito (D5, C-9). El 422 real lo cubren MDO-0001 (AC-7) y
 `api.test.ts`.
+
+Hoy, en local, un smoke con curl contra el backend real devolvió $50.000.000 con la fuente "Productos de
+Crédito > Crédito Productivo Impulso". La pregunta fuera de alcance devolvió "No tengo información
+suficiente para responder.", `fuentes: []` y "Sin información suficiente".
 
 ## Suites
 
 | Project | Kind | Result |
 |---|---|---|
-| web | unit (`vitest related`, 4 archivos impactados) | PASS — 67/67 |
-| web | e2e (Playwright, backend real de MDO-0001 en :8000) | PASS — 4/4 |
-| web | build (`mandao run build web`, antes de las e2e) | PASS |
-| web | gates T1 y T2 (format, lint, typecheck, test, build, secrets) | PASS; audit SKIPPED (sin cambio de dependencias); sast no configurado |
+| web | unit (`mandao run tests`, 4 de 4 archivos impactados), HEAD 509aa7f | PASS: 67/67 |
+| web | build (`mandao run build web`), HEAD 509aa7f | PASS |
+| web | format, lint y typecheck, HEAD 509aa7f | PASS |
+| web | e2e (Playwright, backend real), CI del PR #2 sobre 0f66689 | PASS: 4/4 |
+| web | e2e local sobre HEAD 509aa7f | NOT RUN: el guardián de recursos lo bloqueó (3,5 GB libres, se piden 4,5 GB) |
+| asistente-asesores | backend, evals, secrets, sast (bandit), CI del PR #2 sobre 0f66689 | PASS |
 
 ## TDD evidence (ADR 0022)
 
 - `missingRed`: ninguno.
-- Hay filas RED (vitest, exit 1) antes del verde para T1 (`api.test.ts`), T2 (`Resultado.test.tsx`),
-  T3 (`App.test.tsx`) y T5 (`pregunta.test.ts`, `App.test.tsx`). T4 y T6 son e2e sin rojo, como declara
-  `tasks.md`.
-- Prueba roja cambiada: T5 cambió `tests/web/App.test.tsx`. El cambio quedó reportado y el revisor dio PASS después.
-- Ninguna prueba cambió en este verify.
+- T1, T2, T3 y T5 tienen filas RED (vitest, exit 1) antes del verde. T4 y T6 son e2e sin rojo, como
+  declara `tasks.md`.
+- Prueba roja cambiada: T5 cambió `tests/web/App.test.tsx`. Ya se informó y el revisor dio PASS.
+- Este verify no cambió ninguna prueba. El merge 509aa7f no toca `tests/`.
 
 ## Security
 
-- **Secretos:** el proyecto `web` no tenía gate. Por decisión del PE (2026-10-23) se agregó el mismo gate
-  detect-secrets de MDO-0001 con el `.secrets.baseline` del repo (00f6c57). Lo probé con un canario
-  (detectó una clave AWS sembrada) y pasó en T1 y T2 (`_log/gates.md`, intento 2).
-- **SAST:** el PE aceptó el hueco y quedó registrado con `mandao approve MDO-0002 security-gaps`. Motivo:
-  es un frontend sin código de servidor ni secretos, muestra el texto sin interpretar HTML ni enlaces
-  (aba941b) y usa datos irreales. **Mejora futura:** SAST para TypeScript en CI.
+- **Secretos:** cubiertos. T1 y T2 llevan el tag `security` y tienen PASS ejecutado del gate
+  detect-secrets (`_log/gates.md`, intento 2 de cada una). En CI el gate corre sobre todo el repositorio.
+- **SAST del proyecto `web`:** `unknown`. Es un hueco aceptado por el PE (`mandao approve MDO-0002
+  security-gaps`, 2026-10-23T20:30:44Z). Bandit en CI cubre solo el backend Python. **Mejora futura:**
+  SAST para TypeScript en CI.
 
 ## Security mentions (not blocking)
 
@@ -72,64 +77,83 @@ None.
 
 ## Deferred to CI
 
-Las tres corridas e2e de T4 estaban diferidas porque el backend de MDO-0001 no estaba en `main` ni en
-:8000 (R-1). Por decisión del PE corrieron aquí contra el backend real, levantado desde la rama
-`feat/MDO-0001-…` (aún no está en `main`), y pasaron 4/4. CI todavía tiene que confirmar la e2e completa
-y el smoke del flujo crítico cuando MDO-0001 esté en `main`.
+Las tres corridas e2e de T4 (`tests/web/e2e/consultar.spec.ts`) quedaron confirmadas por la CI del PR #2:
+el job `frontend` sobre 0f66689 dio `e2e: success` y "4 passed (12.1s)". Por eso este verify usa
+`--ci-confirmed`.
+
+**Salvedad:** HEAD es 509aa7f, un merge local todavía sin push que viene de
+`draft/quick-renombrar-w-ia`. Cambia solo textos visibles de "Bot-W" a "W+IA" en `App.tsx`,
+`Orbe.tsx`, `estilos.css`, `index.html` y `AGENTS.md`. Ninguna e2e usa esos textos: buscan por
+"Pregunta", "Procesando consulta…", "Exitosa", "Sin información suficiente" y "Sin fuentes". La unidad,
+el build y los gates estáticos pasaron sobre HEAD. Al hacer push, CI vuelve a correr la e2e sobre 509aa7f.
 
 ## Blockers
 
-- `verify-plan` mantiene "3 run(s) deferred to CI wait for CI (T4)" hasta que CI confirme
-  (`verify-plan --ci-confirmed`). `mandao run status MDO-0002 verified` responde `allowed: false` por ese
-  motivo.
-- El repositorio no tiene CI (no hay `.github/workflows` en esta rama ni en la de MDO-0001), así que
-  nada puede confirmar esas corridas todavía. Para desbloquear hace falta una de dos cosas: un
-  `/mandao-quick` que agregue un workflow de CI con la e2e y el smoke del flujo crítico, o que la e2e
-  pase en CI una vez MDO-0001 esté en `main`. Después se vuelve a correr `/mandao-verify MDO-0002`.
+None.
 
 ## Observations
 
-- En el Overview de `tasks.md`, T5 y T6 siguen en `[ ]`, pero en Details están en `[x]` y sus commits
-  existen (f783067, 7421a5e). Hay que corregir solo la casilla.
-- El quickstart coincide con lo construido: los pasos 2 y 3 los comprobé contra el backend real. Queda igual.
+- La spec (C-7 y la sección de impacto en `ux.md`, `spec.md:329` y `spec.md:388-389`) todavía llama
+  "Bot-W" a la interfaz. Desde 509aa7f el código y `src/web/AGENTS.md` dicen "W+IA". Es una decisión
+  visual (fuera de alcance de los AC) y `/mandao-close` debe llevarla a `ux.md`.
+- El commit 7492298 usa el emoji 💄, pero la guía pide 🎨 para `style`. No se corrige porque reescribir
+  historia no compensa.
+- El quickstart coincide con el backend: los pasos 2 y 3 se comprobaron hoy con curl. Los pasos de UI
+  (1, 4 y 5) los cubren las e2e de CI y las pruebas de unidad. Queda igual.
 
 ## Consistency Check
 
 | ID | Type | Finding | Severity | Owner | Status |
 |---|---|---|---|---|---|
 
-No findings. Story, spec y este informe concuerdan: cada AC y cláusula tiene FR, escenario y prueba en
-verde. El contrato que usa el cliente coincide con las respuestas reales del backend de MDO-0001.
+No findings. Story, spec y este informe concuerdan: cada AC y cada cláusula tienen FR, escenario y prueba
+en verde. El contrato que usa el cliente coincide con las respuestas reales del backend de MDO-0001. El
+cambio de nombre (Bot-W → W+IA) no toca ningún AC ni FR y queda en Observations.
 
 ## Evidence
 
 ```
-$ node .mandao/bin/mandao.mjs run tests web src/web/src/App.tsx src/web/src/Compositor.tsx src/web/src/Resultado.tsx src/web/src/api.ts src/web/src/main.tsx src/web/src/pregunta.ts
+$ node .mandao/bin/mandao.mjs run verify-plan MDO-0002
+"missingRed":[], "findings":[], "blockers":["3 run(s) deferred to CI wait for CI (T4, T4, T4)"],
+"securityScans":[{"project":"asistente-asesores","secrets":"covered","sast":"covered"},{"project":"web","secrets":"covered","sast":"unknown"}]
+
+$ gh run view 40024670663 --json headSha,conclusion,jobs
+{"conclusion":"success","headSha":"0f6668901af8e2e2347a12b452793258d188e8a0","jobs":[
+ {"name":"backend","conclusion":"success"  (test sin red, secrets, sast: success)},
+ {"name":"frontend","conclusion":"success" (test, Levantar el backend, e2e: success)},
+ {"name":"evals","conclusion":"success"}]}
+frontend  test  Test Files  4 passed (4)
+frontend  test       Tests  67 passed (67)
+frontend  e2e   4 passed (12.1s)
+
+$ node .mandao/bin/mandao.mjs run tests web src/web/src/{App,Compositor,Resultado,Orbe,main}.tsx src/web/src/{api,pregunta}.ts   # HEAD 509aa7f
 Test Files  4 passed (4)
+Affected  4 of 4 test files (related to 7 files)
 Tests  67 passed (67)
-{"status":"PASS", ... "exitCode":0}
+{"status":"PASS","exitCode":0,"impact":"configured"}
 
-$ node .mandao/bin/mandao.mjs run build web
-✓ built in 511ms
-{"status":"PASS", ... "exitCode":0}
+$ node .mandao/bin/mandao.mjs run build web   # HEAD 509aa7f
+✓ built in 191ms
+{"status":"PASS","exitCode":0}
 
-$ npm --prefix src/web run e2e        # backend: uv run --no-sync uvicorn src.server.principal:app --port 8000 --workers 1 (worktree MDO-0001)
-Running 4 tests using 1 worker
-4 passed (3.8s)
+$ npm --prefix src/web run format:check   → All matched files use Prettier code style!  (exit 0)
+$ npm --prefix src/web run lint           → (sin salida)  (exit 0)
+$ npm --prefix src/web run typecheck      → (sin salida)  (exit 0)
 
-$ node .mandao/bin/mandao.mjs run gates MDO-0002 T1
-{"task":"T1","attempt":2,"passed":true,"results":[{"gate":"format","status":"PASS"},{"gate":"lint","status":"PASS"},{"gate":"typecheck","status":"PASS"},{"gate":"test","status":"PASS"},{"gate":"build","status":"PASS"},{"gate":"secrets","status":"PASS"},{"gate":"audit","status":"SKIPPED","reason":"no dependency change"}],"notConfigured":["sast","metrics"]}
+$ npm --prefix src/web run e2e   # local, HEAD 509aa7f
+resource-guard: available RAM 3544 MB < 4500 MB required for e2e → blocked (no se forzó con RG_FORCE)
 
-$ node .mandao/bin/mandao.mjs run gates MDO-0002 T2
-{"task":"T2","attempt":2,"passed":true,"results":[{"gate":"format","status":"PASS"},{"gate":"lint","status":"PASS"},{"gate":"typecheck","status":"PASS"},{"gate":"test","status":"PASS"},{"gate":"build","status":"PASS"},{"gate":"secrets","status":"PASS"},{"gate":"audit","status":"SKIPPED","reason":"no dependency change"}],"notConfigured":["sast","metrics"]}
+$ curl -s -X POST localhost:8000/api/consultar -d '{"pregunta":"¿Cuál es el monto máximo del Crédito Productivo Impulso?"}'
+… "Monto máximo | $50.000.000" … "fuentes":[{"documento":"Productos de Crédito","seccion":"Crédito Productivo Impulso", …}, …]
+$ curl -s -X POST localhost:8000/api/consultar -d '{"pregunta":"¿Va a llover mañana en Bogotá?"}'
+{"respuesta":"No tengo información suficiente para responder.","fuentes":[],"estado":"Sin información suficiente"}
 
-$ (canario en src/web/zz-canary.txt, borrado después) detect-secrets-hook ...
-ERROR: Potential secrets about to be committed to git repo!
-Secret Type: AWS Access Key   Location: zz-canary.txt:1
+$ node .mandao/bin/mandao.mjs run security-scanning
+web: secrets covered (detect-secrets local + CI), sast unknown (approved gap)
 
-$ node .mandao/bin/mandao.mjs approve MDO-0002 security-gaps --reason "..."
-{"approved":true,"step":"security-gaps","by":"Juan D. Guzmán","at":"2026-10-23T20:30:44.949Z"}
+$ node .mandao/bin/mandao.mjs run verify-plan MDO-0002 --ci-confirmed
+"missingRed":[], "findings":[], "blockers":[]
 
-$ node .mandao/bin/mandao.mjs run trace MDO-0002
-{"rows":[...8 filas AC/cláusula...],"findings":[],"issues":[]}
+$ node .mandao/bin/mandao.mjs run status MDO-0002 verified --ci-confirmed
+{"from":"in-progress","to":"verified","allowed":true,"problems":[]}
 ```
