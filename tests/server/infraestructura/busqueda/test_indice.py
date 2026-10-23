@@ -30,15 +30,13 @@ import hashlib
 import math
 import sqlite3
 import unicodedata
-from collections.abc import Iterator, Sequence
+from collections.abc import Sequence
 from pathlib import Path
 
 import pytest
-from src.server.infraestructura.busqueda.indice import reconstruir_indice
 
-from src.server.config import DOCUMENTOS_EXCLUIDOS
 from src.server.dominio.modelos import Fragmento
-from src.server.infraestructura.documentos.cargador import cargar_documentos
+from src.server.infraestructura.busqueda.indice import reconstruir_indice
 
 DATA = Path(__file__).resolve().parents[4] / "Data"
 RESTRINGIDO = "Información restringida.md"
@@ -104,27 +102,6 @@ def _fts(conexion: sqlite3.Connection, palabra: str) -> int:
     return conexion.execute(
         "SELECT count(*) FROM fragmentos_fts WHERE fragmentos_fts MATCH ?", (consulta,)
     ).fetchone()[0]
-
-
-@pytest.fixture
-def conexion(tmp_path: Path) -> Iterator[sqlite3.Connection]:
-    con = sqlite3.connect(tmp_path / "indice.db")
-    yield con
-    con.close()
-
-
-@pytest.fixture
-def qdrant(tmp_path: Path):
-    from qdrant_client import QdrantClient
-
-    cliente = QdrantClient(path=str(tmp_path / "qdrant"))
-    yield cliente
-    cliente.close()
-
-
-@pytest.fixture
-def oficiales() -> list[Fragmento]:
-    return cargar_documentos(DATA, DOCUMENTOS_EXCLUIDOS)
 
 
 def _poner_veneno(conexion: sqlite3.Connection) -> None:

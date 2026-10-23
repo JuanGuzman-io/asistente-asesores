@@ -2,7 +2,7 @@
 progress:
   schema_version: 1
   spec: MDO-0001-consultar-la-base-documental-con-fuentes
-  updated_at: 2026-10-23T16:13:26.324Z
+  updated_at: 2026-10-23T16:30:57.304Z
   current: null
   open_questions: []
   next_step: ""
@@ -60,6 +60,37 @@ progress:
             - test_la_app_abre_un_solo_qdrant_client_y_lo_cierra_al_apagar
             - test_nfr2_segundo_arranque_sin_cambios_no_calcula_embeddings_y_tarda_menos_de_2_s
             - test_d13_si_falla_la_conexion_sqlite_el_cliente_qdrant_se_cierra
+    - task: T4
+      files:
+        - path: tests/server/infraestructura/busqueda/conftest.py
+          sha256: 0f13766c85e95d9352626d4f998a16ccc25c8170125a0566b438330e9c52a803
+          tests: []
+        - path: tests/server/infraestructura/busqueda/test_buscador.py
+          sha256: e763adae0b9d7f6116a1222204c4a98dd7f64d2918c063433e31cf2de378858a
+          tests:
+            - test_d4_umbrales_iniciales_en_configuracion
+            - test_d4_el_buscador_implementa_el_puerto_y_devuelve_resultado_de_dominio
+            - test_s31_el_primer_fragmento_es_credito_productivo_impulso
+            - test_s31_devuelve_como_maximo_tres_fragmentos_sin_repetir
+            - test_s31_el_confidencial_nunca_aparece_en_los_resultados
+            - test_s31_rrf_conserva_el_orden_y_limita_a_tres_candidatos
+            - test_s31_umbral_alto_basta_sin_coincidencia_fts
+            - test_s31_umbral_bajo_con_coincidencia_fts_da_soporte
+            - test_s32_entre_umbrales_sin_coincidencia_fts_no_hay_soporte
+            - test_s32_bajo_el_umbral_bajo_no_hay_soporte_aunque_coincida_en_fts
+            - test_s31_la_busqueda_ignora_puntos_cuyo_hash_no_esta_en_fragmentos
+            - test_s32_pregunta_sin_respuesta_en_la_base_no_supera_el_umbral
+            - test_s81_pregunta_con_signos_da_el_mismo_resultado_que_sin_ellos
+            - test_s81_consulta_fts_cita_cada_palabra_y_quita_palabras_vacias
+            - test_s81_solo_signos_o_emojis_omiten_la_via_fts
+            - test_s81_c1_ninguna_pregunta_hostil_produce_error_de_sintaxis_fts
+            - test_s81_c1_los_operadores_fts_se_tratan_como_palabras_no_como_sintaxis
+            - test_s81_c1_la_pregunta_nunca_se_interpola_en_el_sql
+            - test_s82_sin_tildes_recupera_el_mismo_fragmento_que_con_tildes
+            - test_s82_la_via_fts_por_si_sola_ignora_tildes_y_ordena_primero_la_seccion
+            - test_s31_rrf_fusiona_ordenes_distintos_de_bm25_y_coseno
+            - test_d4_sin_candidatos_comunes_usa_el_coseno_real_del_mejor_fragmento
+            - test_d11_los_huerfanos_no_quitan_cupos_a_los_candidatos_vigentes
   pending_commits: []
   approved_manifests:
     - task: T1
@@ -165,10 +196,47 @@ progress:
         - tests/server/e2e/test_arranque_indice.py
         - tests/server/infraestructura/busqueda/test_indice.py
       receipts: []
+    - task: T4
+      attempt: 2
+      files:
+        - path: src/server/AGENTS.md
+          status: " M"
+          sha256: d45a10b6f1d5d7409078e83af2997aa2080541dbb5f6bc420f0d7ed9b927aac8
+        - path: src/server/config.py
+          status: " M"
+          sha256: beea5cc745a82061899a3f9e0f978a62bff49dafb4578ad91b7b5145512cb6bb
+        - path: src/server/dominio/puertos.py
+          status: ??
+          sha256: 3b568790294e061203ee361736fe3602669da652835d811d4a28bc481315f124
+        - path: src/server/infraestructura/busqueda/buscador.py
+          status: ??
+          sha256: 73315b5c33996bdcb75043fc18657a1b3b5b3662d0acfee50ab5d10a092957f9
+        - path: src/server/infraestructura/busqueda/fts.py
+          status: ??
+          sha256: 51c73afd57564422442a83f4f671c5109dfe6c93be7759032bf7a725b3c7eec1
+        - path: tests/server/infraestructura/busqueda/conftest.py
+          status: ??
+          sha256: 0f13766c85e95d9352626d4f998a16ccc25c8170125a0566b438330e9c52a803
+        - path: tests/server/infraestructura/busqueda/test_buscador.py
+          status: ??
+          sha256: e763adae0b9d7f6116a1222204c4a98dd7f64d2918c063433e31cf2de378858a
+        - path: tests/server/infraestructura/busqueda/test_indice.py
+          status: " M"
+          sha256: 1008362f06c357e83d886ba8089a3e74eef692ba10c7371e4e2b482034d25ffd
+      reviewed:
+        - src/server/AGENTS.md
+        - src/server/config.py
+        - tests/server/infraestructura/busqueda/test_indice.py
+        - src/server/dominio/puertos.py
+        - src/server/infraestructura/busqueda/buscador.py
+        - src/server/infraestructura/busqueda/fts.py
+        - tests/server/infraestructura/busqueda/conftest.py
+        - tests/server/infraestructura/busqueda/test_buscador.py
+      receipts: []
   loop_brake:
-    task: T3
+    task: T4
     action: commit
-    execution_rows: 26
+    execution_rows: 33
     approval_rows: 6
     repeats: 1
 approvals:
@@ -262,4 +330,12 @@ cut_estimates:
     base: 63912
     turns_left: 178
     savings: 1.92
+    decision: "go on: below 50"
+  - at: 2026-10-23T16:16:39.753Z
+    task: T4
+    boundary_id: implement:T4
+    context: 201804
+    base: 63912
+    turns_left: 163
+    savings: 4.18
     decision: "go on: below 50"

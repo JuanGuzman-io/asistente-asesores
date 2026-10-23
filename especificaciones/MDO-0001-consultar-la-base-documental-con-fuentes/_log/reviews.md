@@ -152,3 +152,90 @@ T3 pasa la revisión en este intento. Los hallazgos bloqueantes F1 y F2 están c
 {"id":"F9","status":"open","severity":"low","lens":"security","title":"Accepted pillow 12.3.0 risk lives only in execution.md, with no revisit trigger and no audit gate","file":"constitucion/standards.md","line":62,"evidence":"pip-audit-t3.txt: 35 advisories in pillow 12.3.0 (fix 13.0.0), blocked by fastembed 0.9.0 requiring pillow<13. The PE accepted the risk (text-only use). Advisory: when standards.md is updated at close, also record the pillow acceptance with a revisit trigger (upgrade once fastembed allows pillow>=13), and configure the `audit` gate (currently not configured) so regressions surface automatically."}
 ]}
 ```
+
+## T4 — attempt 1
+
+VERDICT: FAIL
+
+Reviso T4, intento 1. Hay un hallazgo bloqueante: la asunción del implementador hace que no se cumpla la regla de umbral de D4. El resto de lo que pediste revisar está bien: el SQL va con parámetros, los umbrales están en config, el rojo es válido y `test_indice.py` no quedó más débil.
+
+## Asunción "solo por FTS ⇒ coseno 0" frente a D4 (bloqueante)
+
+D4 dice: "hay soporte si **el mejor fragmento** tiene similitud coseno ≥ `UMBRAL_ALTO` (0,60), o ≥ `UMBRAL_BAJO` y además coincide en FTS". En design.md no hay nada que autorice poner a 0 el coseno real de un fragmento.
+
+Además, el efecto es más amplio de lo que parece:
+- **Cuándo pasa.** Con RRF (k = 60), un fragmento que sale en las dos vías suma como mínimo 2/65 ≈ 0,0308. Uno que sale en una sola vía suma como máximo 1/61 ≈ 0,0164. Por eso un fragmento solo de FTS únicamente queda primero cuando los 5 de FTS y los 5 de Qdrant no tienen ninguno en común.
+- **El empate.** En ese caso, el primero de FTS y el primero de Qdrant empatan exactamente en 1/61. `sorted(...)` es estable y `puntaje` recibe primero los hashes de FTS (`for ranking in (por_fts, list(cosenos))`), así que el empate siempre lo gana el de FTS. Su coseno pasa a 0 y el resultado es "sin soporte".
+- **Consecuencia.** Siempre que las dos listas no compartan ningún fragmento, la respuesta es "sin soporte" aunque Qdrant tenga un candidato con coseno 0,95. Esto anula la vía de "≥ 0,60 basta", que D4 justifica justamente porque solo FTS falla con sinónimos. Falla del lado prudente (AC-11), pero produce falsos "Sin información suficiente" en AC-3.
+- **Ninguna prueba lo cubre.**
+
+**Arreglo propuesto:** usar el coseno real del mejor fragmento cuando no esté entre los 5 de Qdrant (por ejemplo, `query_points` con filtro `hash == mejor` y `limit=1`). Además: añadir una prueba con las dos listas sin fragmentos en común, donde el candidato de Qdrant tenga coseno ≥ 0,60, y actualizar la línea de `src/server/AGENTS.md` que documenta la asunción.
+
+## Lo demás que pediste revisar
+
+- **La pregunta nunca se interpola en el SQL (lente security): cumple.** `buscar_fts` usa `MATCH ?` y `LIMIT ?` con parámetros. `_existe` y `_fragmento` también usan `?`. `consulta_fts` solo deja pasar `[a-z0-9]+` sin tildes, cita cada palabra y las une con `OR`. Cuando no queda ninguna palabra útil devuelve `None` y no se ejecuta ningún MATCH. Las pruebas lo cubren con 23 entradas hostiles, con el trace callback y con "NOT como palabra". No hay hallazgos de seguridad abiertos.
+- **Filtro de huérfanos: funciona, pero con una diferencia de diseño** (medio, no bloqueante). Filtra después de `limit=5`, así que cada huérfano le quita un sitio a un candidato vigente. design.md pide "filtro por hashes vigentes" y la prueba de T3 usa `query_filter` con `MatchAny`.
+- **Umbrales en config: cumple.** `UMBRAL_ALTO` y `UMBRAL_BAJO` están en `config.py` y se inyectan como valores por defecto del constructor. `CANDIDATOS`, `RESULTADOS` y `K_RRF` son constantes con nombre.
+- **Fusión RRF: el cálculo es correcto (k = 60, top 3), pero la prueba es débil** (medio). En `test_s31_rrf_conserva_el_orden...` BM25 y los cosenos ordenan igual. Falta un caso donde los dos órdenes sean distintos.
+- **Movimiento de fixtures: no debilitó `test_indice.py`.** Las fixtures pasaron idénticas a `conftest.py`; `test_indice.py` solo pierde imports sin uso; sus 7 pruebas pasan.
+- **TDD: cumple.** El rojo está registrado (exit 2, error de recolección). El único cambio sobre las pruebas rojas es el orden de imports (I001). ASSUMPTION: no tengo el archivo rojo original para compararlo.
+- **Sección no embebida: es de calibración, no de T4.** Queda como observación abierta.
+- **Evidencia de las pruebas.** En `.mandao/cache/MDO-0001/gates/T4-1.md` solo consta `34 passed`. No hay salida que muestre los "56 passed" de la suite completa (OPEN). El gate `audit` aparece como SKIPPED aunque está configurado.
+
+## Findings (JSON)
+
+```json
+{"version":1,"findings":[
+{"id":"F1","status":"open","severity":"high","lens":"core","title":"Coseno 0 para el mejor fragmento que llega solo por FTS contradice D4 y, con el desempate estable a favor de FTS, anula el umbral alto cuando las dos vías no comparten candidatos","file":"src/server/infraestructura/busqueda/buscador.py","line":442,"evidence":"`coseno = cosenos.get(mejor, 0.0)`. Si FTS y Qdrant no comparten candidatos, el primero de cada vía empata en 1/61 y `sorted` estable sobre `puntaje` (rellenado primero con por_fts) elige el de FTS, así que hay_soporte=False aunque el primero de Qdrant tenga coseno >= 0,60. D4 exige el coseno real del mejor fragmento. Ninguna prueba cubre listas sin candidatos en común."},
+{"id":"F2","status":"open","severity":"medium","lens":"core","title":"El filtro de huérfanos se aplica después de limit=5 y reduce los candidatos vigentes de la vía vectorial","file":"src/server/infraestructura/busqueda/buscador.py","line":453,"evidence":"query_points(limit=CANDIDATOS) sin query_filter y después `_existe` por punto. design.md: '5 por vía ... filtro por hashes vigentes'. La prueba de T3 usa Filter(MatchAny) en Qdrant."},
+{"id":"F3","status":"open","severity":"medium","lens":"core","title":"La prueba de RRF no distingue la fusión de un orden por una sola vía","file":"tests/server/infraestructura/busqueda/test_buscador.py","line":765,"evidence":"BM25 y los cosenos ordenan igual (0.9..0.5 y 'comun' x5..x1), así que ordenar solo por coseno o solo por BM25 también pasaría. Falta un caso con órdenes distintos y uno sin candidatos en común (ver F1)."},
+{"id":"F4","status":"open","severity":"low","lens":"core","title":"No hay evidencia registrada de la suite completa (56 passed) y audit aparece como SKIPPED","file":".mandao/cache/MDO-0001/gates/T4-1.md","line":51,"evidence":"La salida del gate test muestra 'collected 34 items ... 34 passed' (solo busqueda/). audit está configurado en el brief pero figura como SKIPPED."},
+{"id":"F5","status":"open","severity":"low","lens":"ai","title":"Solo se embebe `texto`, no `seccion`: posible efecto en S-3.1 con el modelo real","file":"src/server/infraestructura/busqueda/indice.py","line":60,"evidence":"embeddings.embeber([texto ...]). Es una decisión de T3 y debe calibrarse contra EV-2/EV-3 (P5). No bloquea T4."},
+{"id":"F6","status":"resolved","severity":"low","lens":"security","title":"La pregunta nunca se interpola en el SQL; las entradas hostiles no producen errores de sintaxis FTS5","file":"src/server/infraestructura/busqueda/fts.py","line":508,"evidence":"`MATCH ?` y `LIMIT ?` con parámetros; solo pasan tokens [a-z0-9]+ citados; None salta el MATCH; cubierto por test_s81_c1_* y test_s81_solo_signos_*."},
+{"id":"F7","status":"resolved","severity":"low","lens":"core","title":"El movimiento de fixtures a conftest.py no debilita test_indice.py","file":"tests/server/infraestructura/busqueda/conftest.py","line":1,"evidence":"Las fixtures conexion/qdrant/oficiales son idénticas; test_indice.py solo pierde imports sin uso; sus 7 pruebas pasan en la salida del gate."}
+]}
+```
+
+## T4 — attempt 2
+
+VERDICT: PASS
+
+# Revisión de MDO-0001 · T4, intento 2
+
+T4 se puede aceptar. Los dos hallazgos que bloqueaban en el intento 1 (F1 y F2) están corregidos y cada uno tiene una prueba que falló antes del arreglo. F3 y F4 también quedan resueltos. F5 sigue abierto como tarea de calibración; no es de T4. Quedan dos observaciones nuevas de severidad baja que no bloquean.
+
+## Estado de los hallazgos del intento 1
+
+- **F1, coseno del mejor fragmento (resuelto).** Cuando el mejor fragmento no está entre los 5 de Qdrant, `_coseno_de` busca su coseno real en Qdrant con el filtro `hash == mejor` y `limit=1`. Solo usa 0 si el fragmento no está indexado, y eso es lo que pide D4. La prueba `test_d4_sin_candidatos_comunes_usa_el_coseno_real_del_mejor_fragmento` reproduce el problema: las dos vías no comparten candidatos, A (coseno 0,65) empata con B1 en 1/61 y gana el desempate por FTS; con el código anterior su coseno pasaba a 0 y el resultado era "sin soporte"; con el arreglo hay soporte. El rojo está registrado en el intento 2 (exit 1).
+- **F2, huérfanos que quitaban cupos (resuelto).** `query_filter` con `MatchAny(any=vigentes)` se aplica dentro de la consulta a Qdrant, antes del `limit`. La prueba `test_d11_los_huerfanos_no_quitan_cupos_a_los_candidatos_vigentes` usa 6 huérfanos con coseno 1 y un vigente con 0,7. Falló antes del arreglo.
+- **F3, prueba de la fusión RRF (resuelto).** Pasó desde la primera ejecución, sin evidencia de mutación; revisé las aserciones de forma independiente según `loop.evidenceOptions`. Puntajes rehechos a mano: S0 0,031778; S1 0,032002; S2 0,032266; S3 0,031754; S4 0,031010. La fusión da S2, S1, S0; solo BM25 daría S0, S1, S2; solo coseno, S2, S3, S1; k = 0 daría S2, S0, S1. La prueba fija también el orden de BM25 con `buscar_fts`. Basta como evidencia de que discrimina.
+- **F4, evidencia de la suite completa (resuelto).** La salida guardada termina en `59 passed, 2 warnings in 1.21s`. El gate `test` de T4-2.md muestra `37 passed`. `audit` en SKIPPED es aceptable: T4 no toca `pyproject.toml` ni `uv.lock`.
+- **F5 (sigue abierto).** Calibración EV-2/EV-3 (P5); no bloquea T4.
+- **F6 y F7 (siguen resueltos).** La pregunta sigue sin interpolarse en el SQL; el nuevo filtro de Qdrant solo recibe hashes leídos de `fragmentos`. Mover las fixtures no debilitó `test_indice.py`.
+
+## Otras comprobaciones
+
+- **TDD:** `redTests.changed` está vacío y el rojo del intento 2 está registrado. No se debilitó ninguna prueba roja.
+- **AGENTS.md:** describe el filtro por hashes vigentes y la consulta del coseno real; ya no menciona la asunción del coseno 0.
+- **Límites entre módulos:** sin violaciones de `architecture.md`.
+
+## Observaciones nuevas (no bloquean)
+
+- **F8.** `_coseno_de` vuelve a calcular el embedding de la pregunta. Mejora sugerida: reutilizar el vector. OPEN: no se probó `MatchAny(any=[])` con `fragmentos` vacía.
+- **F9.** `PytestUnraisableExceptionWarning` de un `QdrantClient` cerrado desde otro hilo. ASSUMPTION: viene del lifespan de la prueba e2e de T3. Revisar fuera de T4.
+
+## Findings (JSON)
+
+```json
+{"version":1,"findings":[
+{"id":"F1","status":"resolved","severity":"high","lens":"core","title":"Coseno 0 para el mejor fragmento que llega solo por FTS contradice D4","file":"src/server/infraestructura/busqueda/buscador.py","line":441,"evidence":"Ahora `coseno = cosenos[mejor] if mejor in cosenos else self._coseno_de(pregunta, mejor)`; `_coseno_de` hace query_points con Filter(hash == mejor), limit=1. Cubierto por test_d4_sin_candidatos_comunes_usa_el_coseno_real_del_mejor_fragmento (rojo registrado en el intento 2): A (coseno .65) gana el empate 1/61 contra B1 y da soporte."},
+{"id":"F2","status":"resolved","severity":"medium","lens":"core","title":"El filtro de huérfanos se aplicaba después de limit=5","file":"src/server/infraestructura/busqueda/buscador.py","line":456,"evidence":"query_filter=Filter(must=[FieldCondition(key='hash', match=MatchAny(any=vigentes))]) dentro de query_points. Cubierto por test_d11_los_huerfanos_no_quitan_cupos_a_los_candidatos_vigentes (6 huérfanos con coseno 1, el vigente con .7; rojo registrado)."},
+{"id":"F3","status":"resolved","severity":"medium","lens":"core","title":"La prueba de RRF no distinguía la fusión de un orden por una sola vía","file":"tests/server/infraestructura/busqueda/test_buscador.py","line":788,"evidence":"Revisión independiente de las aserciones: puntajes RRF rehechos a mano (S2 .032266, S1 .032002, S0 .031778, S3 .031754, S4 .031010). La fusión da S2,S1,S0; solo BM25 daría S0,S1,S2; solo coseno, S2,S3,S1; k=0 daría S2,S0,S1. La prueba fija además el orden BM25 con buscar_fts."},
+{"id":"F4","status":"resolved","severity":"low","lens":"core","title":"No había evidencia de la suite completa y audit aparecía como SKIPPED","file":".mandao/cache/MDO-0001/gates/T4-2.md","line":51,"evidence":"T4-2-fullsuite.txt: '59 passed, 2 warnings in 1.21s'. Gate test: 37 passed. audit se salta por diseño del runner: T4 no cambia dependencias (el manifiesto no incluye pyproject.toml ni uv.lock)."},
+{"id":"F5","status":"open","severity":"low","lens":"ai","title":"Solo se embebe `texto`, no `seccion`: posible efecto en S-3.1 con el modelo real","file":"src/server/infraestructura/busqueda/indice.py","line":60,"evidence":"Decisión de T3, pendiente de calibrar contra EV-2/EV-3 (P5). No bloquea T4."},
+{"id":"F6","status":"resolved","severity":"low","lens":"security","title":"La pregunta nunca se interpola en el SQL; las entradas hostiles no producen errores de sintaxis FTS5","file":"src/server/infraestructura/busqueda/fts.py","line":515,"evidence":"`MATCH ?` y `LIMIT ?` con parámetros; solo pasan tokens [a-z0-9]+ citados. El nuevo filtro de Qdrant solo recibe hashes leídos de `fragmentos`, nunca texto del usuario."},
+{"id":"F7","status":"resolved","severity":"low","lens":"core","title":"El movimiento de fixtures a conftest.py no debilita test_indice.py","file":"tests/server/infraestructura/busqueda/conftest.py","line":1,"evidence":"Fixtures idénticas; las 7 pruebas de test_indice.py pasan en el gate del intento 2."},
+{"id":"F8","status":"open","severity":"low","lens":"performance","title":"_coseno_de vuelve a calcular el embedding de la pregunta","file":"src/server/infraestructura/busqueda/buscador.py","line":464,"evidence":"Se llama a embeddings.embeber([pregunta]) en _buscar_vectores y otra vez en _coseno_de. Mejora sugerida: reutilizar el vector. OPEN: no se probó MatchAny(any=[]) con `fragmentos` vacía."},
+{"id":"F9","status":"open","severity":"low","lens":"core","title":"Aviso de QdrantClient cerrado desde otro hilo en la suite completa","file":"tests/server/e2e/test_arranque_indice.py","line":1,"evidence":"PytestUnraisableExceptionWarning: 'SQLite objects created in a thread can only be used in that same thread' en QdrantClient.__del__, que salta durante test_s31_rrf_fusiona_*. ASSUMPTION: viene del cliente que abre el lifespan de la prueba e2e de T3; no es código de T4."}
+]}
+```
