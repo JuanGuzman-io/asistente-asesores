@@ -1,0 +1,1343 @@
+# Written by mandao scripts: start request, baseline, progress, approvals, session-cut estimates and the mock decision.
+progress:
+  schema_version: 1
+  spec: MDO-0001-consultar-la-base-documental-con-fuentes
+  updated_at: 2026-10-23T20:27:06.751Z
+  current: null
+  open_questions: []
+  next_step: ""
+  deferred_to_ci: []
+  red_tests:
+    - task: T1
+      files:
+        - path: tests/server/infraestructura/documentos/test_cargador.py::test_s12_marca_confidencial_se_detecta_sin_importar_mayusculas
+          sha256: missing
+          tests: []
+        - path: tests/server/infraestructura/documentos/test_cargador.py
+          sha256: f2ad3afb00e0259349bd96d8cda28699261d355d7d3acb7fc143f0debea38d63
+          tests:
+            - test_s11_los_cinco_documentos_oficiales_se_fragmentan_con_documento_y_seccion
+            - test_s11_c1_ningun_fragmento_proviene_de_informacion_restringida
+            - test_s11_cada_seccion_h2_es_un_fragmento_con_sus_subsecciones
+            - test_s11_documento_sin_h2_es_un_solo_fragmento_titulado_con_su_h1
+            - test_s11_c1_un_archivo_de_la_lista_de_excluidos_no_genera_fragmentos
+            - test_s12_documento_confidencial_por_encabezado_se_excluye_aunque_no_este_en_la_lista
+            - test_s12_el_log_nombra_el_excluido_y_no_contiene_su_contenido
+            - test_s12_marca_confidencial_se_detecta_sin_importar_mayusculas
+    - task: T2
+      files:
+        - path: tests/server/dominio/test_fuentes.py
+          sha256: 5c4ab1a4c9e9b37eea653e82f261cc41fa57b49b3ba6f733c4061867491e0948
+          tests:
+            - test_s22_dos_fragmentos_con_el_mismo_documento_y_seccion_dan_una_sola_fuente
+            - test_s22_conserva_el_orden_de_primera_aparicion
+            - test_s22_misma_seccion_en_documentos_distintos_son_fuentes_distintas
+        - path: tests/server/infraestructura/documentos/test_duplicados.py
+          sha256: 5ac1084de18d59d9dd35d6419c1b6db536227e6765cf060ae24c86e6d0df97c8
+          tests:
+            - test_s21_dos_archivos_con_el_mismo_contenido_normalizado_indexan_solo_el_primero
+            - test_s21_gana_el_primero_en_orden_alfabetico_aunque_se_cree_despues
+            - test_s21_c1_ninguna_fuente_repite_el_mismo_contenido
+            - test_s21_una_seccion_repetida_en_dos_documentos_se_indexa_una_sola_vez
+            - test_s21_secciones_parecidas_pero_distintas_se_conservan_ambas
+    - task: T3
+      files:
+        - path: tests/server/infraestructura/busqueda/test_indice.py
+          sha256: 4de28d1d75cc76a0576befea36eee76992d6df5ecc6ea79ae6b326df4afa76e9
+          tests:
+            - test_s11_indexa_los_fragmentos_oficiales_en_sqlite_y_qdrant
+            - test_s11_c1_ningun_termino_ni_punto_del_confidencial_en_el_indice
+            - test_segundo_arranque_sin_cambios_calcula_cero_embeddings
+            - test_solo_se_calculan_los_embeddings_de_los_hashes_nuevos
+            - test_cambiar_el_nombre_del_modelo_recrea_la_coleccion
+            - test_falla_sqlite_tras_upsert_qdrant_conserva_indice_anterior
+            - test_puntos_huerfanos_no_aparecen_en_busqueda
+        - path: tests/server/e2e/test_arranque_indice.py
+          sha256: 6434a7a5f0d24f91258df9d00c34cab36a3ec39096904f05672c7b5e817c60fe
+          tests:
+            - test_s11_el_arranque_deja_indexados_los_cinco_oficiales
+            - test_s11_c1_el_arranque_no_indexa_nada_del_confidencial
+            - test_la_app_abre_un_solo_qdrant_client_y_lo_cierra_al_apagar
+            - test_nfr2_segundo_arranque_sin_cambios_no_calcula_embeddings_y_tarda_menos_de_2_s
+            - test_d13_si_falla_la_conexion_sqlite_el_cliente_qdrant_se_cierra
+    - task: T4
+      files:
+        - path: tests/server/infraestructura/busqueda/conftest.py
+          sha256: 0f13766c85e95d9352626d4f998a16ccc25c8170125a0566b438330e9c52a803
+          tests: []
+        - path: tests/server/infraestructura/busqueda/test_buscador.py
+          sha256: e763adae0b9d7f6116a1222204c4a98dd7f64d2918c063433e31cf2de378858a
+          tests:
+            - test_d4_umbrales_iniciales_en_configuracion
+            - test_d4_el_buscador_implementa_el_puerto_y_devuelve_resultado_de_dominio
+            - test_s31_el_primer_fragmento_es_credito_productivo_impulso
+            - test_s31_devuelve_como_maximo_tres_fragmentos_sin_repetir
+            - test_s31_el_confidencial_nunca_aparece_en_los_resultados
+            - test_s31_rrf_conserva_el_orden_y_limita_a_tres_candidatos
+            - test_s31_umbral_alto_basta_sin_coincidencia_fts
+            - test_s31_umbral_bajo_con_coincidencia_fts_da_soporte
+            - test_s32_entre_umbrales_sin_coincidencia_fts_no_hay_soporte
+            - test_s32_bajo_el_umbral_bajo_no_hay_soporte_aunque_coincida_en_fts
+            - test_s31_la_busqueda_ignora_puntos_cuyo_hash_no_esta_en_fragmentos
+            - test_s32_pregunta_sin_respuesta_en_la_base_no_supera_el_umbral
+            - test_s81_pregunta_con_signos_da_el_mismo_resultado_que_sin_ellos
+            - test_s81_consulta_fts_cita_cada_palabra_y_quita_palabras_vacias
+            - test_s81_solo_signos_o_emojis_omiten_la_via_fts
+            - test_s81_c1_ninguna_pregunta_hostil_produce_error_de_sintaxis_fts
+            - test_s81_c1_los_operadores_fts_se_tratan_como_palabras_no_como_sintaxis
+            - test_s81_c1_la_pregunta_nunca_se_interpola_en_el_sql
+            - test_s82_sin_tildes_recupera_el_mismo_fragmento_que_con_tildes
+            - test_s82_la_via_fts_por_si_sola_ignora_tildes_y_ordena_primero_la_seccion
+            - test_s31_rrf_fusiona_ordenes_distintos_de_bm25_y_coseno
+            - test_d4_sin_candidatos_comunes_usa_el_coseno_real_del_mejor_fragmento
+            - test_d11_los_huerfanos_no_quitan_cupos_a_los_candidatos_vigentes
+    - task: T5
+      files:
+        - path: tests/server/aplicacion/test_consultar.py
+          sha256: 9e26ea4d8328c32545ffe2b11195b5afaacc7f6bb2619be775e6285d0410ffe3
+          tests:
+            - test_s101_el_mensaje_fijo_es_exactamente_el_del_pdf
+            - test_s101_sin_soporte_responde_el_mensaje_fijo_sin_fuentes_y_con_estado_sin_informacion
+            - test_s101_sin_soporte_no_llama_al_redactor
+            - test_s101_bajo_el_umbral_con_fragmentos_candidatos_no_los_cita_ni_llama_al_redactor
+            - test_s101_la_pregunta_llega_al_buscador_tal_cual
+            - test_s102_base_vacia_responde_el_mensaje_fijo_sin_excepcion
+            - test_s102_c1_base_vacia_con_soporte_declarado_sin_fragmentos_no_falla
+            - test_s103_pregunta_ajena_a_los_cuatro_temas_es_sin_informacion
+            - test_s103_c1_pregunta_ajena_nunca_queda_bloqueada_por_seguridad
+            - test_s61_con_soporte_responde_exitosa_con_la_respuesta_del_redactor
+            - test_s61_el_redactor_recibe_la_pregunta_y_los_fragmentos_recuperados
+            - test_s61_cada_fuente_trae_documento_seccion_y_fragmento
+            - test_s61_las_fuentes_se_deduplican_por_documento_y_seccion
+            - test_s61_c1_solo_los_fragmentos_declarados_usados_son_fuentes
+            - test_s61_c1_las_fuentes_siguen_el_orden_de_los_fragmentos_recuperados
+    - task: T6
+      files:
+        - path: tests/server/infraestructura/redactor/test_extractivo.py
+          sha256: 1bd52953bf2f8f565f4a80f0bc230c1cf0eee9b4d061a4d1ea5049443f81131f
+          tests:
+            - test_s_4_1_la_respuesta_extractiva_contiene_el_monto_maximo_del_documento
+            - test_s_4_1_c1_declara_usado_al_menos_un_fragmento_y_consultar_trae_fuente_exitosa
+            - test_s_5_2_la_respuesta_empieza_con_la_frase_fija
+            - test_s_5_2_trae_el_fragmento_del_credito_productivo_impulso_con_su_fuente
+            - test_s_5_2_c1_no_afirma_responder_toda_la_pregunta_ni_da_una_tasa
+            - test_cada_fragmento_va_precedido_por_documento_mayor_que_seccion
+            - test_usa_como_maximo_dos_fragmentos_de_los_tres_recibidos
+            - test_con_un_solo_fragmento_declara_solo_el_id_uno
+    - task: T8
+      files:
+        - path: tests/server/infraestructura/persistencia/test_repositorio.py
+          sha256: 78eb9c3a17c9eab1e7af96cc01a66c721122b9522813c7cabb0db5b19be6da4b
+          tests:
+            - test_esquema_crea_consultas_con_las_columnas_del_modelo_de_datos
+            - test_esquema_fija_user_version_1_indice_por_fecha_y_es_idempotente
+            - test_s111_exitosa_queda_con_los_cinco_campos_y_el_modo
+            - test_s111_sin_informacion_queda_con_fuentes_lista_vacia
+            - test_s111_la_fuente_con_tildes_se_guarda_sin_perder_texto
+            - test_s111_cada_consulta_tiene_su_propio_registro
+            - test_s111_las_fuentes_registradas_coinciden_con_las_devueltas_por_consultar
+            - test_s111_c1_sin_llamar_a_consultar_no_hay_registros
+            - test_estado_acepta_los_tres_valores_incluida_bloqueada
+            - test_modo_acepta_los_tres_valores
+            - test_modo_invalido_se_rechaza_y_no_deja_fila
+            - test_check_de_la_tabla_rechaza_estado_y_modo_fuera_de_los_valores
+            - test_request_id_es_unico
+            - test_falla_insert_consulta_no_deja_fila
+            - test_falla_despues_del_insert_hace_rollback_y_no_deja_fila_incompleta
+            - test_tras_una_falla_el_repositorio_sigue_registrando
+            - test_s112_si_el_almacenamiento_falla_consultar_propaga_el_error
+            - test_pii_registrar_no_escribe_la_pregunta_en_los_logs
+            - test_pii_la_pregunta_se_guarda_tal_cual_en_la_base_local
+            - test_pii_el_texto_se_enlaza_como_parametro_no_se_interpola_en_el_sql
+        - path: tests/server/infraestructura/redactor/test_extractivo.py
+          sha256: 220523d0947453934702191648348d8cc951dfc10f6e3284c7a2bf475628587e
+          tests:
+            - test_s_4_1_la_respuesta_extractiva_contiene_el_monto_maximo_del_documento
+            - test_s_4_1_c1_declara_usado_al_menos_un_fragmento_y_consultar_trae_fuente_exitosa
+            - test_s_5_2_la_respuesta_empieza_con_la_frase_fija
+            - test_s_5_2_trae_el_fragmento_del_credito_productivo_impulso_con_su_fuente
+            - test_s_5_2_c1_no_afirma_responder_toda_la_pregunta_ni_da_una_tasa
+            - test_cada_fragmento_va_precedido_por_documento_mayor_que_seccion
+            - test_usa_como_maximo_dos_fragmentos_de_los_tres_recibidos
+            - test_con_un_solo_fragmento_declara_solo_el_id_uno
+        - path: tests/server/aplicacion/test_consultar.py
+          sha256: 1e841216cf61a1c73089438600c4651d0e57f2ad04bc545a55b33b567c30f4f7
+          tests:
+            - test_s101_el_mensaje_fijo_es_exactamente_el_del_pdf
+            - test_s101_sin_soporte_responde_el_mensaje_fijo_sin_fuentes_y_con_estado_sin_informacion
+            - test_s101_sin_soporte_no_llama_al_redactor
+            - test_s101_bajo_el_umbral_con_fragmentos_candidatos_no_los_cita_ni_llama_al_redactor
+            - test_s101_la_pregunta_llega_al_buscador_tal_cual
+            - test_s102_base_vacia_responde_el_mensaje_fijo_sin_excepcion
+            - test_s102_c1_base_vacia_con_soporte_declarado_sin_fragmentos_no_falla
+            - test_s103_pregunta_ajena_a_los_cuatro_temas_es_sin_informacion
+            - test_s103_c1_pregunta_ajena_nunca_queda_bloqueada_por_seguridad
+            - test_s61_con_soporte_responde_exitosa_con_la_respuesta_del_redactor
+            - test_s61_el_redactor_recibe_la_pregunta_y_los_fragmentos_recuperados
+            - test_s61_cada_fuente_trae_documento_seccion_y_fragmento
+            - test_s61_las_fuentes_se_deduplican_por_documento_y_seccion
+            - test_s61_c1_solo_los_fragmentos_declarados_usados_son_fuentes
+            - test_s61_c1_las_fuentes_siguen_el_orden_de_los_fragmentos_recuperados
+            - test_s111_consultar_registra_la_exitosa_con_el_mismo_resultado_que_devuelve
+            - test_s111_consultar_registra_sin_informacion_con_modo_ninguno
+            - test_s111_consultar_usa_el_request_id_recibido_o_genera_un_uuid_v4
+            - test_s112_si_el_repositorio_falla_consultar_propaga_el_error_sin_devolver_respuesta
+            - test_d10_consultar_exige_repositorio
+    - task: T7
+      files:
+        - path: tests/server/infraestructura/redactor/test_validacion.py
+          sha256: 0cedaec4e279c1879d5f6bfde9d1aff60bd5cbdc517988efaf3e4d4c6593ebbf
+          tests:
+            - test_S_4_2_salida_valida_con_cifras_en_el_fragmento_citado_se_acepta
+            - test_S_4_2_respuesta_sin_cifras_con_ids_validos_se_acepta
+            - test_S_4_2_id_fuera_de_rango_o_no_recuperado_se_descarta
+            - test_D7_fragmentos_usados_vacio_sin_partes_sin_soporte_se_descarta
+            - test_D7_fragmentos_usados_vacio_y_respuesta_sin_datos_se_descarta_si_no_declara_partes
+            - test_AC_4_cifra_inventada_que_no_esta_en_ningun_fragmento_se_descarta
+            - test_AC_4_cifra_presente_solo_en_fragmento_no_citado_se_descarta
+            - test_AC_4_cifra_se_compara_completa_y_no_como_subcadena
+            - test_AC_4_cifra_con_separador_de_miles_y_simbolo_de_moneda_coincide
+            - test_AC_4_cifra_decimal_con_coma_del_fragmento_citado_coincide
+            - test_AC_4_cifras_de_varios_fragmentos_citados_se_aceptan
+            - test_S_5_1_el_codigo_agrega_la_frase_no_encontre_informacion_sobre_la_parte
+            - test_S_5_1_cada_parte_sin_soporte_agrega_su_frase_en_orden
+            - test_S_5_1_sin_partes_sin_soporte_no_se_agrega_ninguna_frase
+            - test_S_5_1_ninguna_parte_con_soporte_se_acepta_con_fragmentos_usados_vacio
+            - test_S_5_1_C1_declaracion_sin_soporte_con_cifra_en_la_respuesta_se_descarta
+            - test_S_5_1_C1_cifra_inventada_dentro_de_una_parte_sin_soporte_se_descarta
+            - test_S_5_1_C1_tasa_inventada_junto_a_un_monto_valido_se_descarta
+            - test_D7_respuesta_vacia_o_en_blanco_se_descarta
+            - test_D7_sin_fragmentos_recuperados_cualquier_id_es_invalido
+        - path: tests/server/infraestructura/redactor/test_gemini.py
+          sha256: e7eea94efd3b03291a618d20d4806909018a89b4046b9f7e78cb8b03acc1ddc7
+          tests:
+            - test_D7_salida_valida_se_entrega_con_modo_modelo
+            - test_D9_una_sola_llamada_al_modelo_registrado_en_el_registry
+            - test_D7_pide_json_con_esquema_estructurado
+            - test_S_5_1_parte_sin_soporte_agrega_la_frase_del_codigo_y_conserva_el_monto
+            - test_S_5_1_C1_no_da_ni_estima_una_tasa_si_el_modelo_la_inventa
+            - test_S_5_1_parcial_con_soporte_termina_exitosa_con_la_fuente_citada
+            - test_D7_ninguna_parte_con_soporte_termina_sin_informacion_suficiente_y_sin_fuentes
+            - test_S_4_2_salida_invalida_se_descarta_y_se_entrega_el_extractivo
+            - test_D9_fallo_del_modelo_o_salida_ilegible_pasa_al_extractivo_sin_propagar
+            - test_D9_sin_clave_no_se_crea_el_cliente_y_se_usa_el_extractivo
+            - test_D9_la_fabrica_recibe_la_clave_configurada
+            - test_D9_si_la_fabrica_del_cliente_falla_pasa_al_extractivo
+            - test_D9_modo_refleja_la_ultima_llamada_extractivo_y_luego_modelo
+            - test_D9_el_respaldo_queda_registrado_como_modo_extractivo_en_consultar
+            - test_D7_fragmentos_y_pregunta_viajan_en_contents_delimitados_no_en_system_instruction
+            - test_D5_una_instruccion_dentro_de_un_fragmento_no_cambia_el_comportamiento
+            - test_D5_si_el_modelo_obedece_la_instruccion_inyectada_el_guardrail_la_descarta
+            - test_D5_un_fragmento_con_etiquetas_delimitadoras_no_puede_cerrar_su_bloque
+            - test_D5_una_pregunta_con_etiquetas_delimitadoras_no_puede_cerrar_su_bloque
+            - test_D7_system_instruction_es_el_texto_de_prompt_md_v1
+            - test_D7_prompt_dice_que_los_fragmentos_son_datos_y_pide_listar_partes_sin_soporte
+            - test_D9_la_clave_y_la_pregunta_no_aparecen_en_logs_ni_en_excepciones
+            - test_D9_la_clave_no_aparece_en_logs_con_salida_valida
+    - task: T9
+      files:
+        - path: tests/server/http/test_consultar_api.py
+          sha256: 96b9b8e19f61be5fb0b8cb252b7eba8f0648aa6c3df44064636b9f6d4ca45d97
+          tests:
+            - test_s14_1_consulta_valida_responde_200_con_exactamente_respuesta_fuentes_estado
+            - test_s14_1_la_respuesta_lleva_x_request_id_uuid_v4_distinto_en_cada_peticion
+            - test_ac3_monto_maximo_del_credito_impulso_cita_el_documento_con_el_monto_que_dice
+            - test_s14_1_una_consulta_valida_queda_registrada_con_el_request_id_de_la_cabecera
+            - test_una_ruta_inexistente_o_con_metodo_no_permitido_responde_problema_con_request_id
+            - test_s7_1_cuerpo_invalido_responde_422_problema_sin_consultar_ni_registrar
+            - test_s7_2_1001_puntos_de_codigo_responde_422_con_el_limite_sin_consultar_ni_registrar
+            - test_s7_2_1001_tras_quitar_espacios_exteriores_tambien_se_rechaza
+            - test_s7_2_1001_en_nfc_enviada_en_nfd_con_mas_puntos_de_codigo_se_rechaza
+            - test_s7_2_c1_mil_puntos_de_codigo_tras_normalizar_se_procesa_con_la_pregunta_normalizada
+            - test_el_arranque_crea_la_tabla_consultas_vacia_con_wal
+            - test_acid_cada_peticion_abre_su_propia_conexion_sqlite_y_la_cierra
+            - test_dos_peticiones_concurrentes_registran_cada_una_su_propio_modo
+            - test_500_inesperado_responde_problema_sin_detalles_y_sin_la_pregunta_en_logs
+            - test_500_por_fallo_al_registrar_no_deja_pregunta_ni_resultado_en_logs
+            - test_nfr4_cada_peticion_valida_emite_una_linea_json_sin_el_texto_de_la_pregunta
+            - test_nfr4_una_peticion_rechazada_emite_su_linea_json_sin_el_texto_de_la_pregunta
+        - path: tests/server/http/test_limites.py
+          sha256: 74eb297a7ecc788152f0a2cdf9b0abe4c1bfdd6ab8c0f3b0910c5e8b34460688
+          tests:
+            - test_s9_1_cuerpo_de_16385_bytes_con_content_length_responde_413_problema
+            - test_s9_1_cuerpo_de_16385_bytes_sin_content_length_responde_413_problema
+            - test_s9_1_cuerpo_muy_superior_al_limite_sin_content_length_responde_413
+            - test_s9_1_cuerpo_de_exactamente_16384_bytes_no_se_rechaza_con_413
+            - test_s9_2_content_type_distinto_de_json_responde_415_problema
+            - test_s9_2_sin_content_type_responde_415_problema
+            - test_s9_2_application_json_con_o_sin_charset_si_se_procesa
+            - test_s11_1_c1_tras_413_415_y_422_la_tabla_consultas_no_tiene_filas_nuevas
+    - task: T10
+      files:
+        - path: tests/server/e2e/test_flujo_consulta.py
+          sha256: 4ce99fff14b03fcbdd8d8c4b3da0780044b93a1bc7cf374ee7cd5325d1ffff57
+          tests:
+            - test_s4_1_la_pregunta_del_pdf_responde_200_con_el_monto_su_fuente_y_queda_registrada
+            - test_el_confidencial_no_se_devuelve_ni_se_registra
+            - test_s10_1_una_pregunta_sin_soporte_responde_el_mensaje_fijo_y_queda_registrada
+            - test_s10_3_fuera_de_tema_no_es_bloqueada_por_seguridad
+            - test_s11_1_cada_consulta_procesada_tiene_su_registro_y_las_rechazadas_ninguno
+            - test_s5_2_sin_modelo_la_pregunta_de_monto_y_tasa_trae_el_fragmento_con_su_fuente
+        - path: tests/server/evals/test_evals.py
+          sha256: 72ba807c3bb751c99a6576b74b1ac9a16bedd4f8c7dadb9facdfe1946bea3bdf
+          tests:
+            - test_dataset_v1_cubre_los_cuatro_tipos_con_muestra_suficiente
+            - test_s3_1_la_pregunta_del_pdf_trae_primero_el_credito_productivo_impulso
+            - test_ev1_recuperacion_hit_at_3
+            - test_ev2_precision_de_sin_informacion
+            - test_ev3_falsos_sin_informacion
+            - test_ev4_fidelidad_de_las_cifras
+            - test_ev5_fuentes_completas
+        - path: tests/server/infraestructura/busqueda/test_buscador.py
+          sha256: b80aa3173523ccb90f94189589fb8e7de2076c6e5a2a506fcc7c3e29bfa189cf
+          tests:
+            - test_d4_umbrales_iniciales_en_configuracion
+            - test_d4_el_buscador_implementa_el_puerto_y_devuelve_resultado_de_dominio
+            - test_s31_el_primer_fragmento_es_credito_productivo_impulso
+            - test_s31_devuelve_como_maximo_tres_fragmentos_sin_repetir
+            - test_s31_el_confidencial_nunca_aparece_en_los_resultados
+            - test_s31_rrf_conserva_el_orden_y_limita_a_tres_candidatos
+            - test_s31_rrf_fusiona_ordenes_distintos_de_bm25_y_coseno
+            - test_d4_sin_candidatos_comunes_usa_el_coseno_real_del_mejor_fragmento
+            - test_d11_los_huerfanos_no_quitan_cupos_a_los_candidatos_vigentes
+            - test_s31_umbral_alto_basta_sin_coincidencia_fts
+            - test_s31_umbral_bajo_con_coincidencia_fts_da_soporte
+            - test_s32_entre_umbrales_sin_coincidencia_fts_no_hay_soporte
+            - test_s32_bajo_el_umbral_bajo_no_hay_soporte_aunque_coincida_en_fts
+            - test_s31_la_busqueda_ignora_puntos_cuyo_hash_no_esta_en_fragmentos
+            - test_s32_pregunta_sin_respuesta_en_la_base_no_supera_el_umbral
+            - test_s81_pregunta_con_signos_da_el_mismo_resultado_que_sin_ellos
+            - test_s81_consulta_fts_cita_cada_palabra_y_quita_palabras_vacias
+            - test_s81_solo_signos_o_emojis_omiten_la_via_fts
+            - test_s81_c1_ninguna_pregunta_hostil_produce_error_de_sintaxis_fts
+            - test_s81_c1_los_operadores_fts_se_tratan_como_palabras_no_como_sintaxis
+            - test_s81_c1_la_pregunta_nunca_se_interpola_en_el_sql
+            - test_s82_sin_tildes_recupera_el_mismo_fragmento_que_con_tildes
+            - test_s82_la_via_fts_por_si_sola_ignora_tildes_y_ordena_primero_la_seccion
+            - test_fts_encuentra_por_palabras_del_documento_y_de_la_seccion
+            - test_d4_umbrales_calibrados_en_configuracion
+        - path: tests/server/infraestructura/busqueda/test_indice.py
+          sha256: e7e790ce76e596359dafdcfed047bd1393fd9b3386c687339b6a0d07c58226eb
+          tests:
+            - test_s11_indexa_los_fragmentos_oficiales_en_sqlite_y_qdrant
+            - test_s11_c1_ningun_termino_ni_punto_del_confidencial_en_el_indice
+            - test_segundo_arranque_sin_cambios_calcula_cero_embeddings
+            - test_solo_se_calculan_los_embeddings_de_los_hashes_nuevos
+            - test_cambiar_el_nombre_del_modelo_recrea_la_coleccion
+            - test_el_texto_embebido_incluye_documento_y_seccion
+            - test_cambiar_la_version_del_formato_recrea_la_coleccion
+            - test_falla_sqlite_tras_upsert_qdrant_conserva_indice_anterior
+            - test_puntos_huerfanos_no_aparecen_en_busqueda
+            - test_renombrar_la_seccion_con_el_mismo_texto_vuelve_a_embeber
+    - task: T11
+      files:
+        - path: tests/server/aplicacion/test_respaldo.py tests/server/e2e/test_respaldo_e2e.py
+          sha256: missing
+          tests: []
+        - path: tests/server/aplicacion/test_respaldo.py
+          sha256: bd1b8882940eff706b6a4d4f8d9ca3453247bc03a072786a89ff137e5b097dec
+          tests:
+            - test_s12_1_con_el_cliente_lanzando_error_responde_exitosa_extractiva_y_registra_extractivo
+            - test_s12_1_con_el_cliente_que_agota_el_tiempo_responde_exitosa_extractiva_y_registra_extractivo
+            - test_s12_1_si_la_fabrica_del_cliente_falla_responde_extractiva_y_registra_extractivo
+            - test_s12_1_el_error_del_cliente_no_se_propaga_ni_filtra_la_clave_o_la_pregunta
+            - test_s12_2_sin_clave_no_se_llama_a_la_fabrica_y_la_respuesta_es_extractiva
+            - test_s12_2_sin_clave_la_fabrica_por_defecto_no_crea_genai_client
+            - test_d9_la_fabrica_por_defecto_usa_httpoptions_timeout_5000_y_sin_retry_options
+            - test_d9_el_cliente_real_creado_por_la_fabrica_queda_con_timeout_5000_y_sin_reintentos
+            - test_s12_1_el_modo_registrado_sigue_a_cada_consulta_modelo_y_luego_extractivo
+        - path: tests/server/e2e/test_respaldo_e2e.py
+          sha256: 957b573ffe856dde4b87a9912c0863c2f7d93d08c3b959f8ac64dd3dafa972ff
+          tests:
+            - test_s12_1_con_gemini_caido_responde_200_extractiva_con_fuentes_y_registra_extractivo
+            - test_s12_1_dos_consultas_con_gemini_caido_registran_extractivo_las_dos_veces
+            - test_s12_2_crear_app_sin_gemini_api_key_no_crea_el_cliente_y_responde_extractiva
+            - test_s12_1_modelo_y_luego_gemini_caido_registra_modelo_y_luego_extractivo
+    - task: T12
+      files:
+        - path: tests/server/http/test_errores.py
+          sha256: 3ddcc4942e2830562baefb4cf582bc0b9d1ba8f8f11e1633ba0863d67f46ee61
+          tests:
+            - test_s13_1_la_busqueda_que_lanza_responde_500_problem_json_con_request_id_y_detail_generico
+            - test_s13_1_c1_el_cuerpo_del_500_no_lleva_trazas_rutas_sql_ni_la_pregunta
+            - test_s11_2_si_falla_el_insert_de_consultas_responde_el_mismo_500_generico
+            - test_nfr4_el_log_del_500_lleva_request_id_y_tipo_de_error_sin_pregunta_ni_mensaje
+    - task: T13
+      files:
+        - path: tests/server/infraestructura/redactor/test_gemini.py
+          sha256: f6f03254ce68db919036ee28799d480172b474e30f8eeb00c3c5d1467c942711
+          tests:
+            - test_D7_salida_valida_se_entrega_con_modo_modelo
+            - test_D9_una_sola_llamada_al_modelo_registrado_en_el_registry
+            - test_D7_pide_json_con_esquema_estructurado
+            - test_S_5_1_parte_sin_soporte_agrega_la_frase_del_codigo_y_conserva_el_monto
+            - test_S_5_1_C1_no_da_ni_estima_una_tasa_si_el_modelo_la_inventa
+            - test_S_5_1_parcial_con_soporte_termina_exitosa_con_la_fuente_citada
+            - test_D7_ninguna_parte_con_soporte_termina_sin_informacion_suficiente_y_sin_fuentes
+            - test_S_4_2_salida_invalida_se_descarta_y_se_entrega_el_extractivo
+            - test_D9_fallo_del_modelo_o_salida_ilegible_pasa_al_extractivo_sin_propagar
+            - test_D9_sin_clave_no_se_crea_el_cliente_y_se_usa_el_extractivo
+            - test_D9_la_fabrica_recibe_la_clave_configurada
+            - test_D9_si_la_fabrica_del_cliente_falla_pasa_al_extractivo
+            - test_D9_modo_refleja_la_ultima_llamada_extractivo_y_luego_modelo
+            - test_D9_el_respaldo_queda_registrado_como_modo_extractivo_en_consultar
+            - test_D7_fragmentos_y_pregunta_viajan_en_contents_delimitados_no_en_system_instruction
+            - test_D5_una_instruccion_dentro_de_un_fragmento_no_cambia_el_comportamiento
+            - test_D5_si_el_modelo_obedece_la_instruccion_inyectada_el_guardrail_la_descarta
+            - test_D5_un_fragmento_con_etiquetas_delimitadoras_no_puede_cerrar_su_bloque
+            - test_D5_una_pregunta_con_etiquetas_delimitadoras_no_puede_cerrar_su_bloque
+            - test_D7_system_instruction_es_el_texto_de_prompt_md_v1
+            - test_D7_prompt_dice_que_los_fragmentos_son_datos_y_pide_listar_partes_sin_soporte
+            - test_D9_la_clave_y_la_pregunta_no_aparecen_en_logs_ni_en_excepciones
+            - test_D9_la_clave_no_aparece_en_logs_con_salida_valida
+            - test_T13_D9_fabrica_por_defecto_arma_http_options_con_corte_local_y_plazo_de_servidor
+    - task: T14
+      files:
+        - path: tests/server/infraestructura/redactor/test_gemini.py
+          sha256: 77e5cba0c7a09855107d17fda0690fd95cc6a30cdecaa4117618bb8acb9369a0
+          tests:
+            - test_D7_salida_valida_se_entrega_con_modo_modelo
+            - test_D9_una_sola_llamada_al_modelo_registrado_en_el_registry
+            - test_D7_pide_json_con_esquema_estructurado
+            - test_S_5_1_parte_sin_soporte_agrega_la_frase_del_codigo_y_conserva_el_monto
+            - test_S_5_1_C1_no_da_ni_estima_una_tasa_si_el_modelo_la_inventa
+            - test_S_5_1_parcial_con_soporte_termina_exitosa_con_la_fuente_citada
+            - test_D7_ninguna_parte_con_soporte_termina_sin_informacion_suficiente_y_sin_fuentes
+            - test_S_4_2_salida_invalida_se_descarta_y_se_entrega_el_extractivo
+            - test_D9_fallo_del_modelo_o_salida_ilegible_pasa_al_extractivo_sin_propagar
+            - test_D9_sin_clave_no_se_crea_el_cliente_y_se_usa_el_extractivo
+            - test_D9_la_fabrica_recibe_la_clave_configurada
+            - test_D9_si_la_fabrica_del_cliente_falla_pasa_al_extractivo
+            - test_D9_modo_refleja_la_ultima_llamada_extractivo_y_luego_modelo
+            - test_D9_el_respaldo_queda_registrado_como_modo_extractivo_en_consultar
+            - test_D7_fragmentos_y_pregunta_viajan_en_contents_delimitados_no_en_system_instruction
+            - test_D5_una_instruccion_dentro_de_un_fragmento_no_cambia_el_comportamiento
+            - test_D5_si_el_modelo_obedece_la_instruccion_inyectada_el_guardrail_la_descarta
+            - test_D5_un_fragmento_con_etiquetas_delimitadoras_no_puede_cerrar_su_bloque
+            - test_D5_una_pregunta_con_etiquetas_delimitadoras_no_puede_cerrar_su_bloque
+            - test_D7_system_instruction_es_el_texto_de_prompt_md_v1
+            - test_D7_prompt_dice_que_los_fragmentos_son_datos_y_pide_listar_partes_sin_soporte
+            - test_D9_la_clave_y_la_pregunta_no_aparecen_en_logs_ni_en_excepciones
+            - test_D9_la_clave_no_aparece_en_logs_con_salida_valida
+            - test_T13_D9_fabrica_por_defecto_arma_http_options_con_corte_local_y_plazo_de_servidor
+            - test_T14_D7_cada_fragmento_lleva_documento_y_seccion_dentro_de_su_etiqueta
+            - test_T14_D5_etiquetas_en_documento_y_seccion_se_neutralizan_como_las_del_texto
+            - test_T14_S_4_1_respuesta_validada_cita_solo_el_fragmento_del_credito_preguntado
+            - test_T14_S_4_1_cifra_solo_del_otro_fragmento_sin_citarlo_se_descarta_al_extractivo
+            - test_T14_S_4_1_en_consultar_solo_la_fuente_del_credito_preguntado
+    - task: T15
+      files:
+        - path: tests/server/http/test_consultar_api.py
+          sha256: 4d0941049cde724f008b58d06edc6fa951a1d88a90b83b72a9dd3e8be3189102
+          tests:
+            - test_s14_1_consulta_valida_responde_200_con_exactamente_respuesta_fuentes_estado
+            - test_s14_1_la_respuesta_lleva_x_request_id_uuid_v4_distinto_en_cada_peticion
+            - test_ac3_monto_maximo_del_credito_impulso_cita_el_documento_con_el_monto_que_dice
+            - test_s14_1_una_consulta_valida_queda_registrada_con_el_request_id_de_la_cabecera
+            - test_una_ruta_inexistente_o_con_metodo_no_permitido_responde_problema_con_request_id
+            - test_s7_1_cuerpo_invalido_responde_422_problema_sin_consultar_ni_registrar
+            - test_s7_2_1001_puntos_de_codigo_responde_422_con_el_limite_sin_consultar_ni_registrar
+            - test_s7_2_1001_tras_quitar_espacios_exteriores_tambien_se_rechaza
+            - test_s7_2_1001_en_nfc_enviada_en_nfd_con_mas_puntos_de_codigo_se_rechaza
+            - test_s7_2_c1_mil_puntos_de_codigo_tras_normalizar_se_procesa_con_la_pregunta_normalizada
+            - test_el_arranque_crea_la_tabla_consultas_vacia_con_wal
+            - test_acid_cada_peticion_abre_su_propia_conexion_sqlite_y_la_cierra
+            - test_dos_peticiones_concurrentes_registran_cada_una_su_propio_modo
+            - test_500_inesperado_responde_problema_sin_detalles_y_sin_la_pregunta_en_logs
+            - test_500_por_fallo_al_registrar_no_deja_pregunta_ni_resultado_en_logs
+            - test_nfr4_cada_peticion_valida_emite_una_linea_json_sin_el_texto_de_la_pregunta
+            - test_nfr4_una_peticion_rechazada_emite_su_linea_json_sin_el_texto_de_la_pregunta
+            - test_s12_1_cinco_consultas_con_modelo_no_se_serializan_y_cada_una_registra_su_modo
+            - test_s14_1_con_mas_consultas_que_el_limite_nunca_hay_mas_en_vuelo_que_el_limite
+            - test_la_variable_gemini_max_concurrencia_fija_el_limite_cuando_no_se_pasa_parametro
+            - test_s12_1_un_429_del_api_responde_200_extractivo_y_el_log_lleva_el_429_sin_contenido
+    - task: T16
+      files:
+        - path: tests/server/infraestructura/redactor/test_proveedores.py
+          sha256: 945936304da5e5d40662b1dfdcc98552eae8f080941b2c4a81418aa800e0e8b0
+          tests:
+            - test_gemini_esta_registrado_en_proveedores
+            - test_s12_3_sin_proveedor_elegido_es_extractivo_aunque_haya_clave
+            - test_s12_3_proveedor_gemini_con_clave_es_gemini_sin_crear_el_cliente
+            - test_s12_2_proveedor_gemini_sin_clave_es_extractivo
+            - test_un_proveedor_desconocido_es_value_error_que_nombra_la_variable_y_no_filtra_la_clave
+        - path: tests/server/http/test_consultar_api.py::test_s12_3_con_clave_pero_sin_llm_provider_responde_extractivo_y_no_crea_el_cliente
+          sha256: missing
+          tests: []
+        - path: tests/server/http/test_consultar_api.py::test_s12_3_un_llm_provider_desconocido_detiene_crear_app
+          sha256: missing
+          tests: []
+        - path: tests/server/http/test_consultar_api.py::test_s12_1_sin_cupo_tras_la_espera_acotada_responde_extractivo_sin_esperar_al_modelo
+          sha256: missing
+          tests: []
+        - path: tests/server/infraestructura/busqueda/test_fts.py
+          sha256: e24ae42b83abc75503f577e2350eb2eb99b973a317ccb2a242b2dd9c1a486f79
+          tests:
+            - test_s33_singular_plural_y_sin_tilde_comparten_raiz
+            - test_s33_la_normalizacion_quita_palabras_vacias_y_signos
+            - test_s33_con_fts_sobre_data_la_pregunta_del_pe_encuentra_credito_productivo_impulso
+        - path: tests/server/infraestructura/redactor/test_extractivo.py
+          sha256: 814ad8d750f2ab30a55dc4506b8b2a00fc4e3a664496672e4afaeca4c1db76df
+          tests:
+            - test_s_4_1_la_respuesta_extractiva_contiene_el_monto_maximo_del_documento
+            - test_s_4_1_c1_declara_usado_al_menos_un_fragmento_y_consultar_trae_fuente_exitosa
+            - test_s_5_2_la_respuesta_empieza_con_la_frase_fija
+            - test_s_5_2_trae_el_fragmento_del_credito_productivo_impulso_con_su_fuente
+            - test_s_5_2_c1_no_afirma_responder_toda_la_pregunta_ni_da_una_tasa
+            - test_cada_fragmento_va_precedido_por_documento_mayor_que_seccion
+            - test_usa_como_maximo_dos_fragmentos_de_los_tres_recibidos
+            - test_con_un_solo_fragmento_declara_solo_el_id_uno
+            - test_s_6_2_con_puntaje_079_del_mejor_solo_muestra_y_cita_el_primero
+            - test_s_6_2_c1_el_fragmento_filtrado_no_aparece_ni_su_encabezado
+            - test_s_6_2_con_puntaje_080_del_mejor_muestra_los_dos
+            - test_s_6_2_sin_puntaje_no_filtra
+            - test_s_6_2_los_ids_son_las_posiciones_en_la_lista_original
+    - task: T17
+      files:
+        - path: tests/server/http/test_consultar_api.py::test_s7_1_el_422_responde_el_mensaje_fijo_exacto_de_su_causa
+          sha256: missing
+          tests: []
+        - path: tests/server/http/test_consultar_api.py::test_s7_1_c2_el_detail_del_422_no_lleva_texto_de_pydantic
+          sha256: missing
+          tests: []
+        - path: tests/server/http/test_consultar_api.py::test_s7_1_c2_el_detail_del_422_no_repite_el_texto_enviado
+          sha256: missing
+          tests: []
+        - path: tests/server/http/test_consultar_api.py::test_s7_2_1001_puntos_de_codigo_responde_422_con_el_limite_sin_consultar_ni_registrar
+          sha256: missing
+          tests: []
+        - path: tests/server/http/test_consultar_api.py
+          sha256: 9cdbd5eca7234c3367be987607df96f2e8eeab7311f6eb3bdad4e14095467bbc
+          tests:
+            - test_s14_1_consulta_valida_responde_200_con_exactamente_respuesta_fuentes_estado
+            - test_s14_1_la_respuesta_lleva_x_request_id_uuid_v4_distinto_en_cada_peticion
+            - test_ac3_monto_maximo_del_credito_impulso_cita_el_documento_con_el_monto_que_dice
+            - test_s14_1_una_consulta_valida_queda_registrada_con_el_request_id_de_la_cabecera
+            - test_una_ruta_inexistente_o_con_metodo_no_permitido_responde_problema_con_request_id
+            - test_s7_1_cuerpo_invalido_responde_422_problema_sin_consultar_ni_registrar
+            - test_s7_1_el_422_responde_el_mensaje_fijo_exacto_de_su_causa
+            - test_s7_1_c2_el_detail_del_422_no_lleva_texto_de_pydantic
+            - test_s7_1_c2_el_detail_del_422_no_repite_el_texto_enviado
+            - test_s7_2_1001_puntos_de_codigo_responde_422_con_el_limite_sin_consultar_ni_registrar
+            - test_s7_2_1001_tras_quitar_espacios_exteriores_tambien_se_rechaza
+            - test_s7_2_1001_en_nfc_enviada_en_nfd_con_mas_puntos_de_codigo_se_rechaza
+            - test_s7_2_c1_mil_puntos_de_codigo_tras_normalizar_se_procesa_con_la_pregunta_normalizada
+            - test_el_arranque_crea_la_tabla_consultas_vacia_con_wal
+            - test_acid_cada_peticion_abre_su_propia_conexion_sqlite_y_la_cierra
+            - test_dos_peticiones_concurrentes_registran_cada_una_su_propio_modo
+            - test_500_inesperado_responde_problema_sin_detalles_y_sin_la_pregunta_en_logs
+            - test_500_por_fallo_al_registrar_no_deja_pregunta_ni_resultado_en_logs
+            - test_nfr4_cada_peticion_valida_emite_una_linea_json_sin_el_texto_de_la_pregunta
+            - test_nfr4_una_peticion_rechazada_emite_su_linea_json_sin_el_texto_de_la_pregunta
+            - test_s12_1_cinco_consultas_con_modelo_no_se_serializan_y_cada_una_registra_su_modo
+            - test_s12_1_con_mas_consultas_que_el_limite_nunca_hay_mas_en_vuelo_que_el_limite
+            - test_la_variable_gemini_max_concurrencia_fija_el_limite_cuando_no_se_pasa_parametro
+            - test_s12_1_un_429_del_api_responde_200_extractivo_y_el_log_lleva_el_429_sin_contenido
+  pending_commits: []
+  approved_manifests:
+    - task: T1
+      attempt: 1
+      files:
+        - path: src/server/AGENTS.md
+          status: " M"
+          sha256: f151f76fdc1852555f328181e9ed6d66c2e5d41098545f7cb31077a906d29b28
+        - path: src/server/infraestructura/documentos/cargador.py
+          status: " M"
+          sha256: fbbeeb9b75e6ba55edfd8b68052fd460b3a531224ad93057c9d63b4721bbd685
+        - path: tests/server/infraestructura/documentos/test_cargador.py
+          status: " M"
+          sha256: f2ad3afb00e0259349bd96d8cda28699261d355d7d3acb7fc143f0debea38d63
+      reviewed:
+        - src/server/AGENTS.md
+        - src/server/infraestructura/documentos/cargador.py
+        - tests/server/infraestructura/documentos/test_cargador.py
+      receipts: []
+    - task: T2
+      attempt: 1
+      files:
+        - path: src/server/AGENTS.md
+          status: " M"
+          sha256: df4ae26c1354c663b4d10e1fb24653a9cb30a3088dbc94831c3b7097d3701eee
+        - path: src/server/dominio/modelos.py
+          status: " M"
+          sha256: a22cb4e4e4a830f0cef5c3789cd7742e76c978492ff7fae29586d6c35c2a1c68
+        - path: src/server/dominio/reglas.py
+          status: ??
+          sha256: ea93af1d4957eb9a9337a9745ecb9088b55e7f01c90b4c6adbcdfb2c679927e7
+        - path: src/server/infraestructura/documentos/cargador.py
+          status: " M"
+          sha256: 4705a9a9afba8b58c55105cf6177d7345b6075815d6222e7dc6e8c14844293b1
+        - path: tests/server/dominio/test_fuentes.py
+          status: ??
+          sha256: 45d6a98bb2d9592efe505b765700aba65819f186745ef980e9b1338b198aba82
+        - path: tests/server/infraestructura/documentos/test_duplicados.py
+          status: ??
+          sha256: 5ac1084de18d59d9dd35d6419c1b6db536227e6765cf060ae24c86e6d0df97c8
+      reviewed:
+        - src/server/AGENTS.md
+        - src/server/dominio/modelos.py
+        - src/server/infraestructura/documentos/cargador.py
+        - src/server/dominio/reglas.py
+        - tests/server/dominio/test_fuentes.py
+        - tests/server/infraestructura/documentos/test_duplicados.py
+      receipts: []
+    - task: T3
+      attempt: 2
+      files:
+        - path: pyproject.toml
+          status: " M"
+          sha256: 7e0bfe7ea49ac4411f9710243aadb37b282fc5490019a0ae11706f8819ab3594
+        - path: src/server/AGENTS.md
+          status: " M"
+          sha256: e135c4578ccb6c89e15758e544f93267fa891b3d502409400e2d1e9c8435039f
+        - path: src/server/config.py
+          status: " M"
+          sha256: a9bf7a226eef34d57a76a70a79819a17c6629d6d26bfc4a3ae6dea71fa6bb6b7
+        - path: src/server/http/__init__.py
+          status: ??
+          sha256: e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855
+        - path: src/server/http/app.py
+          status: ??
+          sha256: 2b75abe5466506238c411445210c10d515068f71fff8e2f74115b7b618b1bc44
+        - path: src/server/infraestructura/busqueda/__init__.py
+          status: ??
+          sha256: e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855
+        - path: src/server/infraestructura/busqueda/embeddings.py
+          status: ??
+          sha256: 9aa6700ca3a107ba2b5a56cbeabd82fd4046de437f543b09cb6c9c8ff779f1a5
+        - path: src/server/infraestructura/busqueda/esquema.py
+          status: ??
+          sha256: 86d46b81044f8171948592213b6b7a4d748a28206e2e1e0caab9c32ac983a142
+        - path: src/server/infraestructura/busqueda/indice.py
+          status: ??
+          sha256: 30739732bff4af5a216e28293d851c9a86ab701cf756ffe846f4ccf3b93c6b0b
+        - path: src/server/infraestructura/documentos/cargador.py
+          status: " M"
+          sha256: 8c2a0cea9bc1e9b1ae409d29a9033a20875663f7bbb8231da3a587d7cbc6b38a
+        - path: tests/server/e2e/test_arranque_indice.py
+          status: ??
+          sha256: 6434a7a5f0d24f91258df9d00c34cab36a3ec39096904f05672c7b5e817c60fe
+        - path: tests/server/infraestructura/busqueda/test_indice.py
+          status: ??
+          sha256: 4de28d1d75cc76a0576befea36eee76992d6df5ecc6ea79ae6b326df4afa76e9
+        - path: uv.lock
+          status: " M"
+          sha256: f903021d2bca4e52151b524c97a34d23ea225028ec3e81463e930252f31852ce
+      reviewed:
+        - pyproject.toml
+        - src/server/AGENTS.md
+        - src/server/config.py
+        - src/server/infraestructura/documentos/cargador.py
+        - uv.lock
+        - src/server/http/__init__.py
+        - src/server/http/app.py
+        - src/server/infraestructura/busqueda/__init__.py
+        - src/server/infraestructura/busqueda/embeddings.py
+        - src/server/infraestructura/busqueda/esquema.py
+        - src/server/infraestructura/busqueda/indice.py
+        - tests/server/e2e/test_arranque_indice.py
+        - tests/server/infraestructura/busqueda/test_indice.py
+      receipts: []
+    - task: T4
+      attempt: 2
+      files:
+        - path: src/server/AGENTS.md
+          status: " M"
+          sha256: d45a10b6f1d5d7409078e83af2997aa2080541dbb5f6bc420f0d7ed9b927aac8
+        - path: src/server/config.py
+          status: " M"
+          sha256: beea5cc745a82061899a3f9e0f978a62bff49dafb4578ad91b7b5145512cb6bb
+        - path: src/server/dominio/puertos.py
+          status: ??
+          sha256: 3b568790294e061203ee361736fe3602669da652835d811d4a28bc481315f124
+        - path: src/server/infraestructura/busqueda/buscador.py
+          status: ??
+          sha256: 73315b5c33996bdcb75043fc18657a1b3b5b3662d0acfee50ab5d10a092957f9
+        - path: src/server/infraestructura/busqueda/fts.py
+          status: ??
+          sha256: 51c73afd57564422442a83f4f671c5109dfe6c93be7759032bf7a725b3c7eec1
+        - path: tests/server/infraestructura/busqueda/conftest.py
+          status: ??
+          sha256: 0f13766c85e95d9352626d4f998a16ccc25c8170125a0566b438330e9c52a803
+        - path: tests/server/infraestructura/busqueda/test_buscador.py
+          status: ??
+          sha256: e763adae0b9d7f6116a1222204c4a98dd7f64d2918c063433e31cf2de378858a
+        - path: tests/server/infraestructura/busqueda/test_indice.py
+          status: " M"
+          sha256: 1008362f06c357e83d886ba8089a3e74eef692ba10c7371e4e2b482034d25ffd
+      reviewed:
+        - src/server/AGENTS.md
+        - src/server/config.py
+        - tests/server/infraestructura/busqueda/test_indice.py
+        - src/server/dominio/puertos.py
+        - src/server/infraestructura/busqueda/buscador.py
+        - src/server/infraestructura/busqueda/fts.py
+        - tests/server/infraestructura/busqueda/conftest.py
+        - tests/server/infraestructura/busqueda/test_buscador.py
+      receipts: []
+    - task: T5
+      attempt: 1
+      files:
+        - path: src/server/AGENTS.md
+          status: " M"
+          sha256: b91b401a78c88f23ad85a0f86f33db8c462ef075cbfb7452c8a0081215bac113
+        - path: src/server/aplicacion/__init__.py
+          status: ??
+          sha256: e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855
+        - path: src/server/aplicacion/consultar.py
+          status: ??
+          sha256: 20877f2b2da3d1e41cb635c8962708ab19defd51f12650aa8bf0a67986af0071
+        - path: src/server/dominio/estados.py
+          status: ??
+          sha256: ffe54bde6e14ab178609e1542856af4c369be0306db168e04b43419bde2dc2a3
+        - path: src/server/dominio/modelos.py
+          status: " M"
+          sha256: 7feea807e0f0dffc58b88af6e4512cbe2cdfb9550b4d65f0a7fefd47c3a9c38c
+        - path: src/server/dominio/puertos.py
+          status: " M"
+          sha256: 4e715e99dfdbf73a0c8219ee2093b7a31300a3203c4de4b71fa4fc9eec435c41
+        - path: src/server/dominio/reglas.py
+          status: " M"
+          sha256: 96262e4ccfcdd9f88b58262c00e59e5fa2c250d98be6a26d015e5de1cc3d8476
+        - path: tests/server/aplicacion/test_consultar.py
+          status: ??
+          sha256: 02df7ee1f4e5ebeeb8a661dcf12f9d58145ae3f6235027795305a6a2f527af5a
+      reviewed:
+        - src/server/AGENTS.md
+        - src/server/dominio/modelos.py
+        - src/server/dominio/puertos.py
+        - src/server/dominio/reglas.py
+        - src/server/aplicacion/__init__.py
+        - src/server/aplicacion/consultar.py
+        - src/server/dominio/estados.py
+        - tests/server/aplicacion/test_consultar.py
+      receipts: []
+    - task: T6
+      attempt: 1
+      files:
+        - path: src/server/AGENTS.md
+          status: " M"
+          sha256: 6440048dd01f07eb86bf5514af1114ded87968ffbcaf645aaea6c210aeed1ee6
+        - path: src/server/infraestructura/redactor/__init__.py
+          status: ??
+          sha256: e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855
+        - path: src/server/infraestructura/redactor/extractivo.py
+          status: ??
+          sha256: 0cf8e11ae63b2e4ca0bf4aeff8f5009967eaf1798fbcba34960f71045cee3073
+        - path: tests/server/infraestructura/redactor/test_extractivo.py
+          status: ??
+          sha256: 8d585ef5452e113f1dc0ec0c5cdc9046b175846f9c702747207f39ba6d61d084
+      reviewed:
+        - src/server/AGENTS.md
+        - src/server/infraestructura/redactor/__init__.py
+        - src/server/infraestructura/redactor/extractivo.py
+        - tests/server/infraestructura/redactor/test_extractivo.py
+      receipts: []
+    - task: T8
+      attempt: 2
+      files:
+        - path: src/server/AGENTS.md
+          status: " M"
+          sha256: bb2f91f4be8ed1826ec866311d819f7374ab1dd78a3f5cd69f4ca5c987104970
+        - path: src/server/aplicacion/consultar.py
+          status: " M"
+          sha256: 5d974c6b08e87facd67e52234c13b6298c8b21e11d0a2d0ccc48f12bb2ddc869
+        - path: src/server/dominio/puertos.py
+          status: " M"
+          sha256: 3a989f9e7e3199306f4032f4a0095b911fd7bfefe6f2b9a577e45efd639ad370
+        - path: src/server/infraestructura/persistencia/__init__.py
+          status: ??
+          sha256: e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855
+        - path: src/server/infraestructura/persistencia/esquema.py
+          status: ??
+          sha256: 685cd7ca13cf394b2fd4f112b49885c1b4b992439beeccb07c8569c22ef7ce46
+        - path: src/server/infraestructura/persistencia/repositorio.py
+          status: ??
+          sha256: 8cc30fbf7290568a3d5e2285080848a639b24e12162f473f35e7d05147044547
+        - path: src/server/infraestructura/redactor/extractivo.py
+          status: " M"
+          sha256: 0950dfb94ee733cc28a4436b2b4190104252c25d6f8b07983bd462cc84160208
+        - path: tests/server/aplicacion/test_consultar.py
+          status: " M"
+          sha256: 1e841216cf61a1c73089438600c4651d0e57f2ad04bc545a55b33b567c30f4f7
+        - path: tests/server/infraestructura/persistencia/test_repositorio.py
+          status: ??
+          sha256: 2b27795c5b9e48ab76cf4d22c1cf8f875afb72250d219691856929d4326fd318
+        - path: tests/server/infraestructura/redactor/test_extractivo.py
+          status: " M"
+          sha256: 220523d0947453934702191648348d8cc951dfc10f6e3284c7a2bf475628587e
+      reviewed:
+        - src/server/AGENTS.md
+        - src/server/aplicacion/consultar.py
+        - src/server/dominio/puertos.py
+        - src/server/infraestructura/redactor/extractivo.py
+        - tests/server/aplicacion/test_consultar.py
+        - tests/server/infraestructura/redactor/test_extractivo.py
+        - src/server/infraestructura/persistencia/__init__.py
+        - src/server/infraestructura/persistencia/esquema.py
+        - src/server/infraestructura/persistencia/repositorio.py
+        - tests/server/infraestructura/persistencia/test_repositorio.py
+      receipts: []
+    - task: T7
+      attempt: 1
+      files:
+        - path: pyproject.toml
+          status: " M"
+          sha256: 03375ef048c825759023767db97e243b86e6db2dff56b3ff7007049e3636cb57
+        - path: src/server/AGENTS.md
+          status: " M"
+          sha256: a0957074f945c2ad35883f1d45d0a9476b636d16fe1276b50e926a00e6560b33
+        - path: src/server/aplicacion/consultar.py
+          status: " M"
+          sha256: 1ba248ab0b0d0a35bd5570c91ec357e1677cb178b93a2703bb9aea3e31496954
+        - path: src/server/infraestructura/redactor/gemini.py
+          status: ??
+          sha256: 8efa71d57132517598785e658d3346ab542c2bf6e46bc4b064c1d3c839133465
+        - path: src/server/infraestructura/redactor/prompt.md
+          status: ??
+          sha256: ee7b80300575c9a5f89f5b345c940182995adec6eeb8978fb5f380c8fcebbf9b
+        - path: src/server/infraestructura/redactor/validacion.py
+          status: ??
+          sha256: 74b181fc52f7715fc396dfd898542c8f8318ace357680ea369bd008d9d0cecb6
+        - path: tests/server/infraestructura/redactor/test_gemini.py
+          status: ??
+          sha256: f2c8827be0cba279e2a76219408e848c5a709321ff26a03620d9fa08315e527f
+        - path: tests/server/infraestructura/redactor/test_validacion.py
+          status: ??
+          sha256: ea83108feb68aba442db557b5501dc438357af5b9f9e7728f12d795ceda329dc
+        - path: uv.lock
+          status: " M"
+          sha256: 9d310442d649718c0b53fedf8101f3ef21e5c97573d8e70936e7a05d66d0bcb9
+      reviewed:
+        - pyproject.toml
+        - src/server/AGENTS.md
+        - src/server/aplicacion/consultar.py
+        - uv.lock
+        - src/server/infraestructura/redactor/gemini.py
+        - src/server/infraestructura/redactor/prompt.md
+        - src/server/infraestructura/redactor/validacion.py
+        - tests/server/infraestructura/redactor/test_gemini.py
+        - tests/server/infraestructura/redactor/test_validacion.py
+      receipts: []
+    - task: T9
+      attempt: 1
+      files:
+        - path: src/server/AGENTS.md
+          status: " M"
+          sha256: 14cacf25c993a0d0265d21b91cf4d91a97424caba19909aecce3ae70d4dd74d1
+        - path: src/server/http/app.py
+          status: " M"
+          sha256: 46595291975f1e41227d585124e9e189b4e991d2d2fdbd39f922c1d90a793c95
+        - path: src/server/http/esquemas.py
+          status: ??
+          sha256: 11eb30e8e43abeb7e287dd250e1ae6c8e135dbe4766a2da497f4de7f4389e124
+        - path: src/server/http/logs.py
+          status: ??
+          sha256: c8666a3b5f0ebd94c5805af2d8fb3f6956526ec7c6c2dcbfcbe9839d70afcabb
+        - path: src/server/http/middleware.py
+          status: ??
+          sha256: f7b30d359f25f76d8cec4fc2fea83925f3abb4f2ca020bbff2d123a90cdf812a
+        - path: src/server/http/problemas.py
+          status: ??
+          sha256: 37cccab341493f451a719dac7aa005b7da10e7baf241ebc03ad9bbda6240bd30
+        - path: src/server/http/rutas.py
+          status: ??
+          sha256: bf188478a25a859821185dd8a53b559d272b79497120b2bcb8a8300dcb79fe7f
+        - path: tests/server/http/conftest.py
+          status: ??
+          sha256: 15148292117828b9199a01a637063601c7c1192779cb627fd3c5992607733658
+        - path: tests/server/http/test_consultar_api.py
+          status: ??
+          sha256: 96b9b8e19f61be5fb0b8cb252b7eba8f0648aa6c3df44064636b9f6d4ca45d97
+        - path: tests/server/http/test_limites.py
+          status: ??
+          sha256: 74eb297a7ecc788152f0a2cdf9b0abe4c1bfdd6ab8c0f3b0910c5e8b34460688
+      reviewed:
+        - src/server/AGENTS.md
+        - src/server/http/app.py
+        - src/server/http/esquemas.py
+        - src/server/http/logs.py
+        - src/server/http/middleware.py
+        - src/server/http/problemas.py
+        - src/server/http/rutas.py
+        - tests/server/http/conftest.py
+        - tests/server/http/test_consultar_api.py
+        - tests/server/http/test_limites.py
+      receipts: []
+    - task: T10
+      attempt: 2
+      files:
+        - path: pyproject.toml
+          status: " M"
+          sha256: 13dfa6ab97f558c6777e429649d64f7bded6c0a23739dac1e3139829e004e48b
+        - path: src/server/AGENTS.md
+          status: " M"
+          sha256: a74e0d6ed65453fb0b7de7a7e848f0d717fc04b8683c3757db10aa0d07e71305
+        - path: src/server/config.py
+          status: " M"
+          sha256: c33ca1abcf098248ec3b7c06ba0e9664013e66137a7c017194a3d1904198cdab
+        - path: src/server/infraestructura/busqueda/indice.py
+          status: " M"
+          sha256: 0a62d57d3c1ee69e845702438671624ee1c42ade641925e959ef58ebb00dad9e
+        - path: tests/fixtures/consultas.json
+          status: ??
+          sha256: 243af29d871454bf48cfd1c7f36112089e25032b92dee31a8436c923a43cb870
+        - path: tests/server/e2e/test_flujo_consulta.py
+          status: ??
+          sha256: dd03df06d0273961f132c6409039c830c2c0e807b1e25469cff57ec9de9ead17
+        - path: tests/server/evals/test_evals.py
+          status: ??
+          sha256: 72ba807c3bb751c99a6576b74b1ac9a16bedd4f8c7dadb9facdfe1946bea3bdf
+        - path: tests/server/http/test_consultar_api.py
+          status: " M"
+          sha256: 27c1eba993dff4b0f858cbb2bc660170e564c16abdcfe2ce968e997bb6241148
+        - path: tests/server/infraestructura/busqueda/test_buscador.py
+          status: " M"
+          sha256: b80aa3173523ccb90f94189589fb8e7de2076c6e5a2a506fcc7c3e29bfa189cf
+        - path: tests/server/infraestructura/busqueda/test_indice.py
+          status: " M"
+          sha256: e7e790ce76e596359dafdcfed047bd1393fd9b3386c687339b6a0d07c58226eb
+      reviewed:
+        - pyproject.toml
+        - src/server/AGENTS.md
+        - src/server/config.py
+        - src/server/infraestructura/busqueda/indice.py
+        - tests/server/http/test_consultar_api.py
+        - tests/server/infraestructura/busqueda/test_buscador.py
+        - tests/server/infraestructura/busqueda/test_indice.py
+        - tests/fixtures/consultas.json
+        - tests/server/e2e/test_flujo_consulta.py
+        - tests/server/evals/test_evals.py
+      receipts: []
+    - task: T11
+      attempt: 1
+      files:
+        - path: tests/server/aplicacion/test_respaldo.py
+          status: ??
+          sha256: bd1b8882940eff706b6a4d4f8d9ca3453247bc03a072786a89ff137e5b097dec
+        - path: tests/server/e2e/test_respaldo_e2e.py
+          status: ??
+          sha256: 957b573ffe856dde4b87a9912c0863c2f7d93d08c3b959f8ac64dd3dafa972ff
+      reviewed:
+        - tests/server/aplicacion/test_respaldo.py
+        - tests/server/e2e/test_respaldo_e2e.py
+      receipts: []
+    - task: T12
+      attempt: 1
+      files:
+        - path: tests/server/aplicacion/test_respaldo.py
+          status: " M"
+          sha256: e748de3a5e89624a441e08779cc6bdc36529631a1f98ca80b94fbfdffada9512
+        - path: tests/server/http/test_errores.py
+          status: ??
+          sha256: 3ddcc4942e2830562baefb4cf582bc0b9d1ba8f8f11e1633ba0863d67f46ee61
+      reviewed:
+        - tests/server/aplicacion/test_respaldo.py
+        - tests/server/http/test_errores.py
+      receipts: []
+    - task: T13
+      attempt: 1
+      files:
+        - path: src/server/infraestructura/redactor/gemini.py
+          status: " M"
+          sha256: cd0a814b9b7b7ceedf27d171ba91c69540041edbe6dd992413951e61860bd70b
+        - path: tests/server/infraestructura/redactor/test_gemini.py
+          status: " M"
+          sha256: f6f03254ce68db919036ee28799d480172b474e30f8eeb00c3c5d1467c942711
+      reviewed:
+        - src/server/infraestructura/redactor/gemini.py
+        - tests/server/infraestructura/redactor/test_gemini.py
+      receipts: []
+    - task: T14
+      attempt: 1
+      files:
+        - path: src/server/AGENTS.md
+          status: " M"
+          sha256: 2adf790ce7f180d6baac60fb53535fe19b489653a106dfff36082a5969ae6b44
+        - path: src/server/infraestructura/redactor/gemini.py
+          status: " M"
+          sha256: 4c0a46b2262437b486c88b9b8c95e07d3e97c1123f601e690cad9c9a13765b7d
+        - path: tests/server/infraestructura/redactor/test_gemini.py
+          status: " M"
+          sha256: c08e4e3b13d34b0af45796b4e5fa306d9100e8437772c03db369cf6177d1776e
+      reviewed:
+        - src/server/AGENTS.md
+        - src/server/infraestructura/redactor/gemini.py
+        - tests/server/infraestructura/redactor/test_gemini.py
+      receipts: []
+    - task: T15
+      attempt: 1
+      files:
+        - path: .env.example
+          status: " M"
+          sha256: 358918488426286525e5b9a870036eeaad4733127704fdf1f7786e5dd049dd8f
+        - path: src/server/AGENTS.md
+          status: " M"
+          sha256: ef14c736d53743fe5da642f304372931ef6e5d45ac616dec6c37f390ccb7c388
+        - path: src/server/aplicacion/consultar.py
+          status: " M"
+          sha256: 35f4e6f738f423a61d05fa543f2437ec37a352d1e71d78d6c80c1ea19f4ef263
+        - path: src/server/dominio/puertos.py
+          status: " M"
+          sha256: a0de9be92b89c7ace5750b5c5b1a2c42dccae46add185a0a6418482ef93fe1c5
+        - path: src/server/http/app.py
+          status: " M"
+          sha256: 8a3bd166dbe1974301dee8482357361925914efefd16f8b0b1802b95b5c2b8a0
+        - path: src/server/http/rutas.py
+          status: " M"
+          sha256: e5318e2f29561a809a26a34d48e1e572a22b3133f31eecca56c1eff2b610b885
+        - path: src/server/infraestructura/redactor/extractivo.py
+          status: " M"
+          sha256: 545141018ffa8d527ce096901555e7b4f41c771b1609878cee32b03696b7af08
+        - path: src/server/infraestructura/redactor/gemini.py
+          status: " M"
+          sha256: a9e4051b41d5e8a69f698861d518df7d884d2f7ce3bc10ab7f38f443d4148c7a
+        - path: tests/server/http/test_consultar_api.py
+          status: " M"
+          sha256: c5bf43717ea730d5aa9a625c3733a23b43f26d17b6f9cc91117ae329ee829d1f
+      reviewed:
+        - .env.example
+        - src/server/AGENTS.md
+        - src/server/aplicacion/consultar.py
+        - src/server/dominio/puertos.py
+        - src/server/http/app.py
+        - src/server/http/rutas.py
+        - src/server/infraestructura/redactor/extractivo.py
+        - src/server/infraestructura/redactor/gemini.py
+        - tests/server/http/test_consultar_api.py
+      receipts: []
+    - task: T16
+      attempt: 1
+      files:
+        - path: constitucion/model-registry.md
+          status: " M"
+          sha256: 716fb31a12f48d024d070e81e73a3cbe5bab8543ea85b96345e91d66b2e5fa39
+        - path: pyproject.toml
+          status: " M"
+          sha256: 511caa5678feb03f7abc7e53741c2394d5449e1747ac555a4b340129a9af7fff
+        - path: README.md
+          status: " M"
+          sha256: b95142d1b4ee72b8ca3a934b7aa94e6aec591df6422ecacb53357798a56f1925
+        - path: src/server/AGENTS.md
+          status: " M"
+          sha256: 57cd254420572ab49b9b5a41145c9c106bf65b39188cad5b121d9f059b8d235f
+        - path: src/server/infraestructura/busqueda/fts.py
+          status: " M"
+          sha256: 32928b5d65a68e160fdc601db4c45ef6f0a5c0a2b069df1111d8e1684031a078
+        - path: src/server/infraestructura/busqueda/indice.py
+          status: " M"
+          sha256: 58fa4e7242af7a04fe32433fe1eab8babe46f30fd98f497ed84985d9d27bb190
+        - path: tests/fixtures/consultas.json
+          status: " M"
+          sha256: 53ea96ba9b3ac4df3a53bf1eed32a60e987504f760a98eb1fab5143794b2ea28
+        - path: tests/server/e2e/test_arranque_indice.py
+          status: " M"
+          sha256: 8a26e40a6a540b1b0c45abfb043ef0e1b197ce1d57ecbbb0542826972a6e691f
+        - path: tests/server/evals/test_evals.py
+          status: " M"
+          sha256: 365af2999ea92b13b0f99de94b703f90c81749a30f127076f80e7880d2e25e98
+        - path: tests/server/http/test_consultar_api.py
+          status: " M"
+          sha256: 0177d161624a7eeedd1f154b44a31387628c92f5c8c9eaa915b7afcef46ffbf8
+        - path: tests/server/infraestructura/busqueda/test_buscador.py
+          status: " M"
+          sha256: 56e4492f43bd7c8b5134c0525274ceb7d8c2df33a45b26f69b5a2356c97eaa27
+        - path: tests/server/infraestructura/busqueda/test_fts.py
+          status: ??
+          sha256: e24ae42b83abc75503f577e2350eb2eb99b973a317ccb2a242b2dd9c1a486f79
+        - path: tests/server/infraestructura/busqueda/test_indice.py
+          status: " M"
+          sha256: f88f6b11288f513a9a1539189aef0c9a63176822b2762f587e4a8adb5d4a95ca
+        - path: uv.lock
+          status: " M"
+          sha256: b88e209f0ec420f501fddc0b6889a2944a1345d004aa3691d0f172be1ee7b19c
+      reviewed:
+        - README.md
+        - constitucion/model-registry.md
+        - pyproject.toml
+        - src/server/AGENTS.md
+        - src/server/infraestructura/busqueda/fts.py
+        - src/server/infraestructura/busqueda/indice.py
+        - tests/fixtures/consultas.json
+        - tests/server/e2e/test_arranque_indice.py
+        - tests/server/evals/test_evals.py
+        - tests/server/http/test_consultar_api.py
+        - tests/server/infraestructura/busqueda/test_buscador.py
+        - tests/server/infraestructura/busqueda/test_indice.py
+        - uv.lock
+        - tests/server/infraestructura/busqueda/test_fts.py
+      receipts: []
+    - task: T17
+      attempt: 1
+      files:
+        - path: src/server/AGENTS.md
+          status: " M"
+          sha256: 2eddb08479696a1f655e10d3dc48f83a2335f3db1d603fcc09188f56030aa75c
+        - path: src/server/http/esquemas.py
+          status: " M"
+          sha256: a5468d724eb9b77d30c86ace79d05591445a47ac93e6b3dde2783a3845206985
+        - path: src/server/http/problemas.py
+          status: " M"
+          sha256: 54ee8c490b323649555892e65797bbbd989d655920d3294186b02c9553f41731
+        - path: tests/server/http/test_consultar_api.py
+          status: " M"
+          sha256: 9cdbd5eca7234c3367be987607df96f2e8eeab7311f6eb3bdad4e14095467bbc
+      reviewed:
+        - src/server/AGENTS.md
+        - src/server/http/esquemas.py
+        - src/server/http/problemas.py
+        - tests/server/http/test_consultar_api.py
+      receipts: []
+approvals:
+  - step: shown
+    by: Juan D. Guzmán
+    at: 2026-10-23T14:56:01.904Z
+    sha256:
+      story.md: sha256-GcvUpEEKlMSsDWfyK/mCYE94P1Wcvt5aphDxrtqDjgk=
+      requirements.md: sha256-5P8cacoG7DLJxZilfWQLXhWgXQfNDyAU4KtP2pIA8Pw=
+      design.md: sha256-/gLZ1pKvwi8pzOQevdffa1QqskXUzxcQDRohY6xpBD8=
+      research.md: sha256-Co47YL+gctr+Awiz3XVEe5HWSrNLpUPta0XGgb1v8u4=
+  - step: shown
+    by: Juan D. Guzmán
+    at: 2026-10-23T15:02:01.356Z
+    sha256:
+      story.md: sha256-vuoxSZOUvnLk7tEsF/V+ByP9TzMCTSVrhOCGr8oaz9M=
+      requirements.md: sha256-0W6tFkbZSbs78Tn3gd4QQVkwxbWGfPDAWaG/Qf/n/rU=
+      design.md: sha256-sTuqbMljftdPbT+AWyOFvLIDuwQoV4/B172/1js0/VQ=
+      research.md: sha256-gSxWwOyLbisys7mSZPuF5z2nDjqZJmdMLYu1iFewAhI=
+  - step: shown
+    by: Juan D. Guzmán
+    at: 2026-10-23T15:02:44.181Z
+    sha256:
+      story.md: sha256-vuoxSZOUvnLk7tEsF/V+ByP9TzMCTSVrhOCGr8oaz9M=
+      requirements.md: sha256-0W6tFkbZSbs78Tn3gd4QQVkwxbWGfPDAWaG/Qf/n/rU=
+      design.md: sha256-sTuqbMljftdPbT+AWyOFvLIDuwQoV4/B172/1js0/VQ=
+      research.md: sha256-OX0XfABAQ8ssM1sDtHc1O2X1BlhonXJpcr+O+Vqf0uQ=
+  - step: shown
+    by: Juan D. Guzmán
+    at: 2026-10-23T15:03:01.685Z
+    sha256:
+      story.md: sha256-vuoxSZOUvnLk7tEsF/V+ByP9TzMCTSVrhOCGr8oaz9M=
+      requirements.md: sha256-0W6tFkbZSbs78Tn3gd4QQVkwxbWGfPDAWaG/Qf/n/rU=
+      design.md: sha256-sTuqbMljftdPbT+AWyOFvLIDuwQoV4/B172/1js0/VQ=
+      research.md: sha256-yU0on2kPgBGftgr/cpcQprPPuMuctr2WxUzyre31DFY=
+  - step: shown
+    by: Juan D. Guzmán
+    at: 2026-10-23T15:16:38.221Z
+    sha256:
+      story.md: sha256-vuoxSZOUvnLk7tEsF/V+ByP9TzMCTSVrhOCGr8oaz9M=
+      requirements.md: sha256-OKSlYNJnHbrGdifT06fJxPyrWTDk4O6XCutr+tDxFak=
+      design.md: sha256-vb1u87Xfaff6mzp69LT5oAa8/NyzYU3N+kcE6MP3YgU=
+      research.md: sha256-zIRqEpLE7D8+hZNMwtBpylMa9qw0U68N6Y0kLbftWAQ=
+  - step: shown
+    by: Juan D. Guzmán
+    at: 2026-10-23T15:20:14.749Z
+    sha256:
+      story.md: sha256-vuoxSZOUvnLk7tEsF/V+ByP9TzMCTSVrhOCGr8oaz9M=
+      requirements.md: sha256-OKSlYNJnHbrGdifT06fJxPyrWTDk4O6XCutr+tDxFak=
+      design.md: sha256-vb1u87Xfaff6mzp69LT5oAa8/NyzYU3N+kcE6MP3YgU=
+      research.md: sha256-zIRqEpLE7D8+hZNMwtBpylMa9qw0U68N6Y0kLbftWAQ=
+  - step: shown
+    by: Juan D. Guzmán
+    at: 2026-10-23T19:46:14.741Z
+    sha256:
+      story.md: sha256-vuoxSZOUvnLk7tEsF/V+ByP9TzMCTSVrhOCGr8oaz9M=
+      requirements.md: sha256-TQd5bFTlv6V73jQ7HCiEfafvf49j/ECXqWDVRQEH6Dw=
+      design.md: sha256-TKpmy57awFt6jNUT5Z+MbJmn+B4IYdTybnaUf4Lytf8=
+      research.md: sha256-zIRqEpLE7D8+hZNMwtBpylMa9qw0U68N6Y0kLbftWAQ=
+  - step: shown
+    by: Juan D. Guzmán
+    at: 2026-10-23T19:46:16.948Z
+    sha256:
+      story.md: sha256-vuoxSZOUvnLk7tEsF/V+ByP9TzMCTSVrhOCGr8oaz9M=
+      requirements.md: sha256-TQd5bFTlv6V73jQ7HCiEfafvf49j/ECXqWDVRQEH6Dw=
+      design.md: sha256-TKpmy57awFt6jNUT5Z+MbJmn+B4IYdTybnaUf4Lytf8=
+      research.md: sha256-zIRqEpLE7D8+hZNMwtBpylMa9qw0U68N6Y0kLbftWAQ=
+cut_estimates:
+  - at: 2026-10-23T15:23:40.600Z
+    task: T1
+    boundary_id: implement:T1
+    suggested: true
+    context: 412399
+    base: 59571
+    turns_left: 208
+    savings: 14.38
+    decision: "stop: suggest a new session"
+  - at: 2026-10-23T15:24:56.832Z
+    task: T1
+    boundary_id: implement:T1
+    context: 65905
+    base: 63812
+    turns_left: 208
+    savings: -0.23
+    decision: stay
+  - at: 2026-10-23T15:45:40.692Z
+    task: T2
+    boundary_id: implement:T2
+    suggested: true
+    context: 134581
+    base: 63812
+    turns_left: 193
+    savings: 2.41
+    decision: "stop: suggest a new session"
+  - at: 2026-10-23T15:55:39.127Z
+    task: T2
+    boundary_id: implement:T2
+    context: 96392
+    base: 63912
+    turns_left: 193
+    savings: 0.93
+    decision: "go on: below 50"
+  - at: 2026-10-23T16:00:46.912Z
+    task: T3
+    boundary_id: implement:T3
+    context: 126773
+    base: 63912
+    turns_left: 178
+    savings: 1.92
+    decision: "go on: below 50"
+  - at: 2026-10-23T16:16:39.753Z
+    task: T4
+    boundary_id: implement:T4
+    context: 201804
+    base: 63912
+    turns_left: 163
+    savings: 4.18
+    decision: "go on: below 50"
+  - at: 2026-10-23T16:31:12.784Z
+    task: T5
+    boundary_id: implement:T5
+    context: 245136
+    base: 63912
+    turns_left: 148
+    savings: 5.04
+    decision: "go on: below 50"
+  - at: 2026-10-23T16:35:56.121Z
+    task: T6
+    boundary_id: implement:T6
+    context: 268828
+    base: 63912
+    turns_left: 133
+    savings: 5.13
+    decision: "go on: below 50"
+  - at: 2026-10-23T16:38:58.062Z
+    task: T8
+    boundary_id: implement:T8
+    context: 284120
+    base: 63912
+    turns_left: 118
+    savings: 4.88
+    decision: "go on: below 50"
+  - at: 2026-10-23T16:48:53.374Z
+    task: T7
+    boundary_id: implement:T7
+    context: 322229
+    base: 63912
+    turns_left: 103
+    savings: 5
+    decision: "go on: below 50"
+  - at: 2026-10-23T17:00:11.434Z
+    task: T9
+    boundary_id: implement:T9
+    context: 353377
+    base: 63912
+    turns_left: 88
+    savings: 4.78
+    decision: "go on: below 50"
+  - at: 2026-10-23T17:12:11.668Z
+    task: T10
+    boundary_id: implement:T10
+    context: 381206
+    base: 63912
+    turns_left: 73
+    savings: 4.31
+    decision: "go on: below 50"
+  - at: 2026-10-23T17:39:25.495Z
+    task: T11
+    boundary_id: implement:T11
+    context: 483782
+    base: 63912
+    turns_left: 58
+    savings: 4.55
+    decision: "go on: below 50"
+  - at: 2026-10-23T17:48:43.087Z
+    task: T12
+    boundary_id: implement:T12
+    context: 528824
+    base: 63912
+    turns_left: 43
+    savings: 3.68
+    decision: "go on: below 50"
+  - at: 2026-10-23T17:54:12.023Z
+    task: verify
+    boundary_id: verify
+    suggested: true
+    context: 558494
+    base: 63912
+    turns_left: 28
+    savings: 2.45
+    decision: new session
+  - at: 2026-10-23T19:17:25.276Z
+    task: T13
+    boundary_id: implement:T13
+    context: 69742
+    base: 64632
+    turns_left: 73
+    savings: -0.25
+    decision: stay
+  - at: 2026-10-23T19:22:07.710Z
+    task: T14
+    boundary_id: implement:T14
+    context: 106969
+    base: 64632
+    turns_left: 58
+    savings: 0.17
+    decision: "go on: below 50"
+  - at: 2026-10-23T19:32:24.458Z
+    task: T15
+    boundary_id: implement:T15
+    context: 144673
+    base: 64632
+    turns_left: 43
+    savings: 0.37
+    decision: "go on: below 50"
+  - at: 2026-10-23T19:38:40.211Z
+    task: verify
+    boundary_id: verify
+    context: 168452
+    base: 64632
+    turns_left: 28
+    savings: 0.26
+    decision: "go on: suggestion already shown at boundary"
+  - at: 2026-10-23T19:46:36.431Z
+    task: T16
+    boundary_id: implement:T16
+    context: 131361
+    base: 60463
+    turns_left: 43
+    savings: 0.31
+    decision: "go on: below 50"
+  - at: 2026-10-23T20:09:02.168Z
+    task: verify
+    boundary_id: verify
+    context: 250515
+    base: 60463
+    turns_left: 28
+    savings: 0.76
+    decision: "go on: suggestion already shown at boundary"
+  - at: 2026-10-23T20:23:24.964Z
+    task: T17
+    boundary_id: implement:T17
+    context: 145636
+    base: 61621
+    turns_left: 43
+    savings: 0.41
+    decision: "go on: below 50"
+  - at: 2026-10-23T20:27:30.870Z
+    task: verify
+    boundary_id: verify
+    context: 172493
+    base: 61621
+    turns_left: 28
+    savings: 0.31
+    decision: "go on: suggestion already shown at boundary"

@@ -7,9 +7,25 @@ Spec-driven development with [Mandao](https://www.npmjs.com/package/mandao): com
 
 <!-- mandao:end -->
 
+## Levantar el backend
+
+Requisitos: Python 3.13 (`.python-version`) y `uv`. Desde la raíz del repositorio:
+
+1. `uv sync` instala las dependencias fijadas en `uv.lock`.
+2. Opcional: `cp .env.example .env` y poner `GEMINI_API_KEY`. Sin clave el servicio responde en modo extractivo, sin costo.
+3. Arrancar, siempre con un solo worker (D13: Qdrant local bloquea su carpeta y un segundo proceso falla al abrirla):
+   - sin clave: `uv run uvicorn src.server.principal:app --port 8000 --workers 1`
+   - con `.env`: `uv run --env-file .env uvicorn src.server.principal:app --port 8000 --workers 1`
+4. Esperar `Application startup complete.`: el arranque indexa `Data/` (sin `Información restringida.md`). El primer arranque descarga el modelo de embeddings (0,22 GB); después corre sin red.
+5. Probar: `curl -s -X POST localhost:8000/api/consultar -H 'Content-Type: application/json' -d '{"pregunta":"¿Cuál es el monto máximo del Crédito Productivo Impulso?"}'`
+
+- Punto de entrada: `src/server/principal.py` (`app`). Rutas de datos en `src/server/config.py`: `almacen/qdrant/` (vectores) y `almacen/consultas.db` (SQLite: índice FTS5 y registro de consultas). `almacen/` está en `.gitignore`; borrarla con el servidor apagado fuerza un reindexado completo.
+- Puerto ocupado: cambiar `--port`. No usar `--workers` > 1 ni `--reload` con dos procesos sobre la misma carpeta `almacen/`.
+- La clave solo se lee de `os.environ` (no hay `python-dotenv`); nunca se registra en logs.
+
 ## Module index
 
-Proyecto nuevo: estos módulos están planeados (ver `constitucion/architecture.md`); aún no existen.
+Arquitectura en `constitucion/architecture.md`. El frontend (`src/web/`) y `docs/Cuestionario.md` aún no existen.
 
 | Module | Path | Purpose |
 |---|---|---|

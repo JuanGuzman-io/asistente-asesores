@@ -10,9 +10,9 @@ last_reviewed: 2026-10-23
 ## Models
 | Use | Model | Provider | Version pinned | Cost per 1k requests | Owner |
 |---|---|---|---|---|---|
-| Redacción de la respuesta | `gemini-3.5-flash-lite` | Google (Gemini API, SDK `google-genai`) | código de modelo estable (sin `-preview`) | ≈ USD 1,10 en nivel pago (estimación abajo); USD 0 en nivel gratuito | tech lead |
-| Respaldo sin clave o con la API caída | extractivo (sin modelo) | — | — | USD 0 | tech lead |
-| Embeddings de búsqueda | `sentence-transformers/paraphrase-multilingual-MiniLM-L12-v2` (384 dim, 0,22 GB) | local (ONNX, `fastembed` 0.9.0) | nombre de modelo fijo en configuración | USD 0 | tech lead |
+| Redacción de la respuesta | `gemini-3.5-flash-lite` | Google (Gemini API, SDK `google-genai`) | código de modelo estable (sin `-preview`) | ≈ USD 1,10 en nivel pago (estimación abajo); USD 0 en nivel gratuito | PE |
+| Respaldo sin clave o con la API caída | extractivo (sin modelo) | — | — | USD 0 | PE |
+| Embeddings de búsqueda | `sentence-transformers/paraphrase-multilingual-MiniLM-L12-v2` (384 dim, 0,22 GB) | local (ONNX, `fastembed` 0.9.0) | nombre de modelo fijo en configuración | USD 0 | PE |
 
 ### Almacén de vectores
 Qdrant en modo local (`qdrant-client` 1.20.0, `QdrantClient(path=…)`), una colección de fragmentos con
@@ -48,10 +48,10 @@ Riesgo: dependencia de un proveedor externo. Mitigación: el modelo está detrá
 ## Prompts
 | Name | Path | Version | Used by | Eval dataset |
 |---|---|---|---|---|
-| Redactor con fuentes | `src/server/infraestructura/redactor/prompt.md` (por crear) | v1 | `Redactor` (Gemini) | `tests/fixtures/consultas.json` (por crear) |
+| Redactor con fuentes | `src/server/infraestructura/redactor/prompt.md` | v1 | `Redactor` (Gemini) | `tests/fixtures/consultas.json` (v3) |
 
 ## Datasets
 | Name | Purpose | Version | Location | Contains personal data |
 |---|---|---|---|---|
 | Base documental | Fuente de las respuestas | v1 (datos irreales del PDF) | `Data/` | No |
-| Casos de prueba de consultas | Validar respuestas, estados y fuentes | por crear | `tests/fixtures/` | No |
+| Casos de prueba de consultas | Validar respuestas, estados y fuentes (EV-1 a EV-7) | v3 (80 preguntas, MDO-0001 C-10; v2: 66, C-9) | `tests/fixtures/consultas.json` | No |

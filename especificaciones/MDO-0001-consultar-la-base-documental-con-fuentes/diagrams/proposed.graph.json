@@ -1,0 +1,28 @@
+{
+  "schema_version": 1,
+  "nodes": [
+    { "id": "asesor", "label": "Asesor", "kind": "actor", "role": "context" },
+    { "id": "POST /api/consultar", "label": "POST /api/consultar", "kind": "contract", "role": "changed" },
+    { "id": "src/server/http", "label": "http", "kind": "module", "role": "changed" },
+    { "id": "src/server/aplicacion", "label": "aplicacion", "kind": "module", "role": "changed" },
+    { "id": "src/server/dominio", "label": "dominio", "kind": "module", "role": "changed" },
+    { "id": "src/server/infraestructura/documentos", "label": "documentos", "kind": "module", "role": "changed" },
+    { "id": "src/server/infraestructura/busqueda", "label": "busqueda", "kind": "module", "role": "changed" },
+    { "id": "src/server/infraestructura/redactor", "label": "redactor", "kind": "module", "role": "changed" },
+    { "id": "src/server/infraestructura/persistencia", "label": "persistencia", "kind": "module", "role": "changed" },
+    { "id": "Data", "label": "Data/", "kind": "external", "role": "context" },
+    { "id": "gemini-api", "label": "Gemini API", "kind": "external", "role": "context" }
+  ],
+  "edges": [
+    { "from": "asesor", "to": "POST /api/consultar" },
+    { "from": "POST /api/consultar", "to": "src/server/http" },
+    { "from": "src/server/http", "to": "src/server/aplicacion" },
+    { "from": "src/server/aplicacion", "to": "src/server/dominio" },
+    { "from": "src/server/aplicacion", "to": "src/server/infraestructura/busqueda" },
+    { "from": "src/server/aplicacion", "to": "src/server/infraestructura/redactor" },
+    { "from": "src/server/aplicacion", "to": "src/server/infraestructura/persistencia" },
+    { "from": "src/server/infraestructura/documentos", "to": "Data" },
+    { "from": "src/server/infraestructura/busqueda", "to": "src/server/infraestructura/documentos" },
+    { "from": "src/server/infraestructura/redactor", "to": "gemini-api" }
+  ]
+}

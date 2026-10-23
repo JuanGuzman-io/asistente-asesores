@@ -1,9 +1,12 @@
 node_modules/
 .env
-src/web/dist/
-src/web/playwright-report/
-src/web/test-results/
-src/web/.playwright/
+.venv/
+__pycache__/
+.pytest_cache/
+.mypy_cache/
+.ruff_cache/
+# Almacenes locales del servidor: Qdrant y SQLite (src/server/config.py)
+almacen/
 
 # mandao:begin
 # Managed by mandao 0.1.0-beta.0.
@@ -13,3 +16,7 @@ graphify-out/
 .mandao/cache/
 .claude/settings.local.json
 # mandao:end
+src/web/dist/
+src/web/playwright-report/
+src/web/test-results/
+src/web/.playwright/

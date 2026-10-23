@@ -3,7 +3,7 @@ schema_version: 1
 level: workspace
 status: approved
 last_reviewed: 2026-10-23
-owner: tech lead
+owner: PE
 ---
 
 # Architecture (TRD)
@@ -46,6 +46,10 @@ SQLite, embeddings, Gemini). `dominio` no importa nada de las demás capas; `web
   Qdrant en modo local (`QdrantClient(path=…)`, carpeta fuera de git) guarda los vectores de los
   fragmentos con distancia coseno. No se usan extensiones de SQLite, así que cualquier Python 3.13 sirve.
   Al pasar a producción, el mismo código apunta a un servidor Qdrant cambiando la configuración.
+- **Un solo proceso:** uvicorn corre con `--workers 1`. Qdrant local bloquea su carpeta y un segundo
+  proceso falla al abrirla (MDO-0001 D13, P6). Dentro del proceso la ruta es síncrona (threadpool) y las
+  llamadas a Gemini se limitan con un semáforo (`GEMINI_MAX_CONCURRENCIA`, 5). Para escalar a varios
+  procesos, apuntar a un servidor Qdrant.
 - **Recuperación híbrida:** se combinan los puntajes de FTS5 y de Qdrant. Si el mejor fragmento no
   supera el umbral, el estado es `Sin información suficiente` y no se llama al modelo.
 - **Redacción:** con `GEMINI_API_KEY`, Gemini redacta solo con los fragmentos recuperados y debe citarlos.
