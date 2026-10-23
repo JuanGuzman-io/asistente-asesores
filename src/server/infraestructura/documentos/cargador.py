@@ -17,7 +17,7 @@ def _nfc(texto: str) -> str:
 
 def _es_confidencial(texto: str) -> bool:
     encabezado = texto.splitlines()[:LINEAS_ENCABEZADO]
-    return any(MARCA_CONFIDENCIAL in linea for linea in encabezado)
+    return any(MARCA_CONFIDENCIAL.casefold() in linea.casefold() for linea in encabezado)
 
 
 def _fragmentar(documento: str, texto: str) -> list[Fragmento]:

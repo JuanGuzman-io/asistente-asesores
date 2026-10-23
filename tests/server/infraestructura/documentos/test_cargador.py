@@ -14,6 +14,8 @@ import logging
 import unicodedata
 from pathlib import Path
 
+import pytest
+
 from src.server.infraestructura.documentos.cargador import cargar_documentos
 
 DATA = Path(__file__).resolve().parents[4] / "Data"
@@ -100,6 +102,21 @@ def test_s12_documento_confidencial_por_encabezado_se_excluye_aunque_no_este_en_
     (tmp_path / "Oficial.md").write_text("# Oficial\n\n## A\n\nvisible\n", encoding="utf-8")
     (tmp_path / "Nuevo reservado.md").write_text(
         "# Nuevo reservado\n\n> CONFIDENCIAL: solo gerencia\n\n## Montos\n\nSECRETO-XYZ-987\n",
+        encoding="utf-8",
+    )
+
+    with caplog.at_level(logging.DEBUG):
+        fragmentos = cargar_documentos(tmp_path, [])
+
+    assert {f.documento for f in fragmentos} == {"Oficial"}
+    assert all("SECRETO-XYZ-987" not in f.texto for f in fragmentos)
+
+
+@pytest.mark.parametrize("marca", ["Confidencial", "confidencial"])
+def test_s12_marca_confidencial_se_detecta_sin_importar_mayusculas(tmp_path, caplog, marca):
+    (tmp_path / "Oficial.md").write_text("# Oficial\n\n## A\n\nvisible\n", encoding="utf-8")
+    (tmp_path / "Nuevo reservado.md").write_text(
+        f"# Nuevo reservado\n\n> {marca}: solo gerencia\n\n## Montos\n\nSECRETO-XYZ-987\n",
         encoding="utf-8",
     )
 

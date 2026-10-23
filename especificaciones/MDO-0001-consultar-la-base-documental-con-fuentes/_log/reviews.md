@@ -4,36 +4,33 @@
 
 VERDICT: PASS
 
-I reviewed this as claude-opus-5-5.
+La marca `CONFIDENCIAL` ahora se detecta sin importar mayúsculas, como decidió el PE, y la prueba nueva lo demuestra. Ninguno de los cambios bloquea. Me baso en la salida de gates que ejecutó el Leader (`.mandao/cache/MDO-0001/gates/T1-1.md`): format, lint y mypy pasan, y pytest da 9 passed. No volví a ejecutar nada.
 
-T1 does what the spec asks and nothing blocks it. All four gates passed in the Leader's run (format, lint, `mypy --strict` on 8 source files, and pytest with 7 passed). I am relying on that output (`.mandao/cache/MDO-0001/gates/T1-1.md`) and did not rerun anything.
+**Modelo:** no lo indico. Mi rol me prohíbe decir qué modelo soy, porque Mandao registra quién revisó a partir de lo que invocó.
 
-**Spec, clause by clause**
-- **S-1.1 / AC-1:** the five official documents load, including `Políticas de Atención`, and every fragment has its document, section and text. The test checks the exact set of documents.
-- **S-1.1/C1 / AC-1/C1:** nothing from the restricted file becomes a fragment. One test checks every meaningful line of that file against all fragments, without printing it. The "indexed term" and "vector" parts of C1 can't be tested yet because the search index isn't built in T1.
-- **S-1.2:** a file marked `CONFIDENCIAL` in its first 10 lines is excluded even when it isn't on the list. The log names the file and contains none of its content or headings, and a test checks this.
-- **Design decisions:** D1 is met (Python 3.13 pinned, `requires-python >=3.11,<3.15`). D2 is met: each `##` section with its `###` subsections is one fragment, and a file with no `##` is one fragment titled with its `#`. D3 is met: both exclusion layers are in place, and file names are normalized so the macOS name of `Información restringida.md` still matches.
-- **The other done-when items in `tasks.md`:** the gates in `.mandao/config.yml` match the spec, the PE approved them in this session, and mypy runs in strict mode.
+**Conformidad con la especificación**
+- **S-1.2 / D3:** `_es_confidencial` compara con `casefold()` en ambos lados. Sigue mirando solo las 10 primeras líneas (`LINEAS_ENCABEZADO`) y la marca sigue siendo una constante con nombre.
+- **El log:** el mensaje no cambió y sigue nombrando el archivo sin su contenido.
+- **S-1.1 y AC-1:** busqué "confidencial" en `Data/` sin importar mayúsculas y solo aparece en `Información restringida.md`, línea 4. Ningún documento oficial queda excluido por error con la regla más amplia, y la prueba S-1.1 sigue pasando.
 
-**Tests and TDD:** red evidence is in `execution.md`. The first run failed because `pytest` wasn't found (exit 127). The second failed with exit 2, which fits the module not existing yet. `redTests.changed` is empty, so no red test was weakened. The seven tests check real behaviour and none of them is noise.
+**TDD**
+- `execution.md` tiene dos entradas RED. La primera, con exit 127 (`pytest` no encontrado), no sirve como evidencia de rojo. La segunda, con exit 1, sí lo es.
+- `redTests.changed` está vacío, así que no se debilitó ninguna prueba en rojo.
+- La prueba nueva cubre las dos variantes que faltaban.
 
-**Layers and module boundaries:** `infraestructura/documentos` imports only `dominio.modelos.Fragmento`, which `design.md` places in `dominio`. Nothing reaches into another module's internals.
+**AGENTS.md:** `src/server/AGENTS.md` ya dice "sin distinguir mayúsculas".
 
-**Clean code:** no errors are swallowed, the 10-line limit and the `CONFIDENCIAL` marker are named constants, and names follow the glossary. There was no exemplar to follow. Files outside the brief's list (`__init__.py` files, `src/server/AGENTS.md` and `CLAUDE.md`, the ruff exclude for `especificaciones/`, `uv.lock`, `mandao.lock`) are justified.
+**Límites de módulo y código limpio:** sin cambios en importaciones ni en capas, y no hay errores silenciados.
 
-**Security:** no open security finding. Confidential content is kept out of fragments and out of the log, as `security.md` requires. `.env.example` has no value, and `.env` is ignored by git.
+**Seguridad:** no hay hallazgos de seguridad abiertos de severidad alta o crítica. El cambio amplía la exclusión, así que no abre ninguna vía para exponer contenido.
 
 ## Findings (JSON)
 
 ```json
 {"version":1,"findings":[
-{"id":"F1","status":"open","severity":"low","lens":"security","title":"The CONFIDENCIAL header check matches case-sensitively and as a substring","file":"src/server/infraestructura/documentos/cargador.py","line":20,"evidence":"`MARCA_CONFIDENCIAL in linea` misses 'Confidencial' and matches 'CONFIDENCIALIDAD'. D3 says 'la palabra CONFIDENCIAL', so this is within spec. The name-list layer still protects the known file. Advisory: consider a case-insensitive whole-word match."},
-{"id":"F2","status":"open","severity":"low","lens":"security","title":"No test shows the header layer alone excludes the real restricted file","file":"tests/server/infraestructura/documentos/test_cargador.py","line":580,"evidence":"The tests on real Data/ always pass [RESTRINGIDO] as excluded. The header layer is only tested with tmp_path fixtures. Advisory: add cargar_documentos(DATA, []) to show both layers work on the real data."},
-{"id":"F3","status":"open","severity":"low","lens":"core","title":"Text before the first ## is dropped when a file has sections","file":"src/server/infraestructura/documentos/cargador.py","line":506,"evidence":"Lines between '#' and the first '##' are not stored anywhere. D2 doesn't cover this case, and a check found no official file in Data/ with such text. Advisory."},
-{"id":"F4","status":"open","severity":"low","lens":"core","title":"'##' inside a fenced code block would start a new section","file":"src/server/infraestructura/documentos/cargador.py","line":504,"evidence":"The splitter doesn't track code fences. The current Data/ files are not affected. Advisory."},
-{"id":"F5","status":"open","severity":"low","lens":"core","title":"Startup exclusion log is plain text, not JSON","file":"src/server/infraestructura/documentos/cargador.py","line":523,"evidence":"standards.md says logs are structured JSON. No logging setup exists yet, and the content-free rule is met. Advisory until the logging task lands."},
-{"id":"F6","status":"open","severity":"low","lens":"core","title":"Root AGENTS.md module index still says no modules exist","file":"AGENTS.md","line":1,"evidence":"src/server/ now exists and has its own AGENTS.md. The root index still says 'aún no existen'. Advisory: update it when the next module is added."}
+{"id":"F1","status":"resolved","severity":"low","lens":"security","title":"The CONFIDENCIAL header check matched case-sensitively","file":"src/server/infraestructura/documentos/cargador.py","line":20,"evidence":"Now `MARCA_CONFIDENCIAL.casefold() in linea.casefold()`, as the PE decided on 2026-10-23. test_s12_marca_confidencial_se_detecta_sin_importar_mayusculas covers 'Confidencial' and 'confidencial'. It failed red with exit 1 before the change and passes in the Leader's gate run (9 passed). The substring part of the old F1 is carried over as F7."},
+{"id":"F7","status":"open","severity":"low","lens":"security","title":"Header marker still matches as a substring, now in any case","file":"src/server/infraestructura/documentos/cargador.py","line":20,"evidence":"'confidencialidad' or 'Política de confidencialidad' in the first 10 lines would exclude an official document. This fails closed: content is never exposed, but an official document could silently become unavailable, and the log would show it. No file in Data/ is affected today (the only match is 'Información restringida.md', line 4). The PE's decision covered only letter case. Advisory: consider a whole-word match such as re.search(r'\\bconfidencial\\b', linea, re.IGNORECASE)."},
+{"id":"F8","status":"open","severity":"low","lens":"core","title":"PE decision not reflected in design.md D3","file":"especificaciones/MDO-0001-consultar-la-base-documental-con-fuentes/design.md","line":1,"evidence":"D3 still says 'la palabra `CONFIDENCIAL`'. The case-insensitive decision is recorded only in _log/execution.md. It does not contradict D3, but the design is the source of truth. Advisory: add the decision and its date to D3. Line number is approximate."},
+{"id":"F9","status":"open","severity":"low","lens":"core","title":"New test sets caplog level but asserts nothing on the log","file":"tests/server/infraestructura/documentos/test_cargador.py","line":115,"evidence":"`with caplog.at_level(logging.DEBUG)` has no log assertion. The content-free log is already covered by test_s12_el_log_nombra_el_excluido_y_no_contiene_su_contenido. Advisory: either drop caplog or assert that the excluded file name is logged for the mixed-case variants."}
 ]}
 ```
-
-ASSUMPTION: the second red run's exit 2 came from importing a module that didn't exist yet. The log records only the exit code, not the error text.
