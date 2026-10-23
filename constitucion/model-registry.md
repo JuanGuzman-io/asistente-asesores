@@ -12,7 +12,14 @@ last_reviewed: 2026-10-23
 |---|---|---|---|---|---|
 | Redacción de la respuesta | `gemini-3.5-flash-lite` | Google (Gemini API, SDK `google-genai`) | código de modelo estable (sin `-preview`) | ≈ USD 1,10 en nivel pago (estimación abajo); USD 0 en nivel gratuito | tech lead |
 | Respaldo sin clave o con la API caída | extractivo (sin modelo) | — | — | USD 0 | tech lead |
-| Embeddings de búsqueda | OPEN: modelo multilingüe de `fastembed`, se fija en el plan verificado | local (ONNX) | se fija en el plan | USD 0 | tech lead |
+| Embeddings de búsqueda | `sentence-transformers/paraphrase-multilingual-MiniLM-L12-v2` (384 dim, 0,22 GB) | local (ONNX, `fastembed` 0.9.0) | nombre de modelo fijo en configuración | USD 0 | tech lead |
+
+### Almacén de vectores
+Qdrant en modo local (`qdrant-client` 1.20.0, `QdrantClient(path=…)`), una colección de fragmentos con
+distancia coseno y 384 dimensiones; corre dentro del proceso del backend, sin servidor. Fuentes:
+https://pypi.org/project/qdrant-client/ y README de qdrant-client (leídos 2026-10-23). Verificado en local
+el 2026-10-23 con `uv` (Python 3.13.16 y 3.13.4): insertar y buscar un punto devolvió el fragmento correcto
+(coseno 0,8157 frente a 0,2802). Cambiar de modelo de embeddings obliga a recrear la colección.
 
 ### Por qué Google (Gemini 3.5 Flash-Lite)
 Fuentes: https://ai.google.dev/gemini-api/docs/pricing y https://ai.google.dev/gemini-api/docs/models
