@@ -2,6 +2,10 @@
 
 Prueba técnica: asistente interno que responde consultas de asesores comerciales usando solo la base documental de `Data/`.
 
+## Ejecutar
+
+`uv sync` y luego `uv run uvicorn src.server.principal:app --port 8000 --workers 1` (con `GEMINI_API_KEY` en `.env`: `uv run --env-file .env uvicorn ...`). Siempre un solo worker: Qdrant local bloquea su carpeta. Detalle paso a paso en `AGENTS.md` ("Levantar el backend").
+
 ## Pruebas
 
 Todo se prueba siempre, en dos comandos:
