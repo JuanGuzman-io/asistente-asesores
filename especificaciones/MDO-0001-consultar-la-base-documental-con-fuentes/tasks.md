@@ -124,7 +124,7 @@ parallel_safe: false
 verify: uv run pytest tests/server/infraestructura/documentos -q
 ```
 
-### [ ] T2 — El contenido duplicado se considera una sola vez, también en las fuentes
+### [x] T2 — El contenido duplicado se considera una sola vez, también en las fuentes
 
 - **What:** el cargador calcula el hash del texto normalizado (minúsculas, espacios colapsados) por
   documento y por fragmento y descarta los repetidos; una regla de dominio deduplica las fuentes por
