@@ -465,7 +465,6 @@ button {
   max-width: 640px;
 }
 
-.estado-bot,
 .texto-cargando {
   font-family: var(--mono);
   font-size: 0.75rem;

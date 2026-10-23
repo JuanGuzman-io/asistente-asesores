@@ -85,9 +85,6 @@ function Bienvenida({ escuchando, onOrbe }: { escuchando: boolean; onOrbe: () =>
         <Orbe tamano="grande" modo={escuchando ? "escuchando" : "reposo"} />
       </button>
       <div className="saludo entrada">
-        <p className="estado-bot">
-          {escuchando ? "Escuchando · escribe tu pregunta" : "En línea · listo para ayudarte"}
-        </p>
         <h2>Hola, soy Bot-W.</h2>
         <p>
           Pregúntame por productos, políticas y procedimientos del banco. Te respondo solo con documentos
