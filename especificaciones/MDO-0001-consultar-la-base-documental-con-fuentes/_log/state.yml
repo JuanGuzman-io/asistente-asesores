@@ -2,7 +2,7 @@
 progress:
   schema_version: 1
   spec: MDO-0001-consultar-la-base-documental-con-fuentes
-  updated_at: 2026-10-23T16:30:57.304Z
+  updated_at: 2026-10-23T16:35:36.264Z
   current: null
   open_questions: []
   next_step: ""
@@ -91,6 +91,26 @@ progress:
             - test_s31_rrf_fusiona_ordenes_distintos_de_bm25_y_coseno
             - test_d4_sin_candidatos_comunes_usa_el_coseno_real_del_mejor_fragmento
             - test_d11_los_huerfanos_no_quitan_cupos_a_los_candidatos_vigentes
+    - task: T5
+      files:
+        - path: tests/server/aplicacion/test_consultar.py
+          sha256: 9e26ea4d8328c32545ffe2b11195b5afaacc7f6bb2619be775e6285d0410ffe3
+          tests:
+            - test_s101_el_mensaje_fijo_es_exactamente_el_del_pdf
+            - test_s101_sin_soporte_responde_el_mensaje_fijo_sin_fuentes_y_con_estado_sin_informacion
+            - test_s101_sin_soporte_no_llama_al_redactor
+            - test_s101_bajo_el_umbral_con_fragmentos_candidatos_no_los_cita_ni_llama_al_redactor
+            - test_s101_la_pregunta_llega_al_buscador_tal_cual
+            - test_s102_base_vacia_responde_el_mensaje_fijo_sin_excepcion
+            - test_s102_c1_base_vacia_con_soporte_declarado_sin_fragmentos_no_falla
+            - test_s103_pregunta_ajena_a_los_cuatro_temas_es_sin_informacion
+            - test_s103_c1_pregunta_ajena_nunca_queda_bloqueada_por_seguridad
+            - test_s61_con_soporte_responde_exitosa_con_la_respuesta_del_redactor
+            - test_s61_el_redactor_recibe_la_pregunta_y_los_fragmentos_recuperados
+            - test_s61_cada_fuente_trae_documento_seccion_y_fragmento
+            - test_s61_las_fuentes_se_deduplican_por_documento_y_seccion
+            - test_s61_c1_solo_los_fragmentos_declarados_usados_son_fuentes
+            - test_s61_c1_las_fuentes_siguen_el_orden_de_los_fragmentos_recuperados
   pending_commits: []
   approved_manifests:
     - task: T1
@@ -233,10 +253,47 @@ progress:
         - tests/server/infraestructura/busqueda/conftest.py
         - tests/server/infraestructura/busqueda/test_buscador.py
       receipts: []
+    - task: T5
+      attempt: 1
+      files:
+        - path: src/server/AGENTS.md
+          status: " M"
+          sha256: b91b401a78c88f23ad85a0f86f33db8c462ef075cbfb7452c8a0081215bac113
+        - path: src/server/aplicacion/__init__.py
+          status: ??
+          sha256: e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855
+        - path: src/server/aplicacion/consultar.py
+          status: ??
+          sha256: 20877f2b2da3d1e41cb635c8962708ab19defd51f12650aa8bf0a67986af0071
+        - path: src/server/dominio/estados.py
+          status: ??
+          sha256: ffe54bde6e14ab178609e1542856af4c369be0306db168e04b43419bde2dc2a3
+        - path: src/server/dominio/modelos.py
+          status: " M"
+          sha256: 7feea807e0f0dffc58b88af6e4512cbe2cdfb9550b4d65f0a7fefd47c3a9c38c
+        - path: src/server/dominio/puertos.py
+          status: " M"
+          sha256: 4e715e99dfdbf73a0c8219ee2093b7a31300a3203c4de4b71fa4fc9eec435c41
+        - path: src/server/dominio/reglas.py
+          status: " M"
+          sha256: 96262e4ccfcdd9f88b58262c00e59e5fa2c250d98be6a26d015e5de1cc3d8476
+        - path: tests/server/aplicacion/test_consultar.py
+          status: ??
+          sha256: 02df7ee1f4e5ebeeb8a661dcf12f9d58145ae3f6235027795305a6a2f527af5a
+      reviewed:
+        - src/server/AGENTS.md
+        - src/server/dominio/modelos.py
+        - src/server/dominio/puertos.py
+        - src/server/dominio/reglas.py
+        - src/server/aplicacion/__init__.py
+        - src/server/aplicacion/consultar.py
+        - src/server/dominio/estados.py
+        - tests/server/aplicacion/test_consultar.py
+      receipts: []
   loop_brake:
-    task: T4
+    task: T5
     action: commit
-    execution_rows: 33
+    execution_rows: 37
     approval_rows: 6
     repeats: 1
 approvals:
@@ -338,4 +395,12 @@ cut_estimates:
     base: 63912
     turns_left: 163
     savings: 4.18
+    decision: "go on: below 50"
+  - at: 2026-10-23T16:31:12.784Z
+    task: T5
+    boundary_id: implement:T5
+    context: 245136
+    base: 63912
+    turns_left: 148
+    savings: 5.04
     decision: "go on: below 50"

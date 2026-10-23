@@ -239,3 +239,52 @@ T4 se puede aceptar. Los dos hallazgos que bloqueaban en el intento 1 (F1 y F2) 
 {"id":"F9","status":"open","severity":"low","lens":"core","title":"Aviso de QdrantClient cerrado desde otro hilo en la suite completa","file":"tests/server/e2e/test_arranque_indice.py","line":1,"evidence":"PytestUnraisableExceptionWarning: 'SQLite objects created in a thread can only be used in that same thread' en QdrantClient.__del__, que salta durante test_s31_rrf_fusiona_*. ASSUMPTION: viene del cliente que abre el lifespan de la prueba e2e de T3; no es código de T4."}
 ]}
 ```
+
+## T5 — attempt 1
+
+VERDICT: PASS
+
+# Review de MDO-0001 · T5, intento 1
+
+T5 cumple su "Done when". El caso de uso respeta las capas de `architecture.md` y cada escenario de la tarea tiene una prueba que lo verifica. No hay hallazgos que bloqueen. Hay un hallazgo de severidad media que conviene corregir en `src/server/AGENTS.md`: atribuye a T6 el guardrail D7, que es de T7.
+
+## Conformidad con la spec
+
+- **S-10.1 / AC-11.** Sin soporte, la respuesta es el mensaje fijo exacto, con `fuentes == []` y estado `Sin información suficiente`, y el redactor no se llama. Las pruebas lo comprueban, incluido el caso con fragmentos candidatos bajo el umbral, y que `MENSAJE_SIN_INFORMACION` coincide con el texto del PDF.
+- **S-10.2 / S-10.2/C1 / AC-12.** Con la base vacía responde lo mismo y no lanza excepción; el buscador inconsistente (`hay_soporte=True` sin fragmentos) también da el mensaje fijo. "El servidor arranca" no es de esta capa.
+- **S-10.3 / C1 / AC-13.** "¿Va a llover mañana en Bogotá?" da `Sin información suficiente` y nunca `Bloqueada por seguridad`.
+- **S-6.1 / S-6.1/C1 / AC-6.** Cada fuente trae `documento`, `seccion` y `fragmento`, deduplicadas con `deduplicar_fuentes` y solo de los fragmentos declarados usados. Solo la parte determinista, dentro del alcance acordado.
+- **D4.** Bajo el umbral no se llama al modelo.
+
+## Límites de módulo y Principle check
+
+`aplicacion/consultar.py` solo importa de `dominio`; DP-5 y DP-9 se cumplen. Nombres según `glossary.md`. Sin errores tragados que bloqueen, números mágicos ni lógica duplicada (ver F2).
+
+## TDD (ADR 0022)
+
+- Rojo registrado (línea 46 de `execution.md`, exit 2 por falta de `src.server.aplicacion`).
+- `redTests.changed` lista `test_consultar.py`; según el log, solo `ruff --fix` I001. Sin aserciones debilitadas. ASSUMPTION: no tengo shell para comparar con el archivo del rojo.
+- Pruebas significativas, sobre comportamiento observable, con dobles de los puertos.
+- Gates T5-1 en PASS; suite completa 74 passed (T5-1-fullsuite.txt). El warning de `QdrantClient.__del__` viene de T4 (F5).
+
+## Decisiones de API
+
+| Decisión | Dictamen |
+|---|---|
+| Ids de `fragmentos_usados` 1-based | Confirmada. Encaja con D7. T7 debe numerar desde 1 y validar igual. |
+| Fuentes en el orden de recuperación | Confirmada (D6, DP-4). |
+| Ids fuera de rango se ignoran | Confirmada solo en `consultar`, con salvedades (F1, F2). El guardrail D7 es de **T7**. |
+| `partes_sin_soporte=()` sin uso | Confirmada. Lo consume **T7**. |
+| `Estado` es `StrEnum` | Confirmada; el docstring de la prueba sigue diciendo `(str, Enum)` (F4). |
+
+## Findings (JSON)
+
+```json
+{"version":1,"findings":[
+{"id":"F1","status":"open","severity":"medium","lens":"core","title":"AGENTS.md atribuye a T6 el guardrail de salida D7 y el uso de partes_sin_soporte; según tasks.md ambos son de T7","file":"src/server/AGENTS.md","line":10,"evidence":"AGENTS.md dice 'partes_sin_soporte aún sin uso, lo consume T6' y 'el guardrail de salida es T6'. Pero tasks.md asigna T6 a RedactorExtractivo (D12), y a T7 validacion.py (ids no recuperados, fragmentos_usados vacío, cifras) y partes_sin_soporte (S-5.1). Puede llevar al implementador de T6 a meter el guardrail en el lugar equivocado. Hay que cambiar T6 por T7 en las dos referencias."},
+{"id":"F2","status":"open","severity":"medium","lens":"core","title":"consultar puede devolver Exitosa sin fuentes si el redactor no declara ids válidos (DP-2), y nada lo prueba","file":"src/server/aplicacion/consultar.py","line":9,"evidence":"Si fragmentos_usados queda vacío o todo fuera de rango, el resultado es Exitosa con fuentes=[]. Eso contradice DP-2 de standards.md ('Toda respuesta Exitosa cita al menos una fuente existente'). Hoy lo cubre el guardrail D7 dentro del redactor (T7), así que no bloquea T5. OPEN: T7 debe garantizar que ningún Redactor devuelva ids vacíos o fuera de rango, o consultar debe tener una defensa explícita. Además, el descarte de ids fuera de rango que documenta AGENTS.md no tiene prueba."},
+{"id":"F3","status":"open","severity":"low","lens":"core","title":"Resultado es una dataclass congelada con un campo list mutable","file":"src/server/dominio/modelos.py","line":21,"evidence":"Resultado.fuentes es list[Fuente] dentro de una dataclass frozen=True, así que la lista se puede mutar después de crearla. Es advisory: valorar tuple[Fuente, ...] o Sequence antes de que T8 y la capa http dependan del tipo."},
+{"id":"F4","status":"open","severity":"low","lens":"core","title":"El docstring de la prueba describe Estado(str, Enum); la implementación usa StrEnum","file":"tests/server/aplicacion/test_consultar.py","line":7,"evidence":"La implementación usa StrEnum (UP042), según el log de execution.md. Es advisory: ajustar el docstring para que la documentación de la API asumida no se desvíe del código."},
+{"id":"F5","status":"open","severity":"low","lens":"core","title":"Warning de QdrantClient.__del__ en la suite: cierre de SQLite desde otro hilo (de T4, no de T5)","file":"tests/server/infraestructura/busqueda/test_buscador.py","line":1,"evidence":"La salida de la suite completa trae PytestUnraisableExceptionWarning: 'SQLite objects created in a thread can only be used in that same thread' en test_s31_rrf_conserva_el_orden_y_limita_a_tres_candidatos. El cliente no se cierra explícitamente en la prueba; D13 pide cerrarlo. Es advisory y pertenece a T4."}
+]}
+```
