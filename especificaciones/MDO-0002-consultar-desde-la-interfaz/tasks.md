@@ -150,7 +150,7 @@ verify: npm --prefix src/web run e2e
 
 **Notes:** T4 necesita MDO-0001 en `main` y esta rama actualizada con él (R-1). Sin TDD rojo: prueba un comportamiento que T1–T3 ya construyeron contra el backend simulado.
 
-### [ ] T5 — La pregunta vacía o de más de 1.000 caracteres no se envía y un contador muestra el largo
+### [x] T5 — La pregunta vacía o de más de 1.000 caracteres no se envía y un contador muestra el largo
 
 - **What:** `pregunta.ts` con la regla de largo de [D8](spec.md#d8); `Compositor` deshabilita el envío y
   muestra el contador; el manejador de `App` no envía una pregunta inválida ([C-9](spec.md#c-9)).
