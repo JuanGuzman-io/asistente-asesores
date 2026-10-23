@@ -1,0 +1,15 @@
+# Written by mandao run cost: what each command spent, per role and model (USD).
+costs:
+  - at: 2026-10-23T22:56:04.783Z
+    command: specify
+    harness: claude
+    session: 40c6cee9-e860-48b5-89e8-8a264ceee20b
+    usd: 2.9717
+    roles:
+      specify: 2.9717
+    models:
+      claude-opus-5-5: 2.9717
+    cumulative:
+      main-session: 2.971691
+    source: claude-code
+    basis: equivalent
