@@ -9,4 +9,4 @@ DIRECTORIO_QDRANT = DIRECTORIO_ALMACEN / "qdrant"
 RUTA_SQLITE = DIRECTORIO_ALMACEN / "consultas.db"
 MODELO_EMBEDDINGS = "sentence-transformers/paraphrase-multilingual-MiniLM-L12-v2"
 UMBRAL_ALTO = 0.60
-UMBRAL_BAJO = 0.54
+UMBRAL_BAJO = 0.525

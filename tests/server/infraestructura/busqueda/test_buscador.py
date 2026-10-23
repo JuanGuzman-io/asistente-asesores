@@ -1,9 +1,9 @@
-"""T4 (MDO-0001): búsqueda híbrida FTS5 + Qdrant, RRF, umbral 0,60 / 0,54 (D4, D5).
+"""T4 (MDO-0001): búsqueda híbrida FTS5 + Qdrant, RRF, umbral 0,60 / 0,525 (D4, D5, C-9).
 
 API asumida (design.md fija el puerto `BuscadorDocumental`, los umbrales y la fusión, pero no firmas):
 
     src/server/config.py
-        UMBRAL_ALTO = 0.60, UMBRAL_BAJO = 0.54 ("valores calibrados en configuración", D4).
+        UMBRAL_ALTO = 0.60, UMBRAL_BAJO = 0.525 ("valores calibrados en configuración", D4).
 
     src/server/dominio/puertos.py
         ResultadoBusqueda (dataclass congelada): `fragmentos: Sequence[Fragmento]` (hasta 3, mejor
@@ -184,7 +184,7 @@ def _caso_umbral(conexion, qdrant, coseno: float, pregunta: str) -> ResultadoBus
 
 def test_d4_umbrales_calibrados_en_configuracion():
     assert config.UMBRAL_ALTO == pytest.approx(0.60)
-    assert config.UMBRAL_BAJO == pytest.approx(0.54)
+    assert config.UMBRAL_BAJO == pytest.approx(0.525)
 
 
 def test_d4_el_buscador_implementa_el_puerto_y_devuelve_resultado_de_dominio(buscador):
@@ -304,7 +304,7 @@ def test_d11_los_huerfanos_no_quitan_cupos_a_los_candidatos_vigentes(conexion, q
     assert [f.seccion for f in resultado.fragmentos] == ["Sección Vigente"]
 
 
-# --- Umbral D4: 0,60 solo vectores; 0,54 si además coincide en FTS ------------------------------
+# --- Umbral D4: 0,60 solo vectores; 0,525 si además coincide en FTS -----------------------------
 
 
 def test_s31_umbral_alto_basta_sin_coincidencia_fts(conexion, qdrant):
