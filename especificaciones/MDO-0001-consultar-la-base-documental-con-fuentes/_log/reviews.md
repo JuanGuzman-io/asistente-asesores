@@ -667,3 +667,48 @@ Todos PASS según `.mandao/cache/MDO-0001/gates/T11-1.md`: test "23 passed" (sol
 {"id":"F6","status":"open","severity":"low","lens":"core","title":"Sigue apareciendo la PytestUnraisableExceptionWarning de QdrantClient.__del__ en otro hilo","file":"src/server/http/app.py","line":61,"evidence":"La salida del gate test muestra 'sqlite3.ProgrammingError: SQLite objects created in a thread can only be used in that same thread' desde QdrantClient.__del__. No lo introduce T11 y no rompe ninguna prueba; advisory para revisar la mitigación de app.py:59-61."}
 ]}
 ```
+
+## T12 — attempt 1
+
+VERDICT: PASS
+
+Reviso el estado actual del código. `middleware.py`, `problemas.py` y `app.py` no cambian en este diff. Los resultados de pruebas que cito vienen de los gates del pack y de las dos mutaciones. Yo no ejecuté nada.
+
+## Conformidad con la spec
+
+- **S-13.1 y AC-15: se cumple.** Si la búsqueda lanza, la API responde 500 `application/problem+json` con exactamente `type`, `title`, `status`, `detail` y `requestId`; `requestId` coincide con `X-Request-Id` y `detail == DETALLES[500]`. La excepción la captura `MiddlewareSolicitud`, por dentro de `ServerErrorMiddleware`.
+- **S-13.1/C1 y AC-15/C1: se cumple** para búsqueda e insert. El marcador, la lista de textos y `SELECT * FROM fragmentos` del mensaje de prueba no aparecen en el cuerpo.
+- **S-11.2: se cumple.** Mismo 500 genérico, sin la respuesta del redactor.
+- **NFR-4: se cumple.** La línea JSON lleva `requestId`, `codigo: 500` y `error` con el tipo; ni la pregunta ni el mensaje aparecen en `caplog.text` (DEBUG, todos los loggers). Una sola línea con el `requestId`.
+
+## Sobre D8
+
+T12 cumple sus cuatro criterios de comportamiento. D8 (`design.md:128`) y el "What" de T12 (`tasks.md:427`) todavía hablan de un handler de `Exception`; la justificación de la desviación solo está en `_log/reviews.md:480`. Registrarla en D8 antes de cerrar la spec. No bloquea T12 (F1).
+
+## Las tres comprobaciones pedidas
+
+- **`detail` genérico:** sí, fijado por igualdad exacta en dos pruebas.
+- **La pregunta no va al log:** sí, con marcador único en los dos fallos; T12-2 lo confirma.
+- **Lista de cadenas prohibidas:** basta hoy; hueco no bloqueante (F2): falta la ruta temporal real, `fragmentos` y `Data/`, y el caso del insert no fija el conjunto de claves del cuerpo.
+
+## TDD y pruebas
+
+Evidencia por mutación: T12-1 (`detail=str(error)`) mata 4 casos y T12-2 (log con `str(error)`) mata los 2 de NFR-4. `redTests.changed` vacío. ASSUMPTION: el hash de reversión `e3b0c44298fc` es el SHA-256 vacío (diferencia vacía tras revertir). Sin pruebas innecesarias.
+
+## Cambio fuera de la lista de archivos
+
+`tests/server/aplicacion/test_respaldo.py:234`: solo el comentario `# pragma: allowlist secret`; aserción intacta (F3, resuelto). El gate se corrigió en `9b2e798`.
+
+## Otros puntos
+
+`src/server/AGENTS.md` ya describe el 500 en el middleware. Sin fronteras rotas. OPEN (advisory): FR-13 dice "el detalle queda solo en el log", pero el log solo guarda el tipo; coherente con NFR-4, decisión de producto.
+
+## Findings (JSON)
+
+```json
+{"version":1,"findings":[
+{"id":"F1","status":"open","severity":"medium","lens":"core","title":"D8 y el What de T12 aún describen un handler de Exception; la desviación al middleware solo consta en _log/reviews.md","file":"especificaciones/MDO-0001-consultar-la-base-documental-con-fuentes/design.md","line":128,"evidence":"design.md:128 dice que hay handlers propios para `RequestValidationError` (422), `HTTPException` y `Exception` (500); tasks.md:427 habla del handler de `Exception`; la implementación está en src/server/http/middleware.py:42-47 y la justificación (ServerErrorMiddleware vuelve a lanzar la excepción) solo está en _log/reviews.md:480. Hay que registrarla en D8 antes de cerrar la spec; no bloquea T12."},
+{"id":"F2","status":"open","severity":"low","lens":"security","title":"A la lista de cadenas prohibidas le faltan la ruta temporal real, la tabla fragmentos y Data/, y el caso parametrizado no fija el cuerpo completo","file":"tests/server/http/test_errores.py","line":248,"evidence":"PROHIBIDOS_EN_CUERPO no incluye str(entorno.ruta_sqlite) ni str(tmp_path) (bajo /private/var en macOS), 'fragmentos' (la tabla del SQL de prueba) ni 'Data/'. test_s13_1_c1 solo fija `detail`. Hoy lo cubren la igualdad exacta de `detail` y MARCA_MENSAJE; recomiendo un assert sobre el cuerpo completo, sin contar requestId."},
+{"id":"F3","status":"resolved","severity":"low","lens":"security","title":"Cambio fuera de la lista de archivos: pragma allowlist en test_respaldo.py","file":"tests/server/aplicacion/test_respaldo.py","line":234,"evidence":"Solo se añade el comentario `# pragma: allowlist secret`; la aserción no cambia y 'clave-falsa' es un valor de prueba. Lo destapó el gate de secretos, ahora corregido en 9b2e798 para escanear archivos no trackeados."}
+]}
+```

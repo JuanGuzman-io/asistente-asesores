@@ -2,7 +2,7 @@
 progress:
   schema_version: 1
   spec: MDO-0001-consultar-la-base-documental-con-fuentes
-  updated_at: 2026-10-23T17:48:19.166Z
+  updated_at: 2026-10-23T17:53:42.248Z
   current: null
   open_questions: []
   next_step: ""
@@ -353,6 +353,15 @@ progress:
             - test_s12_1_dos_consultas_con_gemini_caido_registran_extractivo_las_dos_veces
             - test_s12_2_crear_app_sin_gemini_api_key_no_crea_el_cliente_y_responde_extractiva
             - test_s12_1_modelo_y_luego_gemini_caido_registra_modelo_y_luego_extractivo
+    - task: T12
+      files:
+        - path: tests/server/http/test_errores.py
+          sha256: 3ddcc4942e2830562baefb4cf582bc0b9d1ba8f8f11e1633ba0863d67f46ee61
+          tests:
+            - test_s13_1_la_busqueda_que_lanza_responde_500_problem_json_con_request_id_y_detail_generico
+            - test_s13_1_c1_el_cuerpo_del_500_no_lleva_trazas_rutas_sql_ni_la_pregunta
+            - test_s11_2_si_falla_el_insert_de_consultas_responde_el_mismo_500_generico
+            - test_nfr4_el_log_del_500_lleva_request_id_y_tipo_de_error_sin_pregunta_ni_mensaje
   pending_commits: []
   approved_manifests:
     - task: T1
@@ -742,10 +751,23 @@ progress:
         - tests/server/aplicacion/test_respaldo.py
         - tests/server/e2e/test_respaldo_e2e.py
       receipts: []
+    - task: T12
+      attempt: 1
+      files:
+        - path: tests/server/aplicacion/test_respaldo.py
+          status: " M"
+          sha256: e748de3a5e89624a441e08779cc6bdc36529631a1f98ca80b94fbfdffada9512
+        - path: tests/server/http/test_errores.py
+          status: ??
+          sha256: 3ddcc4942e2830562baefb4cf582bc0b9d1ba8f8f11e1633ba0863d67f46ee61
+      reviewed:
+        - tests/server/aplicacion/test_respaldo.py
+        - tests/server/http/test_errores.py
+      receipts: []
   loop_brake:
-    task: T11
+    task: T12
     action: commit
-    execution_rows: 83
+    execution_rows: 89
     approval_rows: 6
     repeats: 1
 approvals:
@@ -903,4 +925,12 @@ cut_estimates:
     base: 63912
     turns_left: 58
     savings: 4.55
+    decision: "go on: below 50"
+  - at: 2026-10-23T17:48:43.087Z
+    task: T12
+    boundary_id: implement:T12
+    context: 528824
+    base: 63912
+    turns_left: 43
+    savings: 3.68
     decision: "go on: below 50"

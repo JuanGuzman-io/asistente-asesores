@@ -231,7 +231,7 @@ def test_d9_la_fabrica_por_defecto_usa_httpoptions_timeout_5000_y_sin_retry_opti
     gemini._fabrica_por_defecto("clave-falsa")
 
     opciones = capturado["kwargs"]["http_options"]
-    assert capturado["kwargs"]["api_key"] == "clave-falsa"
+    assert capturado["kwargs"]["api_key"] == "clave-falsa"  # pragma: allowlist secret
     assert opciones.timeout == 5000
     assert gemini.TIMEOUT_MS == 5000
     assert opciones.retry_options is None
