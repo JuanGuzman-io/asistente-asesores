@@ -23,16 +23,20 @@ Requisitos: Python 3.13 (`.python-version`) y `uv`. Desde la raíz del repositor
 - Puerto ocupado: cambiar `--port`. No usar `--workers` > 1 ni `--reload` con dos procesos sobre la misma carpeta `almacen/`.
 - La clave solo se lee de `os.environ` (no hay `python-dotenv`); nunca se registra en logs.
 
+## Levantar el frontend
+
+Con el backend en el puerto 8000: `cd src/web && npm ci && npm run dev`, y abrir `http://localhost:5173`. El proxy de Vite reenvía `/api` al backend. Gates, pruebas y e2e en `src/web/AGENTS.md`.
+
 ## Module index
 
-Arquitectura en `constitucion/architecture.md`. El frontend (`src/web/`) y `docs/Cuestionario.md` aún no existen.
+Arquitectura en `constitucion/architecture.md`. `docs/Cuestionario.md` aún no existe.
 
 | Module | Path | Purpose |
 |---|---|---|
 | Constitución | `constitucion/` | Principios (`constitucion.md`), arquitectura, estándares, seguridad, producto y reglas de negocio |
 | Especificaciones | `especificaciones/` | Una carpeta por característica |
 | Backend | `src/server/` | `POST /api/consultar`: guardrails, búsqueda documental, respuesta con fuentes, registro |
-| Frontend | `src/web/` | Consultar y ver respuesta, fuentes, errores y estado |
+| Frontend | `src/web/` | Proyecto `web` (W+IA): consultar y ver respuesta, fuentes, errores y estado. Guía en `src/web/AGENTS.md` |
 | Pruebas | `tests/` | TDD: positivos, negativos y casos borde del entregable 7 |
 | Base documental | `Data/` | Documentos oficiales (datos irreales). `Información restringida.md` es confidencial: nunca se indexa ni se expone |
 | Documentación | `docs/` | `Cuestionario.md` (entregable 9) |

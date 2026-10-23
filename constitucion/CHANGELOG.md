@@ -6,6 +6,23 @@ schema_version: 1
 
 <!-- Newest first. Only /mandao-close (or /mandao-constitution in active mode, with approval) writes here. -->
 
+## 2026-10-23 — Cierre de MDO-0002: interfaz para consultar
+
+- **Cambio:** `standards.md` cierra los OPEN del frontend: lint con ESLint y typescript-eslint (complejidad,
+  largo de función y de archivo), exemplar files, y los gates del proyecto `web` en `.mandao/config.yml`.
+  También acepta BlueOak-1.0.0, CC-BY-4.0 (transitivas sin modificar) y OFL-1.1 (fuentes Geist), y agrega dos
+  reglas de Kaizen: el `AGENTS.md` del módulo va en files y en Done when, y la primera tarea define la
+  resolución y el lint de pruebas que viven fuera del paquete. `architecture.md` fija versiones del frontend
+  y el proxy de Vite (D2) y quita la frase "no hay código todavía". `critical-flows.md` suma la suite
+  `tests/web/e2e/consultar.spec.ts`. `security.md` prohíbe que un servidor de desarrollo sirva la raíz del
+  repositorio. `ux.md` agrega la marca W+IA, la dirección visual y los tokens de la paleta de Banco W.
+  `product.md` pasa el frontend a `implemented`.
+- **Motivo:** Constitution Impact y Product Impact de `spec.md` de MDO-0002; Kaizen de MDO-0002 (3 de 4 FAIL
+  del revisor por `AGENTS.md` o archivos no declarados; T1 F1 exponía `Data/` desde Vite); renombre a W+IA.
+- **Verificación:** MDO-0002 verificado (`verify-report.md`: 67 pruebas unitarias y 4 e2e en PASS en la CI del
+  PR #2, corrida 40025377094).
+- **Origen:** MDO-0002, aprobado por el PE (2026-10-23).
+
 ## 2026-10-23 — Cierre de MDO-0001: backend de consulta con fuentes
 
 - **Cambio:** `architecture.md` fija un solo proceso de uvicorn y el semáforo de llamadas a Gemini.

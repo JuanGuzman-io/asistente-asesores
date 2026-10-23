@@ -40,7 +40,12 @@ never infer it from the framework.
 - Exemplar files (backend): puerto `src/server/dominio/puertos.py`; caso de uso
   `src/server/aplicacion/consultar.py`; ruta `src/server/http/rutas.py`; adaptador
   `src/server/infraestructura/persistencia/repositorio.py`; prueba unitaria
-  `tests/server/aplicacion/test_consultar.py`; e2e `tests/server/e2e/test_flujo_consulta.py`. Frontend: OPEN.
+  `tests/server/aplicacion/test_consultar.py`; e2e `tests/server/e2e/test_flujo_consulta.py`. Frontend
+  (MDO-0002): cliente de la API `src/web/src/api.ts`; componente `src/web/src/Resultado.tsx`; prueba
+  unitaria `tests/web/App.test.tsx`; e2e `tests/web/e2e/consultar.spec.ts`. Lint del frontend: ESLint con
+  typescript-eslint (`src/web/eslint.config.js`).
+- Una tarea que cambia el comportamiento de un módulo lista su `AGENTS.md` en files y en Done when, y se revisa antes de entregarla (MDO-0002 T1 F3, T2 F2, T6 F1).
+- Si las pruebas viven fuera del paquete (p. ej. `tests/web`), la primera tarea define la resolución de módulos y el alcance de format y lint (MDO-0002 T1 F2, T2 F3 y F5).
 
 ## Errors
 Códigos de `POST /api/consultar` (decisión del PE, 2026-10-23; intake Q-2, Q-6):
@@ -68,19 +73,22 @@ fijadas en el lockfile. Para Gemini se usa `google-genai` (SDK oficial, `googlea
 nunca `google-generativeai`, deprecado y sin soporte desde el 2025-11-30 (su página de PyPI).
 Excepción (PE, 2026-10-23, MDO-0001): en dependencias transitivas sin modificar se aceptan MPL-2.0 y
 PSF-2.0, y cualquier licencia igual o más permisiva que MIT (MIT-0, ISC, 0BSD, CC0-1.0, Unlicense).
+MDO-0002 (PE, 2026-10-23): en el frontend se aceptan además BlueOak-1.0.0 y CC-BY-4.0 en transitivas sin
+modificar, y OFL-1.1 para las fuentes Geist autoalojadas (`@fontsource-variable/*`).
 Una premisa sobre límites de una API externa (plazos, cuotas, formatos) se verifica con una llamada real antes de aprobar el diseño (MDO-0001 CC-1).
 
 ## Clean-code thresholds (level 0 gates, blocking)
 
 | Metric | Threshold | Tool |
 |---|---|---|
-| Cyclomatic complexity per function | ≤ 10 | ruff (backend); linter del frontend OPEN |
-| Function length (lines) | ≤ 50 | linter |
-| File length (lines) | ≤ 300 | linter |
+| Cyclomatic complexity per function | ≤ 10 | ruff (backend); ESLint `complexity` (frontend) |
+| Function length (lines) | ≤ 50 | linter (frontend: ESLint `max-lines-per-function`) |
+| File length (lines) | ≤ 300 | linter (frontend: ESLint `max-lines`) |
 | Duplication | sin bloques duplicados > 10 líneas | revisión |
 | Layer-violating imports | none | revisión / regla de lint |
 | Dead code | none | typecheck + lint |
 
 ## Gates
 Backend: los de `projects[].gates` en `.mandao/config.yml` (format, lint, typecheck, test, secrets,
-sast, audit y metrics = evals; MDO-0001 C-8). Frontend: OPEN hasta que exista `package.json`.
+sast, audit y metrics = evals; MDO-0001 C-8). Frontend: los del proyecto `web` en el mismo archivo
+(format, lint, typecheck, test, build, secrets y audit; MDO-0002 D6); sin SAST, hueco aceptado por el PE.

@@ -171,3 +171,17 @@ costs:
       mandao-tester: 0.154399
     source: claude-code
     basis: equivalent
+  - at: 2026-10-23T21:34:23.355Z
+    command: close
+    harness: claude
+    session: c4903658-7d6b-4173-ba6a-5d5c0674d410
+    usd: 1.7334
+    roles:
+      close: 1.7334
+    models:
+      claude-opus-5-5: 1.7334
+    cumulative:
+      main-session: 2.909475
+      mandao-tester: 0.154399
+    source: claude-code
+    basis: equivalent

@@ -41,4 +41,4 @@ Condiciones de la entrega de la prueba, no reglas de comportamiento del asistent
 | Indicar falta de información | `src/server/dominio/reglas.py` (`MENSAJE_SIN_INFORMACION`, MDO-0001) | PDF p. 5; Manual del Asesor, "Casos Especiales" | implemented (frase del PDF, ver BR-3) |
 | Bloquear consultas sobre información restringida | — | PDF p. 2; Información restringida.md | planned |
 | Registrar consultas (pregunta, fecha y hora, respuesta, fuentes, estado) | `src/server/infraestructura/persistencia/repositorio.py` (MDO-0001) | PDF p. 2 | implemented |
-| Frontend para consultar y ver respuesta, fuentes, errores y estado | — | PDF p. 5 | planned |
+| Frontend para consultar y ver respuesta, fuentes, errores y estado | `src/web/src/App.tsx`, `src/web/src/Resultado.tsx`, `src/web/src/api.ts` (MDO-0002) | PDF p. 5 | implemented |

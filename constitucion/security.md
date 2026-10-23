@@ -17,6 +17,8 @@ asvs_level: 1
 | Confidential | `Data/Información restringida.md` (sistema interno, token, usuario, clave temporal) | Nunca se indexa, nunca aparece en una respuesta, un prompt o un log. |
 | Personal data | Datos de clientes que un asesor escriba en una pregunta | Nunca se registran en logs; la pregunta se guarda solo en la base local de consultas. |
 
+Ningún servidor de desarrollo sirve la raíz del repositorio; `Data/` va en su lista de denegación (MDO-0002 T1 F1).
+
 ## Authentication and authorization
 Fuera del alcance de la prueba (ejecución local de un solo usuario). ASSUMPTION(source: PDF, entregable 6):
 sin autenticación; en producción se exigiría SSO corporativo (ver cuestionario).
