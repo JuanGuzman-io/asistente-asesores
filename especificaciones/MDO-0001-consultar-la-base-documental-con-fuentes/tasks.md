@@ -473,7 +473,7 @@ parallel_safe: true
 verify: uv run pytest tests/server/http -q
 ```
 
-### [ ] T13 — Con clave real, la llamada a Gemini llega al modelo y se corta a los 5 s
+### [x] T13 — Con clave real, la llamada a Gemini llega al modelo y se corta a los 5 s
 
 - **What:** el API rechaza un plazo de servidor menos de 10 s; el cliente envía `X-Server-Timeout: 10`
   y conserva el corte local de 5 s, sin reintentos ([D9](design.md#d9), NFR-3). Hallado en verify
