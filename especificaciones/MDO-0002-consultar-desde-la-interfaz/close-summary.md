@@ -12,6 +12,7 @@ applied:
   - constitucion/ux.md
   - constitucion/CHANGELOG.md
   - AGENTS.md
+closed_at: 2026-10-23T21:35:38.260Z
 ---
 
 # Close — MDO-0002-consultar-desde-la-interfaz
@@ -136,6 +137,7 @@ tareas con pruebas tuvieron rojo antes del verde. Costo: US$38,28 equivalentes (
 
 ## Delivery
 
+- Closed: 2026-10-23T21:35:38.260Z
 - Applied: `constitucion/standards.md`, `constitucion/architecture.md`, `constitucion/critical-flows.md`, `constitucion/product.md`, `constitucion/security.md`, `constitucion/ux.md`, `constitucion/CHANGELOG.md`, `AGENTS.md`
 - [Verify report](verify-report.md)
 - [Quickstart](quickstart.md)

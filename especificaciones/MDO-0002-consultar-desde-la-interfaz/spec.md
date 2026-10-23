@@ -350,8 +350,8 @@ Propuestas; solo `/mandao-close` las aplica, con aprobación.
 
 ## Open items
 
-- ASSUMPTION(source: MDO-0001 requirements.md S-7.x "un `detail` legible"): el `detail` del 422 llega en español y se puede mostrar tal cual; si no, se usa el mensaje genérico de 422. Confirma: dev de MDO-0001.
-- ASSUMPTION(source: performance.md p95 ≤ 3 s; MDO-0001 D9): 30 s de tiempo límite en la interfaz. Confirma: tech lead.
+- ASSUMPTION(source: MDO-0001 requirements.md S-7.x "un `detail` legible"): el `detail` del 422 llega en español y se puede mostrar tal cual; si no, se usa el mensaje genérico de 422. Confirma: dev de MDO-0001. — resolved 2026-10-23: MDO-0001 C-11 fija los `detail` del 422 en textos exactos en español ("La pregunta no puede estar vacía."); la e2e S-3.1 y `api.test.ts` los muestran tal cual.
+- ASSUMPTION(source: performance.md p95 ≤ 3 s; MDO-0001 D9): 30 s de tiempo límite en la interfaz. Confirma: tech lead. — resolved 2026-10-23: el PE (tech lead) confirmó 30 s al cierre; implementado en `src/web/src/api.ts` y probado en S-3.3.
 
 ## Clarifications
 

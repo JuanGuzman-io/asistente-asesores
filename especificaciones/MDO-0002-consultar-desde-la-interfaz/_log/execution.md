@@ -309,3 +309,5 @@ spec: MDO-0002-consultar-desde-la-interfaz
 <!-- mandao:telemetry {"id":"3a15e153-5532-46a9-afbe-ccd14d2a4d2d","type":"asked","at":"2026-10-23T21:30:44.574Z","command":"close","run":"730a34d0-61b6-40d7-b6ca-09b83049210e","question":"product","subject":"close-impacts"} -->
 <!-- mandao:telemetry {"id":"3a15e153-5532-46a9-afbe-ccd14d2a4d2d","type":"answered","at":"2026-10-23T21:32:21.980Z","command":"close","run":"730a34d0-61b6-40d7-b6ca-09b83049210e","question":"product"} -->
 <!-- mandao:telemetry {"id":"730a34d0-61b6-40d7-b6ca-09b83049210e","type":"command_end","at":"2026-10-23T21:34:23.736Z","command":"close","run":"730a34d0-61b6-40d7-b6ca-09b83049210e"} -->
+<!-- mandao:telemetry {"id":"f61f4ae3-5f1f-445f-a495-ba856d8ddc63","type":"asked","at":"2026-10-23T21:34:40.037Z","command":"close","run":"730a34d0-61b6-40d7-b6ca-09b83049210e","question":"technical","subject":"timeout-30s"} -->
+<!-- mandao:telemetry {"id":"f61f4ae3-5f1f-445f-a495-ba856d8ddc63","type":"answered","at":"2026-10-23T21:35:37.875Z","command":"close","run":"730a34d0-61b6-40d7-b6ca-09b83049210e","question":"technical"} -->

@@ -92,4 +92,4 @@ datos personales que escriba el asesor (`security.md`).
 ## Assumptions and open questions
 
 - `CONFLICT` resuelto (a: MDO-0001 `story.md` "seguridad (MDO-0002) y la interfaz (MDO-0003)"; b: PE 2026-10-23 "Esta spec (MDO-0002) es el frontend… llega en MDO-0003"; decides: PE, resolved): MDO-0002 es la interfaz y MDO-0003 la seguridad. Las referencias de MDO-0001 se corrigen en esa spec, no en esta rama.
-- ASSUMPTION(source: critical-flows.md, "Consulta respondida con fuentes y registrada"): AC-1 es el camino del asesor por ese flujo crítico, por eso `critical: true` y lleva prueba de punta a punta.
+- ASSUMPTION(source: critical-flows.md, "Consulta respondida con fuentes y registrada"): AC-1 es el camino del asesor por ese flujo crítico, por eso `critical: true` y lleva prueba de punta a punta. — resolved 2026-10-23: `critical-flows.md` incluye ahora `tests/web/e2e/consultar.spec.ts` en ese flujo (cierre de MDO-0002, aprobado por el PE).
