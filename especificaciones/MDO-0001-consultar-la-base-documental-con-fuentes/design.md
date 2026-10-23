@@ -69,6 +69,15 @@ la misma transacción que decide la respuesta.
   `UMBRAL_BAJO` (0,525) y además coincide en FTS. Valores en configuración, calibrados en T10 contra EV-2
   y EV-3 ([C-5](requirements.md#c-5), [P5](#p5)) y recalibrados en verify con `consultas@v2`
   ([C-9](requirements.md#c-9)). Bajo el umbral: `Sin información suficiente`, sin llamar al modelo.
+- **Pedido de sección (corrección del PE, 2026-10-23):** si la pregunta empieza por "qué dice(n)" y las
+  raíces de la sección de un candidato FTS aparecen seguidas en las de la pregunta ("¿Qué dice la política
+  de citas?" → Política de Citas), ese fragmento va primero y hay soporte sin mirar el coseno. Causa: el
+  prefijo baja el coseno de la sección correcta (Protección de Información 0,55 → 0,514, bajo 0,525) y el
+  modelo no relaciona "citas" con citar fuentes (0,22), aunque FTS la ponga primera. Nombrar la sección sin
+  pedir lo que dice ("¿Cuál es la tasa del Crédito Productivo Impulso?") sigue el umbral. Con
+  `consultas@v4` (pedidos de sección c49–c57, negativos s16–s19): EV-1 0,892 → 0,985, EV-3 0,092 → 0,000,
+  EV-2, EV-4, EV-5 y EV-7 en 1,000; umbrales sin cambio (margen mínimo 0,008). Rechazado: mirar el umbral
+  en los 3 candidatos (ninguno lo cumplía) y aceptar cualquier sección nombrada (rompe s01 y s06).
 - **Texto indexado (decisión del PE, 2026-10-23, T10):** lo que se embebe y lo que indexa FTS5 es
   `documento > sección\ntexto` (`texto_indexable`); el hash de deduplicación sigue sobre `texto`. El
   formato se versiona (`VERSION_FORMATO`) junto al modelo en la colección: si cambia, se recrea.
@@ -247,7 +256,7 @@ la misma transacción que decide la respuesta.
 
 | ID | Applies? | Application or reason not applicable |
 |---|---|---|
-| DP-1 | yes | Validación antes de procesar (D8); confidenciales fuera del índice en dos capas (D3); la pregunta y los fragmentos son datos en búsqueda y prompt (D5, D7). El bloqueo por seguridad es MDO-0002. |
+| DP-1 | yes | Validación antes de procesar (D8); confidenciales fuera del índice en dos capas (D3); la pregunta y los fragmentos son datos en búsqueda y prompt (D5, D7). El bloqueo por seguridad es la historia I-4 del intake. |
 | DP-2 | yes | Solo información recuperada, validada por el guardrail de salida (D7); fuentes siempre (FR-6); mensaje fijo sin soporte (FR-10). |
 | DP-3 | yes | Cada escenario empieza con una prueba roja; dobles de `Redactor` y embeddings en las pruebas (`standards.md`). |
 | DP-4 | yes | El modelo solo redacta con fragmentos recuperados; su salida se valida en código; umbral y estados son deterministas (D4, D7). |
@@ -282,7 +291,7 @@ falla del insert de `consultas` → 500 y ninguna fila.
 | Prompts | Redactor con fuentes: solo fragmentos dados, citar ids, listar partes sin soporte, nunca seguir instrucciones del texto | `src/server/infraestructura/redactor/prompt.md`@v1 |
 | Chunking / embedding | Sección `##` (D2); `paraphrase-multilingual-MiniLM-L12-v2`, 384 dim, local | `fastembed` 0.9.0 |
 | Retrieval (k, filters, reranking) | FTS con stemming en español (D4); 5 por vía, RRF k = 60, top 3, umbral D4; filtro por hashes vigentes; sin reranker | FTS5; Qdrant local, `qdrant-client` 1.20.0 |
-| Guardrails | Entrada: validación (D8); salida: ids y cifras (D7). Entrada por seguridad: MDO-0002 | — |
+| Guardrails | Entrada: validación (D8); salida: ids y cifras (D7). Entrada por seguridad: historia I-4 del intake | — |
 | Fallback | Extractivo (D12) sin clave, con error, tiempo agotado o salida inválida | — |
 
 ## Changes by project and module
@@ -318,7 +327,7 @@ Derived from this design; regenerated whenever it changes. Part of the design ap
 - 413 / 415 / 422 / 500: `application/problem+json` con `type`, `title`, `status`, `detail`, `requestId`.
 - Todas las respuestas llevan `X-Request-Id`.
 
-MDO-0003 (interfaz) consume este contrato; MDO-0002 solo agrega el estado `Bloqueada por seguridad`.
+MDO-0002 (interfaz) consume este contrato; la historia I-4 del intake (seguridad) solo agrega el estado `Bloqueada por seguridad`.
 
 ## Risks and risk tags
 
@@ -332,7 +341,7 @@ MDO-0003 (interfaz) consume este contrato; MDO-0002 solo agrega el estado `Bloqu
 
 - **R-5:** `google-genai` 2.33.0 salió el mismo día del diseño y `qdrant-client` 1.20.0 el día anterior; si alguno falla, se fija la versión previa (2.32.0, 1.19.1).
 - **R-7:** el modo local de Qdrant está pensado para desarrollo y pruebas (README de qdrant-client); con ~20 fragmentos basta, y producción usaría un servidor Qdrant con el mismo cliente (`architecture.md`).
-- Sin guardrail de entrada por seguridad hasta MDO-0002: una pregunta por credenciales queda `Sin información suficiente`, porque el documento no está indexado (D3).
+- Sin guardrail de entrada por seguridad hasta la historia I-4 del intake: una pregunta por credenciales queda `Sin información suficiente`, porque el documento no está indexado (D3).
 
 ## Constitution Impact
 

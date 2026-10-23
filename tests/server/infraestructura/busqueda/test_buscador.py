@@ -479,3 +479,55 @@ def test_fts_encuentra_por_palabras_del_documento_y_de_la_seccion(conexion, qdra
 
     assert buscar_fts(conexion, "zorrodoc") == [hash_normalizado(fragmento.texto)]
     assert buscar_fts(conexion, "zorrosec") == [hash_normalizado(fragmento.texto)]
+
+
+# --- Pedido de sección: "¿Qué dice la política de…?" / "¿Qué dice el manual sobre…?" ----------
+# Corrección del PE (2026-10-23): una pregunta que pide lo que dice una sección y la nombra
+# completa tiene soporte en esa sección aunque el prefijo "¿Qué dice…?" baje su coseno.
+
+CITAS = Fragmento("Políticas de Atención", "Política de Citas", "Toda respuesta indica la fuente.")
+ESCALAMIENTO = Fragmento(
+    "Políticas de Atención", "Política de Escalamiento", "Los casos dudosos pasan al supervisor."
+)
+
+
+def _caso_seccion(conexion, qdrant, pregunta: str) -> ResultadoBusqueda:
+    """Citas con coseno .20 (bajo el umbral bajo) y Escalamiento mejor en vectores (.45)."""
+    embeddings = EmbeddingsFijo(
+        {
+            _emb(CITAS): _con_coseno(0.20),
+            _emb(ESCALAMIENTO): _con_coseno(0.45),
+            pregunta: _consulta(),
+        }
+    )
+    return _indexar(conexion, qdrant, [CITAS, ESCALAMIENTO], embeddings).buscar(pregunta)
+
+
+@pytest.mark.parametrize(
+    "pregunta",
+    [
+        "¿Qué dice la política de citas?",
+        "que dice la politica de citas",
+        "¿Qué dice el manual sobre la política de citas?",
+    ],
+)
+def test_pedido_de_seccion_que_la_nombra_tiene_soporte_y_va_primero(conexion, qdrant, pregunta):
+    resultado = _caso_seccion(conexion, qdrant, pregunta)
+
+    assert resultado.hay_soporte is True
+    assert _clave(resultado)[0] == ("Políticas de Atención", "Política de Citas")
+
+
+def test_pedido_de_seccion_que_no_nombra_ninguna_no_tiene_soporte(conexion, qdrant):
+    resultado = _caso_seccion(conexion, qdrant, "¿Qué dice la política de vacaciones?")
+
+    assert resultado.hay_soporte is False
+    assert not resultado.fragmentos
+
+
+def test_nombrar_la_seccion_sin_pedir_lo_que_dice_sigue_el_umbral(conexion, qdrant):
+    # Como "¿Cuál es la tasa de interés del Crédito Productivo Impulso?" (s01): el dato no está.
+    resultado = _caso_seccion(conexion, qdrant, "¿Cuál es el horario de la política de citas?")
+
+    assert resultado.hay_soporte is False
+    assert not resultado.fragmentos

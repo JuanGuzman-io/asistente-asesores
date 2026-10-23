@@ -69,7 +69,7 @@ embeddings de hashes nuevos ([NFR-2](requirements.md#nfr-2--arranque)). Carpeta 
   `fragmentos` se ignora en la búsqueda y se borra en el siguiente arranque).
 - `consultas` no referencia a `fragmentos`: guarda las fuentes como copia, porque el índice se reconstruye
   en cada arranque y el registro debe conservar lo que se respondió.
-- Índice sobre `consultas(fecha_hora)` para el historial de MDO-0003.
+- Índice sobre `consultas(fecha_hora)` para un historial futuro (fuera del alcance de la interfaz, MDO-0002).
 
 ## Permissions
 
@@ -80,7 +80,7 @@ quedan fuera de git (`.gitignore`).
 ## State transitions
 
 `consultas.estado` se fija una vez al insertar; no hay transiciones. `BLOQUEADA` queda permitido por el
-CHECK pero solo lo escribe MDO-0002.
+CHECK pero solo lo escribirá la historia I-4 del intake (seguridad).
 
 ## Migration
 

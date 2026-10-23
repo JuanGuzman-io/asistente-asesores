@@ -1,3 +1,4 @@
+import re
 import sqlite3
 
 from qdrant_client import QdrantClient
@@ -7,12 +8,14 @@ from src.server.config import UMBRAL_ALTO, UMBRAL_BAJO
 from src.server.dominio.modelos import Fragmento
 from src.server.dominio.puertos import ResultadoBusqueda
 from src.server.infraestructura.busqueda.embeddings import Embeddings
-from src.server.infraestructura.busqueda.fts import buscar_fts
+from src.server.infraestructura.busqueda.fts import buscar_fts, raices, sin_tildes
 from src.server.infraestructura.busqueda.indice import COLECCION
 
 CANDIDATOS = 5
 RESULTADOS = 3
 K_RRF = 60
+# Pedido de sección: "¿Qué dice la política de…?", "¿Qué dice el manual sobre…?".
+PEDIDO_DE_SECCION = re.compile(r"^\W*que\s+dicen?\b")
 
 
 class BuscadorHibrido:
@@ -44,6 +47,13 @@ class BuscadorHibrido:
         if not orden:
             return ResultadoBusqueda(fragmentos=[], hay_soporte=False)
 
+        nombrada = self._seccion_nombrada(pregunta, por_fts)
+        if nombrada is not None:
+            orden = [nombrada, *(h for h in orden if h != nombrada)][:RESULTADOS]
+            return ResultadoBusqueda(
+                fragmentos=[self._fragmento(h) for h in orden], hay_soporte=True
+            )
+
         mejor = orden[0]
         coseno = cosenos[mejor] if mejor in cosenos else self._coseno_de(pregunta, mejor)
         hay_soporte = coseno >= self._umbral_alto or (
@@ -52,6 +62,24 @@ class BuscadorHibrido:
         if not hay_soporte:
             return ResultadoBusqueda(fragmentos=[], hay_soporte=False)
         return ResultadoBusqueda(fragmentos=[self._fragmento(h) for h in orden], hay_soporte=True)
+
+    def _seccion_nombrada(self, pregunta: str, por_fts: list[str]) -> str | None:
+        """Candidato FTS cuya sección nombra completa un pedido de sección; tiene soporte aunque
+        el prefijo "¿Qué dice…?" baje su coseno. Sin pedido, decide el umbral (p. ej. "¿Cuál es la
+        tasa del Crédito Productivo Impulso?" nombra la sección, pero el dato no está)."""
+        if not PEDIDO_DE_SECCION.match(sin_tildes(pregunta)):
+            return None
+        palabras = raices(pregunta)
+        for hash_fragmento in por_fts:
+            (seccion,) = self._conexion.execute(
+                "SELECT seccion FROM fragmentos WHERE hash = ?", (hash_fragmento,)
+            ).fetchone()
+            titulo = raices(seccion)
+            if titulo and any(
+                palabras[i : i + len(titulo)] == titulo for i in range(len(palabras))
+            ):
+                return hash_fragmento
+        return None
 
     def _buscar_vectores(self, pregunta: str) -> dict[str, float]:
         """Hash -> coseno, en orden de similitud, solo de hashes vigentes en `fragmentos`."""

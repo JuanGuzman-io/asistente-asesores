@@ -344,7 +344,7 @@ verify: uv run pytest tests/server/infraestructura/redactor -q
 - **Done when:**
   - S-11.1 holds: una consulta `Exitosa` y otra `Sin información suficiente` quedan con los cinco campos, `fecha_hora` en UTC ISO 8601 y las mismas fuentes que se devolvieron.
   - S-11.2 holds: si el insert falla, el caso de uso propaga el error y no queda ninguna fila parcial.
-  - `estado` y `modo` solo aceptan los valores del CHECK; `BLOQUEADA` queda permitido para MDO-0002.
+  - `estado` y `modo` solo aceptan los valores del CHECK; `BLOQUEADA` queda permitido para la historia I-4 del intake (seguridad).
 
 ```yaml
 project: asistente-asesores
@@ -403,7 +403,7 @@ verify: uv run pytest tests/server/http -q
   evals EV-1 a EV-5; ajusta los umbrales si hace falta ([C-5](requirements.md#c-5), [P5](design.md#p5)).
 - **Done when:**
   - S-4.1 holds de punta a punta: la pregunta del PDF responde 200 con `$50.000.000`, su fuente y un registro en `consultas`.
-  - Preguntar por "token interno" o "clave temporal" no devuelve nada de `Información restringida.md` (estado `Sin información suficiente` hasta que MDO-0002 agregue el bloqueo).
+  - Preguntar por "token interno" o "clave temporal" no devuelve nada de `Información restringida.md` (estado `Sin información suficiente` hasta que la historia I-4 del intake agregue el bloqueo).
   - S-10.1 y S-11.1 hold de punta a punta: una pregunta sin soporte responde el mensaje fijo y queda registrada.
   - S-5.2 holds de punta a punta: la pregunta por monto y tasa, sin modelo, empieza con "Esto es lo que encontré en la base documental:" y trae el fragmento con su fuente.
   - EV-1 ≥ 0,90, EV-2 ≥ 0,90, EV-3 ≤ 0,10, EV-4 = 1,00 y EV-5 = 1,00 en modo extractivo; los umbrales finales quedan en configuración y en `design.md` D4.
