@@ -22,3 +22,6 @@ spec: quick
 <!-- mandao:telemetry {"id":"202afb04-30b0-44e1-8768-765e8f9ec92f","type":"answered","at":"2026-10-23T14:36:30.008Z","command":"story","run":"5b006aa1-3bcd-4d96-86db-a2e05c679f51","question":"product"} -->
 <!-- mandao:telemetry {"id":"28763740-a846-495c-9f63-39978816cefb","type":"answered","at":"2026-10-23T14:36:30.215Z","command":"story","run":"5b006aa1-3bcd-4d96-86db-a2e05c679f51","question":"product"} -->
 <!-- mandao:telemetry {"id":"5b006aa1-3bcd-4d96-86db-a2e05c679f51","type":"command_end","at":"2026-10-23T14:37:34.622Z","command":"story","run":"5b006aa1-3bcd-4d96-86db-a2e05c679f51"} -->
+<!-- mandao:telemetry {"id":"b55050be-dda1-405d-988b-a5fec8622f9c","type":"agent_start","at":"2026-10-23T23:13:37.373Z","command":"quick","run":"8a669781-055f-4a67-b52e-7103ae03de41","subject":"mandao-reviewer"} -->
+<!-- mandao:telemetry {"id":"b55050be-dda1-405d-988b-a5fec8622f9c","type":"agent_end","at":"2026-10-23T23:14:17.053Z","command":"quick","run":"8a669781-055f-4a67-b52e-7103ae03de41"} -->
+<!-- mandao:telemetry {"id":"8a669781-055f-4a67-b52e-7103ae03de41","type":"command_end","at":"2026-10-23T23:14:21.734Z","command":"quick","run":"8a669781-055f-4a67-b52e-7103ae03de41"} -->

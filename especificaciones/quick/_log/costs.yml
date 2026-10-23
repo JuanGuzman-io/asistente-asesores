@@ -44,3 +44,19 @@ costs:
       model:claude-opus-5-5: 0.957213
     source: claude-code
     basis: equivalent
+  - at: 2026-10-23T23:14:17.327Z
+    command: quick
+    harness: claude
+    session: 98e09eb7-908e-4817-bc0c-4b9b27c90fec
+    usd: 0.8736
+    roles:
+      quick: 0.7502
+      mandao-reviewer: 0.1234
+    models:
+      claude-opus-5-5: 0.8737
+    cumulative:
+      main-session: 0.750231
+      mandao-reviewer: 0.123428
+      model:claude-opus-5-5: 0.873658
+    source: claude-code
+    basis: equivalent
