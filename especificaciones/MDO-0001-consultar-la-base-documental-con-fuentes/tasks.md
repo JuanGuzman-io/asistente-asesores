@@ -29,7 +29,7 @@ tarea empieza con pruebas rojas; el modelo y los embeddings se reemplazan por do
 
 **Delivery checkpoint:** run `mandao run verify-plan <spec> --delivery 1` before delivery 2; it passes when `scope.clear` is true.
 
-### Delivery 2 — AC-8, AC-11, AC-6, AC-12, AC-13, AC-14, AC-7, AC-9, AC-10
+### Delivery 2 — AC-8, AC-12, AC-13, AC-14, AC-7, AC-9, AC-10
 
 #### AC-3, AC-8, AC-11 — Consulta válida con soporte documental; Caracteres especiales; Sin soporte documental
 
@@ -91,14 +91,13 @@ tarea empieza con pruebas rojas; el modelo y los embeddings se reemplazan por do
 
 **Delivery checkpoint:** run `mandao run verify-plan <spec> --delivery 3` before delivery 4; it passes when `scope.clear` is true.
 
-### Delivery 4 — AC-3, AC-5, AC-4, AC-16
+### Delivery 4 — AC-3, AC-11, AC-6, AC-5, AC-4, AC-16
 
 #### AC-16 — Falla del modelo
 
 - [x] T13 [AC-16] Con clave real, la llamada a Gemini llega al modelo y se corta a los 5 s — `src/server/infraestructura/redactor/gemini.py`
-- [ ] T16 [AC-16] El proveedor del modelo se elige por configuración y está apagado por defecto — `src/server/infraestructura/redactor/proveedores.py`
 
-**Checkpoint:** `uv run pytest tests/server/infraestructura/redactor -q` and `uv run pytest tests/server -q` passes (T13, T16); this confirms AC-16 before the next group.
+**Checkpoint:** `uv run pytest tests/server/infraestructura/redactor -q` passes (T13); this confirms AC-16 before the next group.
 
 #### AC-4, AC-5 — Solo información encontrada; Soporte parcial
 
@@ -111,6 +110,12 @@ tarea empieza con pruebas rojas; el modelo y los embeddings se reemplazan por do
 - [x] T15 [AC-3, AC-16] Varias consultas con modelo en paralelo, sin pasar de 3 s de p95 — `src/server/http/rutas.py`
 
 **Checkpoint:** `uv run pytest tests/server/http -q` passes (T15); this confirms AC-3, AC-16 before the next group.
+
+#### AC-3, AC-6, AC-11 — Consulta válida con soporte documental; Contenido de cada fuente; Sin soporte documental
+
+- [ ] T16 [AC-3, AC-6, AC-11] Las paráfrasis con plurales encuentran su sección y el extractivo no muestra relleno — `src/server/infraestructura/busqueda/fts.py`
+
+**Checkpoint:** `uv run pytest tests/server -q` passes (T16); this confirms AC-3, AC-6, AC-11 before the next group.
 
 **Delivery checkpoint:** run `mandao run verify-plan <spec> --delivery 4`; it passes when `scope.clear` is true.
 
@@ -564,36 +569,36 @@ parallel_safe: false
 verify: uv run pytest tests/server/http -q
 ```
 
-### [ ] T16 — El proveedor del modelo se elige por configuración y está apagado por defecto
+### [ ] T16 — Las paráfrasis con plurales encuentran su sección y el extractivo no muestra relleno
 
-- **What:** cambios del PE del 2026-10-23 ([C-10](requirements.md#c-10), [C-11](requirements.md#c-11)).
-  `LLM_PROVIDER` (`ninguno` por defecto, `gemini`) elige el `Redactor` al arrancar desde el registro de
-  `proveedores.py` ([D14](design.md#d14)); con `ninguno` o sin clave, extractivo. La espera por un cupo del
-  semáforo se acota a 1 s ([D9](design.md#d9)). Además, los avisos abiertos de las revisiones de T14 y T15:
-  `prompt.md` explica la línea `documento > sección` (v2); `src/server/AGENTS.md` describe el flujo actual
-  (`consultar.py`, `extractivo.py`, proveedores); prueba del arranque con `GEMINI_MAX_CONCURRENCIA`
-  inválido; la prueba del límite deja de llamarse `s14_1`; se quita la aserción de tiempo frágil en CI y el
-  `type: ignore` sobrante. `model-registry.md` justifica Gemini como proveedor incluido e intercambiable.
+- **What:** ajustes del PE del 2026-10-23 ([C-10](requirements.md#c-10)). FTS5 reduce a raíz en español el
+  texto indexado y la pregunta con `py_rust_stemmers` ([D4](design.md#d4)); el buscador entrega el puntaje
+  RRF de cada fragmento y el extractivo solo muestra y cita los que llegan al 80 % del mejor
+  ([D12](design.md#d12)). El dataset pasa a v3 con las dos preguntas del PE y otras paráfrasis con plurales
+  y conjugaciones; se recalibran los umbrales y se informan los EV antes y después (antes, código actual
+  sobre v2: EV-1 0,952, EV-2 1,000, EV-3 0,000, EV-4 1,00, EV-5 1,00, EV-7 1,00). Orden: `src/server/AGENTS.md`
+  con el flujo actual; la prueba del límite deja de llamarse `s14_1` y pierde la cota de tiempo de pared
+  frágil en CI (avisos de la revisión de T15).
 - **Done when:**
-  - Prueba roja primero (S-12.3): con `GEMINI_API_KEY` definida y `LLM_PROVIDER` sin definir o `ninguno`, `crear_app(redactor=None)` no crea el cliente de Gemini y la respuesta es extractiva con `modo` `extractivo`.
-  - `LLM_PROVIDER=gemini` con clave arma `RedactorGemini`; sin clave, extractivo (S-12.2). Un valor desconocido y un `GEMINI_MAX_CONCURRENCIA` no entero o menor que 1 (`abc`, `0`) lanzan `ValueError` al crear la app.
-  - Con el semáforo lleno, una consulta que no consigue cupo en `ESPERA_CUPO_S` responde 200 extractivo, registra `modo` `extractivo` y no espera más que ese plazo (S-12.1).
-  - La prueba de concurrencia prueba el solapamiento por el pico del doble, sin una cota de tiempo de pared estrecha.
-  - `prompt.md` dice que la primera línea de cada fragmento es `documento > sección` (`VERSION_PROMPT` = `v2`); `model-registry.md` registra v2 y la justificación de C-10; `.env.example`, el `AGENTS.md` de la raíz (activar el modelo, agregar un proveedor), `src/server/AGENTS.md` y el README quedan al día con el apagado por defecto.
+  - Prueba roja primero (S-3.3): con FTS sobre `Data/`, "¿Cuánto le prestan como máximo a un pequeño comerciante?" encuentra `Crédito Productivo Impulso`; la misma normalización reduce "pequeño" y "pequeños" a la misma raíz en el índice y en la pregunta.
+  - Prueba roja primero (S-6.2): el extractivo con fragmentos de puntaje 1,0 / 0,79 muestra y cita solo el primero; con 1,0 / 0,80 muestra los dos; sin puntaje no filtra.
+  - `consultas.json` v3 suma las dos preguntas del PE y paráfrasis con plurales y conjugaciones; una eval comprueba que "¿Qué documentos sirven para actualizar datos?" no cita Solicitud de Crédito. `uv run pytest -m eval` pasa con los umbrales recalibrados, y D4 registra los EV antes y después.
+  - La prueba del límite de concurrencia no se llama `s14_1` y prueba el solapamiento con el pico del doble, sin `duracion < 2 * ESPERA_S`.
+  - `src/server/AGENTS.md` describe el flujo actual (stemming, puntaje, filtro extractivo, `modo` desde `RespuestaRedactada.modo` en `consultar.py` y `extractivo.py`); `model-registry.md` registra el dataset v3.
 
 ```yaml
 project: asistente-asesores
-kind: feat
+kind: fix
 tier: standard
-files: [src/server/infraestructura/redactor/proveedores.py, src/server/infraestructura/redactor/gemini.py, src/server/infraestructura/redactor/prompt.md, src/server/http/app.py, src/server/http/rutas.py, src/server/config.py, tests/server/infraestructura/redactor/test_proveedores.py, tests/server/http/test_consultar_api.py, tests/server/e2e/test_respaldo_e2e.py, src/server/AGENTS.md, AGENTS.md, README.md, .env.example, constitucion/model-registry.md]
-exemplar: src/server/http/app.py
-ac: [AC-16]
-scenarios: [S-12.1, S-12.2, S-12.3]
-test_levels: { S-12.1: unit, S-12.2: unit, S-12.3: unit }
+files: [src/server/infraestructura/busqueda/fts.py, src/server/infraestructura/busqueda/indice.py, src/server/infraestructura/busqueda/buscador.py, src/server/infraestructura/redactor/extractivo.py, src/server/dominio/modelos.py, src/server/config.py, pyproject.toml, uv.lock, tests/server/infraestructura/busqueda/test_fts.py, tests/server/infraestructura/redactor/test_extractivo.py, tests/server/http/test_consultar_api.py, tests/server/evals/test_evals.py, tests/fixtures/consultas.json, src/server/AGENTS.md, constitucion/model-registry.md]
+exemplar: src/server/infraestructura/busqueda/fts.py
+ac: [AC-3, AC-6, AC-11]
+scenarios: [S-3.3, S-6.2, S-6.2/C1]
+test_levels: { S-3.3: unit, S-6.2: unit, S-6.2/C1: unit }
 partial_failure_tests: []
 evidence: tdd
-risk_tags: [ai-prompt, security]
-decisions: [D9, D14, D7]
+risk_tags: []
+decisions: [D4, D12]
 depends_on: [T15]
 delivery: 4
 parallel_safe: false

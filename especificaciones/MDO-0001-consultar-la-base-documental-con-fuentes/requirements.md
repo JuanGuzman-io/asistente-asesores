@@ -58,7 +58,9 @@ Serves: AC-3, AC-11
 Projects: asistente-asesores
 
 La búsqueda combina coincidencia de palabras y similitud semántica, ordena los fragmentos y aplica un
-umbral de relevancia: si ningún fragmento lo supera, no hay soporte documental.
+umbral de relevancia: si ningún fragmento lo supera, no hay soporte documental. La coincidencia de palabras
+reduce cada palabra a su raíz en español, en el texto indexado y en la pregunta, así un plural o una
+conjugación coincide con su forma en el documento ([C-10](#c-10)).
 
 #### S-3.1 — Pregunta con soporte
 - **Given** la base documental completa
@@ -69,6 +71,11 @@ umbral de relevancia: si ningún fragmento lo supera, no hay soporte documental.
 - **Given** una pregunta de los cuatro temas cuya respuesta no está en la base (p. ej. la tasa de interés de un crédito)
 - **When** se busca
 - **Then** ningún fragmento supera el umbral y el resultado es "sin soporte"
+
+#### S-3.3 — Paráfrasis con plurales y conjugaciones
+- **Given** la base documental completa
+- **When** se busca "¿Cuánto le prestan como máximo a un pequeño comerciante?" (el documento dice "Dirigido a pequeños comerciantes")
+- **Then** hay soporte y el primer fragmento es `Productos de Crédito > Crédito Productivo Impulso`
 
 <a id="fr4"></a>
 ### FR-4 — Responder solo con información encontrada
@@ -124,6 +131,12 @@ en la respuesta.
 - **When** se lee `fuentes`
 - **Then** cada fuente trae `documento` (p. ej. "Productos de Crédito"), `seccion` (p. ej. "Crédito Productivo Impulso") y `fragmento` (el texto de la sección usado)
 - **AND IT MUST** corresponder cada fuente a un fragmento que el redactor declaró usado (C1)
+
+#### S-6.2 — Sin fuentes de relleno en modo extractivo
+- **Given** el modo extractivo y "¿Qué documentos sirven para actualizar datos?"
+- **When** responde
+- **Then** solo muestra y cita los fragmentos cuyo puntaje combinado es al menos el 80 % del mejor: `Procedimientos Operativos > Actualización de Datos`
+- **BUT it must NOT** mostrar ni citar `Procedimientos Operativos > Solicitud de Crédito` (C1)
 
 <a id="fr7"></a>
 ### FR-7 — Validar la pregunta
@@ -233,9 +246,8 @@ fuentes y estado antes de responder.
 Serves: AC-16
 Projects: asistente-asesores
 
-Sin modelo configurado (el proveedor está apagado por defecto o falta su clave, [C-10](#c-10)), o si el
-modelo falla, excede el tiempo, no consigue cupo a tiempo ([C-11](#c-11)) o su salida no pasa la validación,
-la respuesta es extractiva: los fragmentos relevantes con sus fuentes, estado `Exitosa` y código 200.
+Sin modelo configurado, o si el modelo falla, excede el tiempo o su salida no pasa la validación, la
+respuesta es extractiva: los fragmentos relevantes con sus fuentes, estado `Exitosa` y código 200.
 
 #### S-12.1 — Modelo caído
 - **Given** el modelo configurado pero respondiendo con error o sin responder antes del tiempo límite
@@ -245,11 +257,6 @@ la respuesta es extractiva: los fragmentos relevantes con sus fuentes, estado `E
 #### S-12.2 — Sin clave
 - **Given** que `GEMINI_API_KEY` no está definida
 - **When** se consulta
-- **Then** no se intenta llamar al modelo y la respuesta es extractiva
-
-#### S-12.3 — Proveedor apagado por defecto
-- **Given** que `LLM_PROVIDER` no está definida o vale `ninguno`, aunque `GEMINI_API_KEY` esté definida
-- **When** se consulta una pregunta con soporte
 - **Then** no se intenta llamar al modelo y la respuesta es extractiva
 
 <a id="fr13"></a>
@@ -281,20 +288,20 @@ Projects: asistente-asesores
 
 ## Eval thresholds
 
-Dataset `tests/fixtures/consultas.json@v2` (66 preguntas; v1 tenía 32): preguntas con respuesta, sin
+Dataset `tests/fixtures/consultas.json@v3` (v3 agrega las paráfrasis de [C-10](#c-10); v2 tenía 66 preguntas, v1 32): preguntas con respuesta, sin
 respuesta, fuera de tema, parciales y de dato faltante sobre `Data/`, con el fragmento y el estado
 esperados. "Dato faltante" pregunta un dato que no está de un producto o proceso que sí existe: es
 soporte parcial (AC-5), no "sin soporte" ([C-9](#c-9)).
 
 | ID | Serves | Metric | Threshold | Tolerance vs baseline | Dataset (version) |
 |---|---|---|---|---|---|
-| EV-1 | AC-3 | Recuperación: el fragmento esperado está entre las fuentes (hit@3) | ≥ 0,90 | −0,05 | consultas@v2 |
-| EV-2 | AC-11, AC-13 | Precisión de "sin información": preguntas sin soporte con estado `Sin información suficiente` | ≥ 0,90 | −0,05 | consultas@v2 |
-| EV-3 | AC-3 | Falsos "sin información": preguntas con soporte que no responden | ≤ 0,10 | +0,05 | consultas@v2 |
-| EV-4 | AC-4 | Fidelidad: cifras de la respuesta presentes en los fragmentos citados | 1,00 | 0 | consultas@v2 |
-| EV-5 | AC-6 | Respuestas `Exitosa` con al menos una fuente completa (documento, sección, fragmento) | 1,00 | 0 | consultas@v2 |
-| EV-6 | AC-5 | Parciales y de dato faltante que nombran la parte o el dato que falta (con modelo) | ≥ 0,80 | −0,10 | consultas@v2 |
-| EV-7 | AC-5/C2 | Dato faltante en modo extractivo: `Exitosa`, con la sección esperada entre las fuentes, la frase inicial de D12 y sin cifras fuera de los fragmentos citados (no afirma el dato) | ≥ 0,90 | −0,05 | consultas@v2 |
+| EV-1 | AC-3 | Recuperación: el fragmento esperado está entre las fuentes (hit@3) | ≥ 0,90 | −0,05 | consultas@v3 |
+| EV-2 | AC-11, AC-13 | Precisión de "sin información": preguntas sin soporte con estado `Sin información suficiente` | ≥ 0,90 | −0,05 | consultas@v3 |
+| EV-3 | AC-3 | Falsos "sin información": preguntas con soporte que no responden | ≤ 0,10 | +0,05 | consultas@v3 |
+| EV-4 | AC-4 | Fidelidad: cifras de la respuesta presentes en los fragmentos citados | 1,00 | 0 | consultas@v3 |
+| EV-5 | AC-6 | Respuestas `Exitosa` con al menos una fuente completa (documento, sección, fragmento) | 1,00 | 0 | consultas@v3 |
+| EV-6 | AC-5 | Parciales y de dato faltante que nombran la parte o el dato que falta (con modelo) | ≥ 0,80 | −0,10 | consultas@v3 |
+| EV-7 | AC-5/C2 | Dato faltante en modo extractivo: `Exitosa`, con la sección esperada entre las fuentes, la frase inicial de D12 y sin cifras fuera de los fragmentos citados (no afirma el dato) | ≥ 0,90 | −0,05 | consultas@v3 |
 
 ## Non-functional requirements
 
@@ -336,7 +343,7 @@ no hacen llamadas de red (verificado ejecutándolas sin red).
 | AC-1 | C1: nada de la información restringida | FR-1 / S-1.1 C1 | covered |
 | AC-2 | main | FR-2 / S-2.1 | covered |
 | AC-2 | C1: sin fuente repetida | FR-2 / S-2.1 C1, S-2.2; FR-6 | covered |
-| AC-3 | main | FR-3 / S-3.1; FR-4 / S-4.1; FR-14 / S-14.1 | covered |
+| AC-3 | main | FR-3 / S-3.1, S-3.3; FR-4 / S-4.1; FR-14 / S-14.1 | covered |
 | AC-3 | C1: al menos una fuente | FR-4 / S-4.1 C1 | covered |
 | AC-4 | main | FR-4 / S-4.2 | covered |
 | AC-4 | C1: sin inferir ni completar | FR-4 / S-4.2 C1 | covered |
@@ -344,7 +351,7 @@ no hacen llamadas de red (verificado ejecutándolas sin red).
 | AC-5 | C1: sin completar la parte faltante | FR-5 / S-5.1 C1 | covered |
 | AC-5 | C2: extractivo sin afirmar cobertura total | FR-5 / S-5.2, S-5.2 C1 | covered |
 | AC-6 | main | FR-6 / S-6.1 | covered |
-| AC-6 | C1: cada fuente usada | FR-6 / S-6.1 C1 | covered |
+| AC-6 | C1: cada fuente usada | FR-6 / S-6.1 C1, S-6.2 | covered |
 | AC-7 | main | FR-7 / S-7.1 | covered |
 | AC-7 | C1: sin consultar ni registrar | FR-7 / S-7.1 C1 | covered |
 | AC-8 | main | FR-8 / S-8.1, S-8.2 | covered |
@@ -362,7 +369,7 @@ no hacen llamadas de red (verificado ejecutándolas sin red).
 | AC-14 | C1: sin registrar rechazos | FR-11 / S-11.1 C1 | covered |
 | AC-15 | main | FR-13 / S-13.1 | covered |
 | AC-15 | C1: sin detalles internos | FR-13 / S-13.1 C1 | covered |
-| AC-16 | main | FR-12 / S-12.1, S-12.2, S-12.3 | covered |
+| AC-16 | main | FR-12 / S-12.1, S-12.2 | covered |
 
 ## Clarifications
 
@@ -415,16 +422,10 @@ no hacen llamadas de red (verificado ejecutándolas sin red).
 - **Effect:** design.md D4 y P5; una tarea calibra contra EV-2 y EV-3.
 
 <a id="c-10"></a>
-### C-10 — ¿El modelo de redacción es obligatorio y está atado a Gemini? (2026-10-23)
-- **Answer:** no. El LLM es opcional y está apagado por defecto: el PDF no lo exige y el modo extractivo cumple el contrato. `LLM_PROVIDER` elige el proveedor (`ninguno` por defecto, `gemini`); el caso de uso recibe el `Redactor` elegido al arrancar y, con `ninguno` o sin la clave del proveedor, usa el extractivo. `AGENTS.md` explica cómo agregar otro proveedor (un adaptador que implemente `Redactor` y su registro), sin implementar otros. `model-registry.md` justifica Gemini como el proveedor incluido: costo (nivel gratuito, Flash-Lite), política de datos (gratuito solo con datos irreales, pago en producción) y tamaño justo; el proveedor es intercambiable por configuración.
+### C-10 — Paráfrasis sin soporte y fuentes de relleno en modo extractivo (2026-10-23)
+- **Answer:** (1) FTS5 aplica el stemmer de español de `py_rust_stemmers` (ya instalado con `fastembed`) al texto indexado y a la pregunta: "¿Cuánto le prestan como máximo a un pequeño comerciante?" respondía `Sin información suficiente` aunque el Crédito Productivo Impulso dice "Dirigido a pequeños comerciantes". (2) En modo extractivo solo se muestran los fragmentos cuyo puntaje combinado (RRF) es al menos el 80 % del mejor: "¿Qué documentos sirven para actualizar datos?" no debe mostrar también Solicitud de Crédito. (3) El dataset suma esas preguntas y otras paráfrasis con plurales y conjugaciones (v3); se recalibran los umbrales y se informan los EV antes y después. Nada cambia del modelo: Gemini queda como está.
 - **Answered by:** PE (Product Engineer).
-- **Effect:** FR-12 y S-12.3; design.md D14 (nueva), D9, Model and prompts, Constitution Impact; tasks.md T16.
-
-<a id="c-11"></a>
-### C-11 — ¿Cuánto espera una consulta por un cupo del semáforo del modelo? (2026-10-23)
-- **Answer:** como máximo 1 s (`ESPERA_CUPO_S` en `config.py`); si no consigue cupo, responde en modo extractivo con 200 y el log dice "sin cupo", sin contenido. Así una consulta en cola no suma una espera ilimitada al presupuesto de 3 s de p95 (NFR-1): 1 s de espera más una llamada típica de 0,9 a 1,7 s (medición de T15) queda por debajo.
-- **Answered by:** resuelto técnicamente (base: NFR-1, D9 "el extractivo es la respuesta de respaldo", AC-16; pedido de acotar la espera del PE, 2026-10-23). Rechazadas: espera sin límite (rompe NFR-1 con más de 5 consultas simultáneas), rechazar con 429 o 503 (AC-16 exige 200 extractivo), hacer la espera configurable (sin un caso que lo pida).
-- **Effect:** FR-12; design.md D9; tasks.md T16.
+- **Effect:** FR-3 / S-3.3; FR-6 / S-6.2; tabla de evals sobre `consultas@v3`; design.md D4 y D12; tasks.md T16.
 
 <a id="c-9"></a>
 ### C-9 — ¿Qué es una pregunta por un dato que no está, de un producto que sí existe? (2026-10-23, verify)

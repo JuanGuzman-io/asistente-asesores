@@ -2,10 +2,14 @@
 progress:
   schema_version: 1
   spec: MDO-0001-consultar-la-base-documental-con-fuentes
-  updated_at: 2026-10-23T19:38:12.918Z
-  current: null
+  updated_at: 2026-10-23T19:50:40.371Z
+  current:
+    task: T16
+    phase: implementing
+    harness: claude
+    model: claude-opus-5-5
   open_questions: []
-  next_step: ""
+  next_step: red tests for S-12.3, provider registry, wait bound
   deferred_to_ci: []
   red_tests:
     - task: T1
@@ -451,6 +455,25 @@ progress:
             - test_s14_1_con_mas_consultas_que_el_limite_nunca_hay_mas_en_vuelo_que_el_limite
             - test_la_variable_gemini_max_concurrencia_fija_el_limite_cuando_no_se_pasa_parametro
             - test_s12_1_un_429_del_api_responde_200_extractivo_y_el_log_lleva_el_429_sin_contenido
+    - task: T16
+      files:
+        - path: tests/server/infraestructura/redactor/test_proveedores.py
+          sha256: 945936304da5e5d40662b1dfdcc98552eae8f080941b2c4a81418aa800e0e8b0
+          tests:
+            - test_gemini_esta_registrado_en_proveedores
+            - test_s12_3_sin_proveedor_elegido_es_extractivo_aunque_haya_clave
+            - test_s12_3_proveedor_gemini_con_clave_es_gemini_sin_crear_el_cliente
+            - test_s12_2_proveedor_gemini_sin_clave_es_extractivo
+            - test_un_proveedor_desconocido_es_value_error_que_nombra_la_variable_y_no_filtra_la_clave
+        - path: tests/server/http/test_consultar_api.py::test_s12_3_con_clave_pero_sin_llm_provider_responde_extractivo_y_no_crea_el_cliente
+          sha256: missing
+          tests: []
+        - path: tests/server/http/test_consultar_api.py::test_s12_3_un_llm_provider_desconocido_detiene_crear_app
+          sha256: missing
+          tests: []
+        - path: tests/server/http/test_consultar_api.py::test_s12_1_sin_cupo_tras_la_espera_acotada_responde_extractivo_sin_esperar_al_modelo
+          sha256: missing
+          tests: []
   pending_commits: []
   approved_manifests:
     - task: T1
@@ -924,6 +947,12 @@ progress:
         - src/server/infraestructura/redactor/gemini.py
         - tests/server/http/test_consultar_api.py
       receipts: []
+  loop_brake:
+    task: T16
+    action: implement
+    execution_rows: 107
+    approval_rows: 8
+    repeats: 1
 approvals:
   - step: shown
     by: Juan D. Guzmán
@@ -972,6 +1001,22 @@ approvals:
       story.md: sha256-vuoxSZOUvnLk7tEsF/V+ByP9TzMCTSVrhOCGr8oaz9M=
       requirements.md: sha256-OKSlYNJnHbrGdifT06fJxPyrWTDk4O6XCutr+tDxFak=
       design.md: sha256-vb1u87Xfaff6mzp69LT5oAa8/NyzYU3N+kcE6MP3YgU=
+      research.md: sha256-zIRqEpLE7D8+hZNMwtBpylMa9qw0U68N6Y0kLbftWAQ=
+  - step: shown
+    by: Juan D. Guzmán
+    at: 2026-10-23T19:46:14.741Z
+    sha256:
+      story.md: sha256-vuoxSZOUvnLk7tEsF/V+ByP9TzMCTSVrhOCGr8oaz9M=
+      requirements.md: sha256-TQd5bFTlv6V73jQ7HCiEfafvf49j/ECXqWDVRQEH6Dw=
+      design.md: sha256-TKpmy57awFt6jNUT5Z+MbJmn+B4IYdTybnaUf4Lytf8=
+      research.md: sha256-zIRqEpLE7D8+hZNMwtBpylMa9qw0U68N6Y0kLbftWAQ=
+  - step: shown
+    by: Juan D. Guzmán
+    at: 2026-10-23T19:46:16.948Z
+    sha256:
+      story.md: sha256-vuoxSZOUvnLk7tEsF/V+ByP9TzMCTSVrhOCGr8oaz9M=
+      requirements.md: sha256-TQd5bFTlv6V73jQ7HCiEfafvf49j/ECXqWDVRQEH6Dw=
+      design.md: sha256-TKpmy57awFt6jNUT5Z+MbJmn+B4IYdTybnaUf4Lytf8=
       research.md: sha256-zIRqEpLE7D8+hZNMwtBpylMa9qw0U68N6Y0kLbftWAQ=
 cut_estimates:
   - at: 2026-10-23T15:23:40.600Z
@@ -1129,3 +1174,11 @@ cut_estimates:
     turns_left: 28
     savings: 0.26
     decision: "go on: suggestion already shown at boundary"
+  - at: 2026-10-23T19:46:36.431Z
+    task: T16
+    boundary_id: implement:T16
+    context: 131361
+    base: 60463
+    turns_left: 43
+    savings: 0.31
+    decision: "go on: below 50"

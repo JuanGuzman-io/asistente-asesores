@@ -58,6 +58,13 @@ la misma transacción que decide la respuesta.
   [research.md#R1, R3, R5](research.md)). El id de cada punto es un UUID v5 del hash del fragmento y su
   payload trae `hash`; los resultados de Qdrant se unen a `fragmentos` por `hash`. Cada búsqueda trae hasta
   5 candidatos por vía, se combinan por Reciprocal Rank Fusion (k = 60) y se quedan los 3 primeros.
+- **Stemming (T16, [C-10](requirements.md#c-10)):** antes de FTS5, el texto indexado y la pregunta pasan
+  por la misma normalización: minúsculas, sin tildes, palabras `[a-z0-9]+`, sin palabras vacías y cada
+  palabra reducida con `SnowballStemmer("spanish")` de `py_rust_stemmers` (0.1.8, dependencia de
+  `fastembed` 0.9.0; se declara directa en `pyproject.toml` porque el código la importa). Las tildes se
+  quitan antes de reducir: así "pequeño" y "pequenos" dan la misma raíz (`pequen`). Solo cambia FTS: lo
+  que se embebe sigue siendo `texto_indexable` sin reducir, así que `VERSION_FORMATO` no cambia; la tabla
+  FTS se reconstruye en cada arranque (D11). Rechazado: el tokenizador `porter` de FTS5 (solo inglés).
 - **Umbral:** hay soporte si el mejor fragmento tiene similitud coseno ≥ `UMBRAL_ALTO` (0,60), o ≥
   `UMBRAL_BAJO` (0,525) y además coincide en FTS. Valores en configuración, calibrados en T10 contra EV-2
   y EV-3 ([C-5](requirements.md#c-5), [P5](#p5)) y recalibrados en verify con `consultas@v2`
@@ -92,6 +99,8 @@ la misma transacción que decide la respuesta.
   - La calibración es dentro de la muestra: los umbrales se eligieron con el mismo dataset que mide los
     EV ([C-5](requirements.md#c-5) lo permite). Recalibrar si cambian el modelo, el formato o el
     dataset; un margen de 0,008 sigue siendo estrecho: ampliar el dataset antes de producción.
+  - Recalibración con stemming y `consultas@v3` (T16, [C-10](requirements.md#c-10)): los números antes y
+    después se registran aquí al cerrar T16.
   - Las evals corren con el modelo real como gate `metrics` (`uv run pytest -m eval`); `uv run pytest`
     las excluye y no descarga modelos (`standards.md`, decisión del PE 2026-10-23).
 - Rechazadas: `sqlite-vec` (exige un Python con extensiones de SQLite cargables, que no todos los
@@ -168,9 +177,6 @@ la misma transacción que decide la respuesta.
   (https://aistudio.google.com/rate-limit). Si el API responde 429, la consulta cae al modo extractivo
   con HTTP 200 y el log registra solo el código 429. Con el candado, 5 consultas concurrentes con modelo
   dieron 0,9 a 4,4 s (p95 > 3 s, NFR-1). El `modo` viaja en `RespuestaRedactada.modo`, no en la instancia.
-- Espera por un cupo (T16, [C-11](requirements.md#c-11)): una consulta espera como máximo `ESPERA_CUPO_S`
-  = 1 s; sin cupo responde extractivo (200) y el log dice "sin cupo". El semáforo envuelve al redactor
-  elegido por [D14](#d14), sea cual sea el proveedor.
 - Rechazado: reintentos (con un p95 de 3 s no hay margen; el extractivo es la respuesta de respaldo).
 
 <a id="d10"></a>
@@ -206,30 +212,18 @@ la misma transacción que decide la respuesta.
 - Rechazadas: varios workers (fallan al abrir la carpeta); un servidor Qdrant (rompe "ejecutable 100 %
   local sin servicios", `architecture.md`; queda como paso a producción).
 
-<a id="d14"></a>
-### D14 — Proveedor de redacción configurable y apagado por defecto
-
-- `LLM_PROVIDER` ([C-10](requirements.md#c-10)): `ninguno` (por defecto, también si está vacía) o
-  `gemini`, sin distinguir mayúsculas ni espacios exteriores. Un valor desconocido lanza `ValueError` al
-  crear la app y detiene el arranque, como `GEMINI_MAX_CONCURRENCIA` (D9).
-- `infraestructura/redactor/proveedores.py` guarda el registro `PROVEEDORES: dict[str, fábrica]`; cada
-  fábrica recibe el entorno y devuelve un `Redactor`, o `None` si falta su clave. `elegir_redactor(entorno)`
-  devuelve `RedactorExtractivo` con `ninguno` o sin clave, y el adaptador del proveedor en otro caso. El
-  `lifespan` de `crear_app` lo llama una vez con `os.environ` y entrega el resultado al caso de uso; el
-  caso de uso no sabe qué proveedor hay.
-- Agregar un proveedor: un adaptador en `infraestructura/redactor/` que implemente `Redactor` (con su
-  guardrail de salida y su respaldo extractivo, como `RedactorGemini`) y una entrada en `PROVEEDORES`.
-  Documentado en el `AGENTS.md` de la raíz; no se implementan otros.
-- Rechazadas: seguir eligiendo por la sola presencia de `GEMINI_API_KEY` (una clave en `.env` activaría el
-  modelo sin decidirlo); cargar adaptadores por nombre de módulo (`importlib`) con un registro explícito
-  de un solo proveedor no hace falta.
-
 <a id="d12"></a>
 ### D12 — Respuesta extractiva
 
 - La respuesta empieza con "Esto es lo que encontré en la base documental:" y sigue con los fragmentos
   que superan el umbral (máximo 2), cada uno precedido por `Documento > Sección`, con estado `Exitosa`. No
   afirma cubrir toda la pregunta ni nombra partes faltantes ([C-1](requirements.md#c-1)).
+- Fuentes de relleno (T16, [C-10](requirements.md#c-10)): solo se muestran y citan los fragmentos cuyo
+  puntaje combinado (RRF de D4) es al menos el 80 % (`PROPORCION_MINIMA_EXTRACTIVA` = 0,80 en `config.py`)
+  del mejor. El buscador entrega el puntaje en cada fragmento (`Fragmento.puntaje`, opcional y fuera de la
+  igualdad); sin puntaje no se filtra. El filtro es solo del modo extractivo: el modelo sigue recibiendo los
+  3 fragmentos. No contradice el rechazo de un umbral sobre RRF en D4: aquí no decide si hay soporte,
+  solo cuánto se muestra de un resultado que ya lo tiene.
 
 ## Principle check
 
@@ -266,12 +260,12 @@ falla del insert de `consultas` → 500 y ninguna fila.
 
 | Concern | Choice | Version / reference |
 |---|---|---|
-| Model | `gemini-3.5-flash-lite`, opcional: `LLM_PROVIDER=gemini` y `GEMINI_API_KEY` (D14) | `google-genai` 2.33.0; `model-registry.md` |
-| Prompts | Redactor con fuentes: solo fragmentos dados, citar ids, listar partes sin soporte, nunca seguir instrucciones del texto | `src/server/infraestructura/redactor/prompt.md`@v2 (v2, T16: la primera línea de cada fragmento es `documento > sección`) |
+| Model | `gemini-3.5-flash-lite`, opcional por `GEMINI_API_KEY` | `google-genai` 2.33.0; `model-registry.md` |
+| Prompts | Redactor con fuentes: solo fragmentos dados, citar ids, listar partes sin soporte, nunca seguir instrucciones del texto | `src/server/infraestructura/redactor/prompt.md`@v1 |
 | Chunking / embedding | Sección `##` (D2); `paraphrase-multilingual-MiniLM-L12-v2`, 384 dim, local | `fastembed` 0.9.0 |
-| Retrieval (k, filters, reranking) | 5 por vía, RRF k = 60, top 3, umbral D4; filtro por hashes vigentes; sin reranker | FTS5; Qdrant local, `qdrant-client` 1.20.0 |
+| Retrieval (k, filters, reranking) | FTS con stemming en español (D4); 5 por vía, RRF k = 60, top 3, umbral D4; extractivo solo ≥ 80 % del mejor RRF (D12); filtro por hashes vigentes; sin reranker | FTS5; Qdrant local, `qdrant-client` 1.20.0 |
 | Guardrails | Entrada: validación (D8); salida: ids y cifras (D7). Entrada por seguridad: MDO-0002 | — |
-| Fallback | Extractivo (D12) con el proveedor apagado, sin clave, sin cupo a tiempo, con error, tiempo agotado o salida inválida | — |
+| Fallback | Extractivo (D12) sin clave, con error, tiempo agotado o salida inválida | — |
 
 ## Changes by project and module
 
@@ -333,7 +327,6 @@ modelo de embeddings ya están en `architecture.md` y `model-registry.md` (`/man
 - `critical-flows.md`: suite E2E del flujo "Consulta respondida con fuentes y registrada" (la que creen
   las tareas).
 - `standards.md`: nombrar los exemplar files creados; tipado con mypy en modo estricto en lugar del `OPEN` "mypy o pyright" ([C-8](requirements.md#c-8)).
-- `architecture.md`: el módulo `redactor` y "Redacción" dicen "con `GEMINI_API_KEY`"; pasan a "con `LLM_PROVIDER=gemini` y su clave; apagado por defecto" (D14). `model-registry.md` lo aplica T16 por pedido del PE ([C-10](requirements.md#c-10)).
 - `glossary.md`: "Modo de respuesta" (`modo`: `modelo`, `extractivo`, `ninguno`).
 
 ## Product Impact
