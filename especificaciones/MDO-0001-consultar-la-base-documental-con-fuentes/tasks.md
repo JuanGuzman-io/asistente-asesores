@@ -95,27 +95,22 @@ tarea empieza con pruebas rojas; el modelo y los embeddings se reemplazan por do
 
 #### AC-16 — Falla del modelo
 
-- [ ] T13 [AC-16] Con clave real, la llamada a Gemini llega al modelo y se corta a los 5 s — `src/server/infraestructura/redactor/gemini.py`
+- [x] T13 [AC-16] Con clave real, la llamada a Gemini llega al modelo y se corta a los 5 s — `src/server/infraestructura/redactor/gemini.py`
+- [ ] T16 [AC-16] El proveedor del modelo se elige por configuración y está apagado por defecto — `src/server/infraestructura/redactor/proveedores.py`
 
-**Checkpoint:** `uv run pytest tests/server/infraestructura/redactor -q` passes (T13); this confirms AC-16 before the next group.
+**Checkpoint:** `uv run pytest tests/server/infraestructura/redactor -q` and `uv run pytest tests/server -q` passes (T13, T16); this confirms AC-16 before the next group.
 
 #### AC-4, AC-5 — Solo información encontrada; Soporte parcial
 
-- [ ] T14 [AC-4, AC-5] Gemini recibe cada fragmento con su documento y sección y no mezcla productos — `src/server/infraestructura/redactor/gemini.py`
+- [x] T14 [AC-4, AC-5] Gemini recibe cada fragmento con su documento y sección y no mezcla productos — `src/server/infraestructura/redactor/gemini.py`
 
 **Checkpoint:** `uv run pytest tests/server/infraestructura/redactor -q` passes (T14); this confirms AC-4, AC-5 before the next group.
 
 #### AC-3, AC-16 — Consulta válida con soporte documental; Falla del modelo
 
-- [ ] T15 [AC-3, AC-16] Varias consultas con modelo en paralelo, sin pasar de 3 s de p95 — `src/server/http/rutas.py`
+- [x] T15 [AC-3, AC-16] Varias consultas con modelo en paralelo, sin pasar de 3 s de p95 — `src/server/http/rutas.py`
 
 **Checkpoint:** `uv run pytest tests/server/http -q` passes (T15); this confirms AC-3, AC-16 before the next group.
-
-#### AC-16 — Falla del modelo
-
-- [ ] T16 [AC-16] El proveedor del modelo se elige por configuración y está apagado por defecto — `src/server/infraestructura/redactor/proveedores.py`
-
-**Checkpoint:** `uv run pytest tests/server -q` passes (T16); this confirms AC-16 before the next group.
 
 **Delivery checkpoint:** run `mandao run verify-plan <spec> --delivery 4`; it passes when `scope.clear` is true.
 
@@ -584,8 +579,7 @@ verify: uv run pytest tests/server/http -q
   - `LLM_PROVIDER=gemini` con clave arma `RedactorGemini`; sin clave, extractivo (S-12.2). Un valor desconocido y un `GEMINI_MAX_CONCURRENCIA` no entero o menor que 1 (`abc`, `0`) lanzan `ValueError` al crear la app.
   - Con el semáforo lleno, una consulta que no consigue cupo en `ESPERA_CUPO_S` responde 200 extractivo, registra `modo` `extractivo` y no espera más que ese plazo (S-12.1).
   - La prueba de concurrencia prueba el solapamiento por el pico del doble, sin una cota de tiempo de pared estrecha.
-  - `prompt.md` dice que la primera línea de cada fragmento es `documento > sección`; `VERSION_PROMPT` = `v2`; `model-registry.md` registra v2 y la justificación de C-10.
-  - `.env.example`, el `AGENTS.md` de la raíz (cómo activar el modelo y cómo agregar un proveedor) y `src/server/AGENTS.md` quedan al día; el README no contradice el apagado por defecto.
+  - `prompt.md` dice que la primera línea de cada fragmento es `documento > sección` (`VERSION_PROMPT` = `v2`); `model-registry.md` registra v2 y la justificación de C-10; `.env.example`, el `AGENTS.md` de la raíz (activar el modelo, agregar un proveedor), `src/server/AGENTS.md` y el README quedan al día con el apagado por defecto.
 
 ```yaml
 project: asistente-asesores
