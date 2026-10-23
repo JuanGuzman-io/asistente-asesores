@@ -111,10 +111,10 @@ cambio de nombre (Bot-W → W+IA) no toca ningún AC ni FR y queda en Observatio
 ```
 $ node .mandao/bin/mandao.mjs run verify-plan MDO-0002
 "missingRed":[], "findings":[], "blockers":["3 run(s) deferred to CI wait for CI (T4, T4, T4)"],
-"securityScans":[{"project":"asistente-asesores","secrets":"covered","sast":"covered"},{"project":"web","secrets":"covered","sast":"unknown"}]
+securityScans: asistente-asesores (secretos y sast cubiertos); web (secretos cubiertos, sast unknown)
 
 $ gh run view 40024670663 --json headSha,conclusion,jobs
-{"conclusion":"success","headSha":"0f6668901af8e2e2347a12b452793258d188e8a0","jobs":[
+{"conclusion":"success","headSha":"0f66689…","jobs":[
  {"name":"backend","conclusion":"success"  (test sin red, secrets, sast: success)},
  {"name":"frontend","conclusion":"success" (test, Levantar el backend, e2e: success)},
  {"name":"evals","conclusion":"success"}]}
@@ -123,7 +123,7 @@ frontend  test       Tests  67 passed (67)
 frontend  e2e   4 passed (12.1s)
 
 $ gh run view 40025377094 --json headSha,conclusion,jobs
-{"conclusion":"success","headSha":"509aa7fdf6fbc723b36593477c87067604bacc56","jobs":[
+{"conclusion":"success","headSha":"509aa7f…","jobs":[
  {"name":"evals","conclusion":"success"},{"name":"backend","conclusion":"success"},{"name":"frontend","conclusion":"success"}]}
 frontend  test  Test Files  4 passed (4)
 frontend  test       Tests  67 passed (67)
