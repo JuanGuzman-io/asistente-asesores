@@ -827,3 +827,46 @@ Files referenced:
 - /Users/jguzman/GitHub/Projects/asistente-asesores.worktrees/MDO-0001-consultar-la-base-documental-con-fuentes/src/server/http/rutas.py
 - /Users/jguzman/GitHub/Projects/asistente-asesores.worktrees/MDO-0001-consultar-la-base-documental-con-fuentes/tests/server/http/test_consultar_api.py
 - /Users/jguzman/GitHub/Projects/asistente-asesores.worktrees/MDO-0001-consultar-la-base-documental-con-fuentes/especificaciones/MDO-0001-consultar-la-base-documental-con-fuentes/_log/execution.md
+
+## T16 — test review 1 (via claude)
+
+TEST REVIEW: PASS
+
+## Assertions
+
+Each changed existing test was checked against its HEAD version in the pack diff and against the current file; none of the changes weakens an assertion.
+
+- `tests/server/http/test_consultar_api.py`: the `# type: ignore[call-arg]` removal on `RespuestaRedactada(..., modo=modo)` is typing only. `test_s12_1_cinco_consultas_...` dropped `duracion < 2 * ESPERA_S`; `redactor.pico == 5` (calls inside `redactar` at the same moment, counted under a lock around a 0.3 s sleep) proves all five overlapped, which the wall-clock bound only suggested and could miss on a slow CI runner: stronger. `test_s14_1_...` renamed to `test_s12_1_con_mas_consultas_que_el_limite_...`; `pico == 2` and the per-request mode checks intact.
+- `tests/server/infraestructura/busqueda/test_indice.py`: `_fts` reduces the searched word to roots before `MATCH` (the index now stores roots; raw words would always return 0 and make the absence checks pass for the wrong reason). In the confidential-leak test, `unicos` also drops restricted terms whose roots all appear among official roots (false positives, not leaks). It still catches a real leak: `"INT-8457-SECRET-782" in unicos`, `_fts(conexion, "INT-8457") == 0` (phrase `int 8457`), payload, point count, embedded texts and `fragmentos.documento` checks unchanged and independent of stemming.
+- `tests/server/infraestructura/busqueda/test_buscador.py`: `test_s81_...` expects `set(raices(...))` instead of literal words; stop-word exclusion, `"..." OR "..."` shape and no-operator checks unchanged. Close to circular; `test_fts.py` pins the stemming itself (advisory).
+- `tests/server/e2e/test_arranque_indice.py`: MATCH literal `"Impulso"` → `"impuls"` (stored stem); `encontrados >= 1` unchanged.
+- `tests/server/evals/test_evals.py`: version guard asserts `"v3"`; docstring, report title and one test name say v3; no threshold relaxed (EV-1 >= 0.90, EV-2 >= 0.90, EV-3 <= 0.10, EV-4/5 == 1.00, EV-7 >= 0.90, margin 0.005).
+
+Verified: `uv run pytest tests/server -q` → 267 passed, 9 deselected; evals 9 passed (EV-1=0.982 … EV-7=1.000). The runner's "test" gate failure is `tests/fixtures/consultas.json` passed to pytest as a test path, not a test failure.
+- `tests/server/infraestructura/redactor/test_proveedores.py` and `tests/server/infraestructura/redactor/test_extractivo.py` (red tests changed): uncommitted red tests for scope the PE discarded (LLM_PROVIDER version of T16; the 80 % filter rejected in C-10(2)/D12). `test_proveedores.py` does not exist in the worktree; `test_extractivo.py` is unchanged from HEAD; no `s_6_2` or `LLM_PROVIDER` tests remain. No committed coverage lost.
+- `tests/server/infraestructura/busqueda/test_fts.py` (new): S-3.3 at unit level ("pequeño", "pequeños", "pequenos" share a root; the PE question through FTS over `Data/` returns `Crédito Productivo Impulso` first); red evidence recorded before the code existed (import error on `raices`, exit 2).
+- Discarded red node ids from the LLM_PROVIDER version of T16, no longer present in the file (no `LLM_PROVIDER` tests remain): `tests/server/http/test_consultar_api.py::test_s12_3_con_clave_pero_sin_llm_provider_responde_extractivo_y_no_crea_el_cliente`, `tests/server/http/test_consultar_api.py::test_s12_3_un_llm_provider_desconocido_detiene_crear_app`, `tests/server/http/test_consultar_api.py::test_s12_1_sin_cupo_tras_la_espera_acotada_responde_extractivo_sin_esperar_al_modelo`.
+
+## T16 — attempt 1
+
+VERDICT: PASS
+
+1. Spec conformance. C-10 (1): `raices()` in `fts.py` is one normalization shared by the index (`indice.py`) and the question (`consulta_fts`); accents removed before stemming, only FTS changes, embeddings keep `texto_indexable`, `VERSION_FORMATO` unchanged, as D4 says. C-10 (2): the 80 % filter is rejected in D12 and listed as a README limitation; no filter code. C-10 (3): `consultas.json` v3 with 80 questions including c35 and c36; D4 records EV before/after, thresholds unchanged at 0.60 / 0.525 with a 0.008 margin, in-sample rewording of c40 disclosed. AC-3 / AC-11: EV-1 0.982, EV-2 1.000, EV-3 0.000 per the gate output. Every T16 "Done when" item is met.
+2. Removed test cases: uncommitted red tests for discarded scope (`test_proveedores.py` does not exist; `test_extractivo.py` unchanged from HEAD; no `s_6_2` or `LLM_PROVIDER` tests remain). No existing coverage lost. Reason per C-10(2)/(3).
+3. AGENTS.md: `src/server/AGENTS.md` covers `raices`, FTS indexing stems, the flow line, and `modo` from `RespuestaRedactada.modo`.
+4. Clean code: no duplicated logic (index and query share `raices`), no swallowed errors, no business magic numbers; the mypy override for a stub-less package is narrow and commented.
+5. Lenses: no risk tags. Security as core: the question is still bound with `MATCH ?`, stems quoted with `"` escaped; the leak test still holds.
+6. TDD: red evidence recorded for `test_fts.py`; red tests changed belong to discarded scope.
+7. Module boundaries: `indice.py` importing `fts.raices` stays inside `infraestructura/busqueda`.
+8. New dependency: `py-rust-stemmers==0.1.8` pinned, MIT (installed METADATA), fits `standards.md` line 62; named by the PE in C-10.
+
+## Findings (JSON)
+
+```json
+{"version":1,"findings":[
+{"id":"F1","status":"open","severity":"low","lens":"core","title":"Removed red test cases have no recorded reason in the Mandao removal record","file":"especificaciones/MDO-0001-consultar-la-base-documental-con-fuentes/_log/state.yml","line":460,"evidence":"Pack: 'Reason recorded by the Leader: missing'. Uncommitted red tests for scope the PE discarded (LLM_PROVIDER; the 80 % filter rejected in C-10(2)/D12); no coverage lost. The Leader should write that reason into the removal record."},
+{"id":"F2","status":"open","severity":"low","lens":"core","title":"AGENTS.md cites only C-9 for the v3 calibration","file":"src/server/AGENTS.md","line":12,"evidence":"The config.py bullet says 'calibrados contra tests/fixtures/consultas.json@v3 ... (D4, C-9)'; the v3 recalibration comes from C-10. Advisory."},
+{"id":"F3","status":"open","severity":"low","lens":"core","title":"test_s81 expected terms are derived with the function under test","file":"tests/server/infraestructura/busqueda/test_buscador.py","line":394,"evidence":"'set(raices(\"monto máximo ...\")) <= plano' compares against raices() itself; listing the expected stems literally would pin the behavior. test_fts.py covers stemming separately. Advisory."},
+{"id":"F4","status":"resolved","severity":"low","lens":"core","title":"Wall-clock assertion in the concurrency test replaced by the peak check","file":"tests/server/http/test_consultar_api.py","line":511,"evidence":"'duracion < 2 * ESPERA_S' removed; 'redactor.pico == 5' proves all five calls overlapped; the limit test was renamed from s14_1 to s12_1, as T16 asked."}
+]}
+```

@@ -2,14 +2,10 @@
 progress:
   schema_version: 1
   spec: MDO-0001-consultar-la-base-documental-con-fuentes
-  updated_at: 2026-10-23T19:50:40.371Z
-  current:
-    task: T16
-    phase: implementing
-    harness: claude
-    model: claude-opus-5-5
+  updated_at: 2026-10-23T20:08:43.474Z
+  current: null
   open_questions: []
-  next_step: red tests for S-12.3, provider registry, wait bound
+  next_step: ""
   deferred_to_ci: []
   red_tests:
     - task: T1
@@ -474,7 +470,105 @@ progress:
         - path: tests/server/http/test_consultar_api.py::test_s12_1_sin_cupo_tras_la_espera_acotada_responde_extractivo_sin_esperar_al_modelo
           sha256: missing
           tests: []
-  pending_commits: []
+        - path: tests/server/infraestructura/busqueda/test_fts.py
+          sha256: e24ae42b83abc75503f577e2350eb2eb99b973a317ccb2a242b2dd9c1a486f79
+          tests:
+            - test_s33_singular_plural_y_sin_tilde_comparten_raiz
+            - test_s33_la_normalizacion_quita_palabras_vacias_y_signos
+            - test_s33_con_fts_sobre_data_la_pregunta_del_pe_encuentra_credito_productivo_impulso
+        - path: tests/server/infraestructura/redactor/test_extractivo.py
+          sha256: 814ad8d750f2ab30a55dc4506b8b2a00fc4e3a664496672e4afaeca4c1db76df
+          tests:
+            - test_s_4_1_la_respuesta_extractiva_contiene_el_monto_maximo_del_documento
+            - test_s_4_1_c1_declara_usado_al_menos_un_fragmento_y_consultar_trae_fuente_exitosa
+            - test_s_5_2_la_respuesta_empieza_con_la_frase_fija
+            - test_s_5_2_trae_el_fragmento_del_credito_productivo_impulso_con_su_fuente
+            - test_s_5_2_c1_no_afirma_responder_toda_la_pregunta_ni_da_una_tasa
+            - test_cada_fragmento_va_precedido_por_documento_mayor_que_seccion
+            - test_usa_como_maximo_dos_fragmentos_de_los_tres_recibidos
+            - test_con_un_solo_fragmento_declara_solo_el_id_uno
+            - test_s_6_2_con_puntaje_079_del_mejor_solo_muestra_y_cita_el_primero
+            - test_s_6_2_c1_el_fragmento_filtrado_no_aparece_ni_su_encabezado
+            - test_s_6_2_con_puntaje_080_del_mejor_muestra_los_dos
+            - test_s_6_2_sin_puntaje_no_filtra
+            - test_s_6_2_los_ids_son_las_posiciones_en_la_lista_original
+  pending_commits:
+    - task: T16
+      subject: stem Spanish words in FTS and extend the eval dataset
+      files:
+        - constitucion/model-registry.md
+        - pyproject.toml
+        - README.md
+        - src/server/AGENTS.md
+        - src/server/infraestructura/busqueda/fts.py
+        - src/server/infraestructura/busqueda/indice.py
+        - tests/fixtures/consultas.json
+        - tests/server/e2e/test_arranque_indice.py
+        - tests/server/evals/test_evals.py
+        - tests/server/http/test_consultar_api.py
+        - tests/server/infraestructura/busqueda/test_buscador.py
+        - tests/server/infraestructura/busqueda/test_fts.py
+        - tests/server/infraestructura/busqueda/test_indice.py
+        - uv.lock
+      manifest:
+        - path: constitucion/model-registry.md
+          status: " M"
+          sha256: 716fb31a12f48d024d070e81e73a3cbe5bab8543ea85b96345e91d66b2e5fa39
+        - path: pyproject.toml
+          status: " M"
+          sha256: 511caa5678feb03f7abc7e53741c2394d5449e1747ac555a4b340129a9af7fff
+        - path: README.md
+          status: " M"
+          sha256: b95142d1b4ee72b8ca3a934b7aa94e6aec591df6422ecacb53357798a56f1925
+        - path: src/server/AGENTS.md
+          status: " M"
+          sha256: 57cd254420572ab49b9b5a41145c9c106bf65b39188cad5b121d9f059b8d235f
+        - path: src/server/infraestructura/busqueda/fts.py
+          status: " M"
+          sha256: 32928b5d65a68e160fdc601db4c45ef6f0a5c0a2b069df1111d8e1684031a078
+        - path: src/server/infraestructura/busqueda/indice.py
+          status: " M"
+          sha256: 58fa4e7242af7a04fe32433fe1eab8babe46f30fd98f497ed84985d9d27bb190
+        - path: tests/fixtures/consultas.json
+          status: " M"
+          sha256: 53ea96ba9b3ac4df3a53bf1eed32a60e987504f760a98eb1fab5143794b2ea28
+        - path: tests/server/e2e/test_arranque_indice.py
+          status: " M"
+          sha256: 8a26e40a6a540b1b0c45abfb043ef0e1b197ce1d57ecbbb0542826972a6e691f
+        - path: tests/server/evals/test_evals.py
+          status: " M"
+          sha256: 365af2999ea92b13b0f99de94b703f90c81749a30f127076f80e7880d2e25e98
+        - path: tests/server/http/test_consultar_api.py
+          status: " M"
+          sha256: 0177d161624a7eeedd1f154b44a31387628c92f5c8c9eaa915b7afcef46ffbf8
+        - path: tests/server/infraestructura/busqueda/test_buscador.py
+          status: " M"
+          sha256: 56e4492f43bd7c8b5134c0525274ceb7d8c2df33a45b26f69b5a2356c97eaa27
+        - path: tests/server/infraestructura/busqueda/test_fts.py
+          status: ??
+          sha256: e24ae42b83abc75503f577e2350eb2eb99b973a317ccb2a242b2dd9c1a486f79
+        - path: tests/server/infraestructura/busqueda/test_indice.py
+          status: " M"
+          sha256: f88f6b11288f513a9a1539189aef0c9a63176822b2762f587e4a8adb5d4a95ca
+        - path: uv.lock
+          status: " M"
+          sha256: b88e209f0ec420f501fddc0b6889a2944a1345d004aa3691d0f172be1ee7b19c
+      reviewed:
+        - README.md
+        - constitucion/model-registry.md
+        - pyproject.toml
+        - src/server/AGENTS.md
+        - src/server/infraestructura/busqueda/fts.py
+        - src/server/infraestructura/busqueda/indice.py
+        - tests/fixtures/consultas.json
+        - tests/server/e2e/test_arranque_indice.py
+        - tests/server/evals/test_evals.py
+        - tests/server/http/test_consultar_api.py
+        - tests/server/infraestructura/busqueda/test_buscador.py
+        - tests/server/infraestructura/busqueda/test_indice.py
+        - uv.lock
+        - tests/server/infraestructura/busqueda/test_fts.py
+      receipts: []
   approved_manifests:
     - task: T1
       attempt: 1
@@ -947,10 +1041,71 @@ progress:
         - src/server/infraestructura/redactor/gemini.py
         - tests/server/http/test_consultar_api.py
       receipts: []
+    - task: T16
+      attempt: 1
+      files:
+        - path: constitucion/model-registry.md
+          status: " M"
+          sha256: 716fb31a12f48d024d070e81e73a3cbe5bab8543ea85b96345e91d66b2e5fa39
+        - path: pyproject.toml
+          status: " M"
+          sha256: 511caa5678feb03f7abc7e53741c2394d5449e1747ac555a4b340129a9af7fff
+        - path: README.md
+          status: " M"
+          sha256: b95142d1b4ee72b8ca3a934b7aa94e6aec591df6422ecacb53357798a56f1925
+        - path: src/server/AGENTS.md
+          status: " M"
+          sha256: 57cd254420572ab49b9b5a41145c9c106bf65b39188cad5b121d9f059b8d235f
+        - path: src/server/infraestructura/busqueda/fts.py
+          status: " M"
+          sha256: 32928b5d65a68e160fdc601db4c45ef6f0a5c0a2b069df1111d8e1684031a078
+        - path: src/server/infraestructura/busqueda/indice.py
+          status: " M"
+          sha256: 58fa4e7242af7a04fe32433fe1eab8babe46f30fd98f497ed84985d9d27bb190
+        - path: tests/fixtures/consultas.json
+          status: " M"
+          sha256: 53ea96ba9b3ac4df3a53bf1eed32a60e987504f760a98eb1fab5143794b2ea28
+        - path: tests/server/e2e/test_arranque_indice.py
+          status: " M"
+          sha256: 8a26e40a6a540b1b0c45abfb043ef0e1b197ce1d57ecbbb0542826972a6e691f
+        - path: tests/server/evals/test_evals.py
+          status: " M"
+          sha256: 365af2999ea92b13b0f99de94b703f90c81749a30f127076f80e7880d2e25e98
+        - path: tests/server/http/test_consultar_api.py
+          status: " M"
+          sha256: 0177d161624a7eeedd1f154b44a31387628c92f5c8c9eaa915b7afcef46ffbf8
+        - path: tests/server/infraestructura/busqueda/test_buscador.py
+          status: " M"
+          sha256: 56e4492f43bd7c8b5134c0525274ceb7d8c2df33a45b26f69b5a2356c97eaa27
+        - path: tests/server/infraestructura/busqueda/test_fts.py
+          status: ??
+          sha256: e24ae42b83abc75503f577e2350eb2eb99b973a317ccb2a242b2dd9c1a486f79
+        - path: tests/server/infraestructura/busqueda/test_indice.py
+          status: " M"
+          sha256: f88f6b11288f513a9a1539189aef0c9a63176822b2762f587e4a8adb5d4a95ca
+        - path: uv.lock
+          status: " M"
+          sha256: b88e209f0ec420f501fddc0b6889a2944a1345d004aa3691d0f172be1ee7b19c
+      reviewed:
+        - README.md
+        - constitucion/model-registry.md
+        - pyproject.toml
+        - src/server/AGENTS.md
+        - src/server/infraestructura/busqueda/fts.py
+        - src/server/infraestructura/busqueda/indice.py
+        - tests/fixtures/consultas.json
+        - tests/server/e2e/test_arranque_indice.py
+        - tests/server/evals/test_evals.py
+        - tests/server/http/test_consultar_api.py
+        - tests/server/infraestructura/busqueda/test_buscador.py
+        - tests/server/infraestructura/busqueda/test_indice.py
+        - uv.lock
+        - tests/server/infraestructura/busqueda/test_fts.py
+      receipts: []
   loop_brake:
     task: T16
-    action: implement
-    execution_rows: 107
+    action: commit
+    execution_rows: 115
     approval_rows: 8
     repeats: 1
 approvals:

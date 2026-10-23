@@ -132,11 +132,6 @@ en la respuesta.
 - **Then** cada fuente trae `documento` (p. ej. "Productos de Crédito"), `seccion` (p. ej. "Crédito Productivo Impulso") y `fragmento` (el texto de la sección usado)
 - **AND IT MUST** corresponder cada fuente a un fragmento que el redactor declaró usado (C1)
 
-#### S-6.2 — Sin fuentes de relleno en modo extractivo
-- **Given** el modo extractivo y "¿Qué documentos sirven para actualizar datos?"
-- **When** responde
-- **Then** solo muestra y cita los fragmentos cuyo puntaje combinado es al menos el 80 % del mejor: `Procedimientos Operativos > Actualización de Datos`
-- **BUT it must NOT** mostrar ni citar `Procedimientos Operativos > Solicitud de Crédito` (C1)
 
 <a id="fr7"></a>
 ### FR-7 — Validar la pregunta
@@ -351,7 +346,7 @@ no hacen llamadas de red (verificado ejecutándolas sin red).
 | AC-5 | C1: sin completar la parte faltante | FR-5 / S-5.1 C1 | covered |
 | AC-5 | C2: extractivo sin afirmar cobertura total | FR-5 / S-5.2, S-5.2 C1 | covered |
 | AC-6 | main | FR-6 / S-6.1 | covered |
-| AC-6 | C1: cada fuente usada | FR-6 / S-6.1 C1, S-6.2 | covered |
+| AC-6 | C1: cada fuente usada | FR-6 / S-6.1 C1 | covered |
 | AC-7 | main | FR-7 / S-7.1 | covered |
 | AC-7 | C1: sin consultar ni registrar | FR-7 / S-7.1 C1 | covered |
 | AC-8 | main | FR-8 / S-8.1, S-8.2 | covered |
@@ -423,9 +418,9 @@ no hacen llamadas de red (verificado ejecutándolas sin red).
 
 <a id="c-10"></a>
 ### C-10 — Paráfrasis sin soporte y fuentes de relleno en modo extractivo (2026-10-23)
-- **Answer:** (1) FTS5 aplica el stemmer de español de `py_rust_stemmers` (ya instalado con `fastembed`) al texto indexado y a la pregunta: "¿Cuánto le prestan como máximo a un pequeño comerciante?" respondía `Sin información suficiente` aunque el Crédito Productivo Impulso dice "Dirigido a pequeños comerciantes". (2) En modo extractivo solo se muestran los fragmentos cuyo puntaje combinado (RRF) es al menos el 80 % del mejor: "¿Qué documentos sirven para actualizar datos?" no debe mostrar también Solicitud de Crédito. (3) El dataset suma esas preguntas y otras paráfrasis con plurales y conjugaciones (v3); se recalibran los umbrales y se informan los EV antes y después. Nada cambia del modelo: Gemini queda como está.
+- **Answer:** (1) FTS5 aplica el stemmer de español de `py_rust_stemmers` (ya instalado con `fastembed`) al texto indexado y a la pregunta: "¿Cuánto le prestan como máximo a un pequeño comerciante?" respondía `Sin información suficiente` aunque el Crédito Productivo Impulso dice "Dirigido a pequeños comerciantes". (2) Se pidió que el extractivo mostrara solo los fragmentos con al menos el 80 % del puntaje combinado del mejor, para que "¿Qué documentos sirven para actualizar datos?" no mostrara también Solicitud de Crédito. Medido en T16, no cumple el ejemplo: con RRF k = 60, Solicitud de Crédito queda en 97,6 % del mejor porque sale en las dos vías. Con el 80 % del coseno sí sale (75 %), pero c31 pierde su sección esperada. Decisión del PE: **sin filtro**. El extractivo sigue mostrando hasta 2 fragmentos, porque perder una sección correcta pesa más que mostrar una de más; el README lo anota como limitación. (3) El dataset suma esas preguntas y otras paráfrasis con plurales y conjugaciones (v3); se recalibran los umbrales y se informan los EV antes y después. Nada cambia del modelo: Gemini queda como está.
 - **Answered by:** PE (Product Engineer).
-- **Effect:** FR-3 / S-3.3; FR-6 / S-6.2; tabla de evals sobre `consultas@v3`; design.md D4 y D12; tasks.md T16.
+- **Effect:** FR-3 / S-3.3; tabla de evals sobre `consultas@v3`; design.md D4 y D12 (filtro rechazado); README (limitación); tasks.md T16.
 
 <a id="c-9"></a>
 ### C-9 — ¿Qué es una pregunta por un dato que no está, de un producto que sí existe? (2026-10-23, verify)

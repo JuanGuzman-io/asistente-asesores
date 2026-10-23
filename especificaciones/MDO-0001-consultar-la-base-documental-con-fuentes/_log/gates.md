@@ -325,3 +325,27 @@ Every configured gate passed; declared none: build.
 | audit | SKIPPED | — |
 | sast | PASS | 0 |
 | metrics | PASS | 0 |
+
+## T16 — attempt 1
+
+A gate failed; declared none: build.
+
+| Gate | Status | Exit |
+|---|---|---|
+| scan-markers | PASS | — |
+| format | PASS | 0 |
+| lint | PASS | 0 |
+| typecheck | PASS | 0 |
+| test | FAIL | 4 |
+| build | SKIPPED | — |
+| secrets | PASS | 0 |
+| audit | PASS | 0 |
+| sast | PASS | 0 |
+| metrics | PASS | 0 |
+
+### test — FAIL (2 of 2 lines naming the task's files)
+
+```
+ERROR: not found: /Users/jguzman/GitHub/Projects/asistente-asesores.worktrees/MDO-0001-consultar-la-base-documental-con-fuentes/tests/fixtures/consultas.json
+configfile: pyproject.toml
+```

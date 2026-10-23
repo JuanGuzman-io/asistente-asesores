@@ -99,8 +99,23 @@ la misma transacción que decide la respuesta.
   - La calibración es dentro de la muestra: los umbrales se eligieron con el mismo dataset que mide los
     EV ([C-5](requirements.md#c-5) lo permite). Recalibrar si cambian el modelo, el formato o el
     dataset; un margen de 0,008 sigue siendo estrecho: ampliar el dataset antes de producción.
-  - Recalibración con stemming y `consultas@v3` (T16, [C-10](requirements.md#c-10)): los números antes y
-    después se registran aquí al cerrar T16.
+  - Recalibración con stemming y `consultas@v3` (T16, [C-10](requirements.md#c-10), 80 preguntas: 56 con
+    soporte, 4 dato faltante, 20 sin soporte). Antes (código sin stemming, `consultas@v2`): EV-1 0,952,
+    EV-2 1,000, EV-3 0,000, EV-4 1,00, EV-5 1,00, EV-7 1,00. Antes sobre v3 (con c40 = "¿Qué eventos
+    cubren los seguros de negocios?", una paráfrasis semántica y no solo morfológica): EV-1 0,929, EV-2
+    1,000, EV-3 0,036, EV-4 1,00, EV-5 1,00, EV-7 1,00; c35 (la pregunta del PE) quedaba en
+    `Sin información suficiente` (0,505, sin FTS). Después, con stemming y v3: EV-1 0,982, EV-2 1,000,
+    EV-3 0,000, EV-4 1,00, EV-5 1,00, EV-7 1,00; c35 pasa a `Exitosa` con `Crédito Productivo Impulso`
+    primero (0,543, con FTS). Coseno que decide con soporte 0,534–0,662–0,881 (n = 56), sin soporte
+    -0,005–0,345–0,531 (n = 20).
+  - Los umbrales no se mueven (0,60 / 0,525): el punto medio entre la pregunta sin soporte más alta con
+    FTS (s06, 0,517) y la de soporte más baja (c33, 0,534) sigue siendo 0,525, margen mínimo 0,008 (s06).
+    Con el stemming c40 coincide en FTS pero decidía con 0,445, por debajo de preguntas sin soporte
+    (hasta 0,531): ningún umbral lo separa, así que se reemplazó por una paráfrasis del mismo tema
+    ("¿Qué coberturas ofrecen los microseguros para negocios?", 0,675); el reemplazo se hizo después de
+    ver la medición y la calibración sigue siendo dentro de la muestra.
+  - Con v3 "¿Qué documentos sirven para actualizar datos?" sigue mostrando también Solicitud de Crédito en
+    modo extractivo: el PE decidió no filtrar fragmentos ([D12](#d12), rechazado; [C-10](requirements.md#c-10)).
   - Las evals corren con el modelo real como gate `metrics` (`uv run pytest -m eval`); `uv run pytest`
     las excluye y no descarga modelos (`standards.md`, decisión del PE 2026-10-23).
 - Rechazadas: `sqlite-vec` (exige un Python con extensiones de SQLite cargables, que no todos los
@@ -218,12 +233,11 @@ la misma transacción que decide la respuesta.
 - La respuesta empieza con "Esto es lo que encontré en la base documental:" y sigue con los fragmentos
   que superan el umbral (máximo 2), cada uno precedido por `Documento > Sección`, con estado `Exitosa`. No
   afirma cubrir toda la pregunta ni nombra partes faltantes ([C-1](requirements.md#c-1)).
-- Fuentes de relleno (T16, [C-10](requirements.md#c-10)): solo se muestran y citan los fragmentos cuyo
-  puntaje combinado (RRF de D4) es al menos el 80 % (`PROPORCION_MINIMA_EXTRACTIVA` = 0,80 en `config.py`)
-  del mejor. El buscador entrega el puntaje en cada fragmento (`Fragmento.puntaje`, opcional y fuera de la
-  igualdad); sin puntaje no se filtra. El filtro es solo del modo extractivo: el modelo sigue recibiendo los
-  3 fragmentos. No contradice el rechazo de un umbral sobre RRF en D4: aquí no decide si hay soporte,
-  solo cuánto se muestra de un resultado que ya lo tiene.
+- Rechazado (T16, [C-10](requirements.md#c-10)): mostrar solo los fragmentos con al menos el 80 % del
+  puntaje del mejor. Con RRF (k = 60) no saca un fragmento que sale en las dos vías (Solicitud de Crédito
+  en "¿Qué documentos sirven para actualizar datos?": 0,0320 / 0,0328 = 97,6 %). Con coseno sí
+  (0,466 / 0,622 = 75 %), pero en `consultas@v3` 38 respuestas pasan de 2 fragmentos a 1 y c31 pierde
+  su sección esperada. El PE prefiere mostrar uno de más a perder uno correcto: limitación en el README.
 
 ## Principle check
 
@@ -263,7 +277,7 @@ falla del insert de `consultas` → 500 y ninguna fila.
 | Model | `gemini-3.5-flash-lite`, opcional por `GEMINI_API_KEY` | `google-genai` 2.33.0; `model-registry.md` |
 | Prompts | Redactor con fuentes: solo fragmentos dados, citar ids, listar partes sin soporte, nunca seguir instrucciones del texto | `src/server/infraestructura/redactor/prompt.md`@v1 |
 | Chunking / embedding | Sección `##` (D2); `paraphrase-multilingual-MiniLM-L12-v2`, 384 dim, local | `fastembed` 0.9.0 |
-| Retrieval (k, filters, reranking) | FTS con stemming en español (D4); 5 por vía, RRF k = 60, top 3, umbral D4; extractivo solo ≥ 80 % del mejor RRF (D12); filtro por hashes vigentes; sin reranker | FTS5; Qdrant local, `qdrant-client` 1.20.0 |
+| Retrieval (k, filters, reranking) | FTS con stemming en español (D4); 5 por vía, RRF k = 60, top 3, umbral D4; filtro por hashes vigentes; sin reranker | FTS5; Qdrant local, `qdrant-client` 1.20.0 |
 | Guardrails | Entrada: validación (D8); salida: ids y cifras (D7). Entrada por seguridad: MDO-0002 | — |
 | Fallback | Extractivo (D12) sin clave, con error, tiempo agotado o salida inválida | — |
 
