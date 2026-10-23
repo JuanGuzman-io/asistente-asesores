@@ -22,7 +22,7 @@ crítico. Cada tarea empieza con pruebas rojas.
 
 ### AC-3 — Datos de otros clientes
 
-- [ ] T3 [AC-3] La línea de log de una consulta bloqueada lleva su categoría y nunca la pregunta — `src/server/http/rutas.py`
+- [x] T3 [AC-3] La línea de log de una consulta bloqueada lleva su categoría y nunca la pregunta — `src/server/http/rutas.py`
 
 **Checkpoint:** `uv run pytest tests/server/http -q` passes (T3); this confirms AC-3 before the next group.
 
@@ -87,7 +87,7 @@ parallel_safe: false
 verify: uv run pytest tests/server/aplicacion -q
 ```
 
-### [ ] T3 — La línea de log de una consulta bloqueada lleva su categoría y nunca la pregunta
+### [x] T3 — La línea de log de una consulta bloqueada lleva su categoría y nunca la pregunta
 
 - **What:** la ruta pone `resultado.categoria` en `request.state.categoria`, el middleware la pasa a
   `registrar_peticion` y la línea JSON suma `categoria` solo cuando existe ([D5](design.md#d5)).
