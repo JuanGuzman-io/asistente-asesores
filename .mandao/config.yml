@@ -21,6 +21,10 @@ projects:
       audit: uvx --quiet pip-audit --path .venv/lib/python3.13/site-packages $(grep -v '^#' .pip-audit-ignore | sed 's/^/--ignore-vuln /')
       # EV-1..EV-5 against the real embeddings model (PE 2026-10-23). Mandao has no `eval` gate name.
       metrics: uv run pytest -m eval
+    tests:
+      # The default selection hands non-Python files (tests/fixtures/*.json) to pytest. The backend
+      # suite without evals runs in seconds, so impacted = the whole backend suite (MDO-0003).
+      impacted: uv run pytest -q tests/server
   - name: web
     path: src/web
     profile: app
