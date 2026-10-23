@@ -303,7 +303,7 @@ parallel_safe: false
 verify: uv run pytest tests/server/infraestructura/redactor -q
 ```
 
-### [ ] T8 — Cada consulta procesada queda registrada completa
+### [x] T8 — Cada consulta procesada queda registrada completa
 
 - **What:** `RepositorioConsultas` en SQLite guarda pregunta, fecha y hora UTC, respuesta, fuentes, estado
   y modo en una transacción antes de responder ([D10](design.md#d10), [data-model.md](data-model.md)).
