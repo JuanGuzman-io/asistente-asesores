@@ -33,7 +33,7 @@ tres primeras usan un backend simulado según el contrato y empiezan con pruebas
 
 ## Details
 
-### [ ] T1 — El proyecto web existe y el cliente de la API traduce cada respuesta del servicio
+### [x] T1 — El proyecto web existe y el cliente de la API traduce cada respuesta del servicio
 
 - **What:** crea el proyecto `web` en `src/web` ([D1](spec.md#d1), [D2](spec.md#d2), [D7](spec.md#d7)) con
   los gates de [D6](spec.md#d6), y el cliente `consultar()` que nunca lanza ([D3](spec.md#d3)).
@@ -47,7 +47,7 @@ tres primeras usan un backend simulado según el contrato y empiezan con pruebas
 project: web
 kind: feat
 tier: standard
-files: [src/web/package.json, src/web/package-lock.json, src/web/vite.config.ts, src/web/tsconfig.json, src/web/eslint.config.js, src/web/.prettierrc, src/web/index.html, src/web/src/api.ts, tests/web/api.test.ts, .gitignore, .mandao/config.yml, .mandao/mandao.lock]
+files: [src/web/package.json, src/web/package-lock.json, src/web/vite.config.ts, src/web/tsconfig.json, src/web/eslint.config.js, src/web/.prettierrc, src/web/.prettierignore, src/web/index.html, src/web/src/main.tsx, src/web/src/api.ts, tests/web/api.test.ts, .gitignore, .mandao/config.yml, .mandao/mandao.lock]
 exemplar: none (proyecto nuevo; api.ts será el exemplar de cliente)
 ac: [AC-2, AC-2/C1]
 scenarios: [S-3.1, S-3.2, S-3.3, S-3.4, S-3.4/C1]
