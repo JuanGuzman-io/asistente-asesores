@@ -1,5 +1,5 @@
 <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 256 256">
-  <!-- Orbe de Bot-W con los colores de Banco W (turquesa, morado y naranja). -->
+  <!-- Orbe de W+IA con los colores de Banco W (turquesa, morado y naranja). -->
   <defs>
     <radialGradient id="color" cx="30%" cy="25%" r="90%">
       <stop offset="0" stop-color="#2fd3c9"/>
