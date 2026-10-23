@@ -16,6 +16,7 @@ Business language ↔ names in code. Names that contradict this glossary are blo
 | Respuesta | `respuesta` | Texto que responde la consulta usando solo información encontrada. | PDF p. 5 |
 | Fuente | `Fuente`, `fuentes` | Documento, sección y fragmento de `Data/` que sustentan la respuesta. | PDF p. 5; Política de Citas; PE 2026-10-23 (MDO-0001) |
 | Estado de la respuesta | `Estado`: `EXITOSA`, `SIN_INFORMACION`, `BLOQUEADA` | Exitosa, Sin información suficiente, Bloqueada por seguridad. | PDF p. 2 |
+| Modo de respuesta | `modo`: `modelo`, `extractivo`, `ninguno` | Cómo se redactó la respuesta registrada: con Gemini, extractiva (sin modelo) o sin redacción (sin información suficiente). | MDO-0001 D10, D12 |
 | Procesamiento | — | Estado de la interfaz mientras una consulta está en curso (cargando, listo, error de red). No es el estado de la respuesta, que viene de la API. | PDF p. 5 |
 | Base documental | `BaseDocumental`, `Data/` | Documentos oficiales que el asistente puede consultar. | PDF p. 2-3 |
 | Información restringida | `confidencial` | Información que ningún asistente debe exponer; no se indexa. | Información restringida.md |

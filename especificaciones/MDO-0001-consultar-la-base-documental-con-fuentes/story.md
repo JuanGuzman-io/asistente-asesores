@@ -7,7 +7,7 @@ url:
 parent:
 projects: [asistente-asesores]
 lane: normal
-status: verified
+status: closed
 sources:
   - { ref: "Prueba técnica.pdf (sha256 ea559182d0cbe46540d0bbd994fa163b6633b42d03100c29632446a0267746b7), p. 2, p. 3, p. 4, p. 5, p. 6", kind: document, date: 2026-10-23 }
   - { ref: "docs/product/intake/prueba-tecnica-2026-10-23.md#I-6, I-1, I-2, I-3, I-5, I-7; Q-2, Q-3, Q-4, Q-6", kind: intake, date: 2026-10-23 }
@@ -37,8 +37,8 @@ inventada sin poder decir de dónde la sacó, lo que contradice BR-1 y BR-2.
 ## Value
 
 Respuestas rápidas, verificables y sustentadas solo en documentación oficial, con la fuente a la vista
-para que el asesor pueda comprobarla. Es el núcleo que necesitan la seguridad (MDO-0002) y la interfaz
-(MDO-0003).
+para que el asesor pueda comprobarla. Es el núcleo que necesitan la seguridad ([intake I-4](../../docs/product/intake/prueba-tecnica-2026-10-23.md#i-4--bloquear-consultas-que-comprometen-la-seguridad))
+y la interfaz (MDO-0002).
 
 ## Scope
 
@@ -56,8 +56,10 @@ Se entrega en tres partes, en este orden:
 
 ## Out of scope
 
-- Bloqueo por seguridad (información restringida, prompt injection, datos de otros clientes): MDO-0002.
-- Interfaz para consultar: MDO-0003.
+- Bloqueo por seguridad (información restringida, prompt injection, datos de otros clientes): historia
+  [I-4 del intake](../../docs/product/intake/prueba-tecnica-2026-10-23.md#i-4--bloquear-consultas-que-comprometen-la-seguridad),
+  que se abrirá como la próxima spec (PE, 2026-10-23).
+- Interfaz para consultar: MDO-0002.
 - README y cuestionario (intake I-9, I-10).
 - Autenticación, despliegue y edición de documentos desde la aplicación (`product.md`).
 
@@ -194,11 +196,11 @@ critical: true
 
 - Constitución aprobada: contrato, estados, mensaje fijo y límites (`business-rules.md`, `performance.md`).
 - El modelo de redacción es opcional: sin él la solución funciona en modo extractivo (`model-registry.md`).
-- MDO-0002 (seguridad) y MDO-0003 (interfaz) dependen de esta spec.
+- La seguridad (intake I-4, próxima spec) y la interfaz (MDO-0002) dependen de esta spec.
 
 ## UX references
 
-Ninguna: esta spec no tiene interfaz (la interfaz es MDO-0003).
+Ninguna: esta spec no tiene interfaz (la interfaz es MDO-0002).
 
 ## Data involved
 
@@ -212,4 +214,4 @@ Ninguna: esta spec no tiene interfaz (la interfaz es MDO-0003).
 ## Assumptions and open questions
 
 - Duplicados y conteo de caracteres: resueltos en [requirements.md#c-2](requirements.md#c-2); modo extractivo de AC-5: [C-1](requirements.md#c-1).
-- ASSUMPTION(source: intake I-5 AC-1, Q-5): el registro de consultas `Bloqueada por seguridad` se verifica en MDO-0002; aquí AC-14 cubre los estados `Exitosa` y `Sin información suficiente`.
+- Registro de consultas `Bloqueada por seguridad` (intake I-5 AC-1, Q-5; resuelto por el PE, 2026-10-23): el registro ya guarda los tres estados, `BLOQUEADA` incluido (`tests/server/infraestructura/persistencia/test_repositorio.py`). Producir ese estado y verificar su registro de punta a punta corresponde a la historia de seguridad, [intake I-4](../../docs/product/intake/prueba-tecnica-2026-10-23.md#i-4--bloquear-consultas-que-comprometen-la-seguridad), que se abrirá como la próxima spec. Aquí AC-14 cubre `Exitosa` y `Sin información suficiente`.

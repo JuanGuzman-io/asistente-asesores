@@ -3,13 +3,13 @@ schema_version: 1
 level: workspace
 status: approved
 last_synced: 2026-10-23
-owner: PO
+owner: PE
 ---
 
 # Product
 
 Fuente: *Prueba técnica — Desarrollador de IA* (PDF, 8 páginas, leído 2026-10-23) y la base documental
-de `Data/`. No hay código todavía: las capacidades están planeadas, sin evidencia en código.
+de `Data/`. El backend de consulta (MDO-0001) está implementado; las demás capacidades siguen planeadas.
 
 ## Vision
 Un asistente interno que responde a los asesores comerciales, con información oficial y citando su
@@ -37,8 +37,8 @@ Condiciones de la entrega de la prueba, no reglas de comportamiento del asistent
 
 | Capability | Evidence in code | Documented in | Status |
 |---|---|---|---|
-| Responder consultas con fuentes | — | PDF p. 2, p. 5 | planned |
-| Indicar falta de información | — | PDF p. 5; Manual del Asesor, "Casos Especiales" | planned (frase del PDF, ver BR-3) |
+| Responder consultas con fuentes | `src/server/aplicacion/consultar.py`, `src/server/http/rutas.py` (MDO-0001) | PDF p. 2, p. 5 | implemented |
+| Indicar falta de información | `src/server/dominio/reglas.py` (`MENSAJE_SIN_INFORMACION`, MDO-0001) | PDF p. 5; Manual del Asesor, "Casos Especiales" | implemented (frase del PDF, ver BR-3) |
 | Bloquear consultas sobre información restringida | — | PDF p. 2; Información restringida.md | planned |
-| Registrar consultas (pregunta, fecha y hora, respuesta, fuentes, estado) | — | PDF p. 2 | planned |
+| Registrar consultas (pregunta, fecha y hora, respuesta, fuentes, estado) | `src/server/infraestructura/persistencia/repositorio.py` (MDO-0001) | PDF p. 2 | implemented |
 | Frontend para consultar y ver respuesta, fuentes, errores y estado | — | PDF p. 5 | planned |

@@ -704,3 +704,9 @@ spec: MDO-0001-consultar-la-base-documental-con-fuentes
 <!-- mandao:telemetry {"id":"b1178365-a3bd-467f-abcd-fd7bdb72e3b9","type":"agent_end","at":"2026-10-23T20:30:08.296Z","command":"verify","run":"e062c763-0041-40d7-b761-c35d2f6a715c"} -->
 <!-- mandao:telemetry {"id":"0d0a1dc4-a19f-44b7-867c-8a7e8f00e3f6","type":"agent_end","at":"2026-10-23T20:30:09.083Z","command":"verify","run":"e062c763-0041-40d7-b761-c35d2f6a715c"} -->
 <!-- mandao:telemetry {"id":"e062c763-0041-40d7-b761-c35d2f6a715c","type":"command_end","at":"2026-10-23T20:31:11.611Z","command":"verify","run":"e062c763-0041-40d7-b761-c35d2f6a715c"} -->
+<!-- mandao:telemetry {"id":"968525bb-60a8-43f5-8d87-010fcf9f3eac","type":"command_start","at":"2026-10-23T20:38:06.676Z","command":"close","run":"968525bb-60a8-43f5-8d87-010fcf9f3eac"} -->
+<!-- mandao:telemetry {"id":"5e1572a7-c0f1-4791-8bef-ca2f113f7e36","type":"asked","at":"2026-10-23T20:40:27.826Z","command":"close","run":"968525bb-60a8-43f5-8d87-010fcf9f3eac","question":"technical","subject":"constitution-impacts"} -->
+<!-- mandao:telemetry {"id":"5e1572a7-c0f1-4791-8bef-ca2f113f7e36","type":"answered","at":"2026-10-23T20:43:41.873Z","command":"close","run":"968525bb-60a8-43f5-8d87-010fcf9f3eac","question":"technical"} -->
+<!-- mandao:telemetry {"id":"5ecec1ab-a62b-459a-9a2d-9ee77e64e109","type":"asked","at":"2026-10-23T20:46:20.802Z","command":"close","run":"968525bb-60a8-43f5-8d87-010fcf9f3eac","question":"product","subject":"story-assumption-bloqueada"} -->
+<!-- mandao:telemetry {"id":"5ecec1ab-a62b-459a-9a2d-9ee77e64e109","type":"answered","at":"2026-10-23T20:48:56.239Z","command":"close","run":"968525bb-60a8-43f5-8d87-010fcf9f3eac","question":"product"} -->
+<!-- mandao:telemetry {"id":"968525bb-60a8-43f5-8d87-010fcf9f3eac","type":"command_end","at":"2026-10-23T20:49:23.890Z","command":"close","run":"968525bb-60a8-43f5-8d87-010fcf9f3eac"} -->
