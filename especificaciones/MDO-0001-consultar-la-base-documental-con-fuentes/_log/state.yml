@@ -492,83 +492,7 @@ progress:
             - test_s_6_2_con_puntaje_080_del_mejor_muestra_los_dos
             - test_s_6_2_sin_puntaje_no_filtra
             - test_s_6_2_los_ids_son_las_posiciones_en_la_lista_original
-  pending_commits:
-    - task: T16
-      subject: stem Spanish words in FTS and extend the eval dataset
-      files:
-        - constitucion/model-registry.md
-        - pyproject.toml
-        - README.md
-        - src/server/AGENTS.md
-        - src/server/infraestructura/busqueda/fts.py
-        - src/server/infraestructura/busqueda/indice.py
-        - tests/fixtures/consultas.json
-        - tests/server/e2e/test_arranque_indice.py
-        - tests/server/evals/test_evals.py
-        - tests/server/http/test_consultar_api.py
-        - tests/server/infraestructura/busqueda/test_buscador.py
-        - tests/server/infraestructura/busqueda/test_fts.py
-        - tests/server/infraestructura/busqueda/test_indice.py
-        - uv.lock
-      manifest:
-        - path: constitucion/model-registry.md
-          status: " M"
-          sha256: 716fb31a12f48d024d070e81e73a3cbe5bab8543ea85b96345e91d66b2e5fa39
-        - path: pyproject.toml
-          status: " M"
-          sha256: 511caa5678feb03f7abc7e53741c2394d5449e1747ac555a4b340129a9af7fff
-        - path: README.md
-          status: " M"
-          sha256: b95142d1b4ee72b8ca3a934b7aa94e6aec591df6422ecacb53357798a56f1925
-        - path: src/server/AGENTS.md
-          status: " M"
-          sha256: 57cd254420572ab49b9b5a41145c9c106bf65b39188cad5b121d9f059b8d235f
-        - path: src/server/infraestructura/busqueda/fts.py
-          status: " M"
-          sha256: 32928b5d65a68e160fdc601db4c45ef6f0a5c0a2b069df1111d8e1684031a078
-        - path: src/server/infraestructura/busqueda/indice.py
-          status: " M"
-          sha256: 58fa4e7242af7a04fe32433fe1eab8babe46f30fd98f497ed84985d9d27bb190
-        - path: tests/fixtures/consultas.json
-          status: " M"
-          sha256: 53ea96ba9b3ac4df3a53bf1eed32a60e987504f760a98eb1fab5143794b2ea28
-        - path: tests/server/e2e/test_arranque_indice.py
-          status: " M"
-          sha256: 8a26e40a6a540b1b0c45abfb043ef0e1b197ce1d57ecbbb0542826972a6e691f
-        - path: tests/server/evals/test_evals.py
-          status: " M"
-          sha256: 365af2999ea92b13b0f99de94b703f90c81749a30f127076f80e7880d2e25e98
-        - path: tests/server/http/test_consultar_api.py
-          status: " M"
-          sha256: 0177d161624a7eeedd1f154b44a31387628c92f5c8c9eaa915b7afcef46ffbf8
-        - path: tests/server/infraestructura/busqueda/test_buscador.py
-          status: " M"
-          sha256: 56e4492f43bd7c8b5134c0525274ceb7d8c2df33a45b26f69b5a2356c97eaa27
-        - path: tests/server/infraestructura/busqueda/test_fts.py
-          status: ??
-          sha256: e24ae42b83abc75503f577e2350eb2eb99b973a317ccb2a242b2dd9c1a486f79
-        - path: tests/server/infraestructura/busqueda/test_indice.py
-          status: " M"
-          sha256: f88f6b11288f513a9a1539189aef0c9a63176822b2762f587e4a8adb5d4a95ca
-        - path: uv.lock
-          status: " M"
-          sha256: b88e209f0ec420f501fddc0b6889a2944a1345d004aa3691d0f172be1ee7b19c
-      reviewed:
-        - README.md
-        - constitucion/model-registry.md
-        - pyproject.toml
-        - src/server/AGENTS.md
-        - src/server/infraestructura/busqueda/fts.py
-        - src/server/infraestructura/busqueda/indice.py
-        - tests/fixtures/consultas.json
-        - tests/server/e2e/test_arranque_indice.py
-        - tests/server/evals/test_evals.py
-        - tests/server/http/test_consultar_api.py
-        - tests/server/infraestructura/busqueda/test_buscador.py
-        - tests/server/infraestructura/busqueda/test_indice.py
-        - uv.lock
-        - tests/server/infraestructura/busqueda/test_fts.py
-      receipts: []
+  pending_commits: []
   approved_manifests:
     - task: T1
       attempt: 1
@@ -1337,3 +1261,11 @@ cut_estimates:
     turns_left: 43
     savings: 0.31
     decision: "go on: below 50"
+  - at: 2026-10-23T20:09:02.168Z
+    task: verify
+    boundary_id: verify
+    context: 250515
+    base: 60463
+    turns_left: 28
+    savings: 0.76
+    decision: "go on: suggestion already shown at boundary"

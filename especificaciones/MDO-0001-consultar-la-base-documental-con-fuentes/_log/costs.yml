@@ -448,3 +448,19 @@ costs:
       mandao-reviewer: 0.603545
     source: claude-code
     basis: equivalent
+  - at: 2026-10-23T20:18:58.810Z
+    command: verify
+    harness: claude
+    session: d1d306d8-ae27-4a54-b473-868821607390
+    usd: 1.502
+    roles:
+      verify: 1.2395
+      mandao-tester: 0.2625
+    models:
+      claude-opus-5-5: 1.2395
+      claude-sonnet-5-5: 0.2625
+    cumulative:
+      main-session: 1.23948
+      mandao-tester: 0.262544
+    source: claude-code
+    basis: equivalent
