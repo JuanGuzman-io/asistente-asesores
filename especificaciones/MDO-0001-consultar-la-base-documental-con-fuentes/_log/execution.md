@@ -68,3 +68,5 @@ spec: MDO-0001-consultar-la-base-documental-con-fuentes
 <!-- mandao:telemetry {"id":"b91ff5f8-e837-477f-b6e2-13b372dd635b","type":"agent_start","at":"2026-10-23T15:36:56.168Z","command":"implement","run":"350b6f13-55c4-443e-a332-6258f2c0ab07","subject":"reviewer"} -->
 <!-- mandao:telemetry {"id":"00bd798a-7e2f-4834-98e8-440184fd90e5","type":"asked","at":"2026-10-23T15:39:22.816Z","command":"implement","run":"350b6f13-55c4-443e-a332-6258f2c0ab07","question":"technical","subject":"build-gate"} -->
 <!-- mandao:telemetry {"id":"00bd798a-7e2f-4834-98e8-440184fd90e5","type":"answered","at":"2026-10-23T15:41:44.683Z","command":"implement","run":"350b6f13-55c4-443e-a332-6258f2c0ab07","question":"technical"} -->
+<!-- mandao:telemetry {"id":"69835db5-6412-45d9-9d64-03c8e475d7f8","type":"asked","at":"2026-10-23T15:43:35.491Z","command":"implement","run":"350b6f13-55c4-443e-a332-6258f2c0ab07","question":"technical","subject":"stale-pending-commit"} -->
+<!-- mandao:telemetry {"id":"69835db5-6412-45d9-9d64-03c8e475d7f8","type":"answered","at":"2026-10-23T15:44:50.659Z","command":"implement","run":"350b6f13-55c4-443e-a332-6258f2c0ab07","question":"technical"} -->
