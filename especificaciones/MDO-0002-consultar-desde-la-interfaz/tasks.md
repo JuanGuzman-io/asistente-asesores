@@ -190,7 +190,7 @@ verify: npm --prefix src/web test -- pregunta App
 
 ```yaml
 project: web
-kind: test
+kind: chore
 tier: standard
 files: [tests/web/e2e/consultar.spec.ts, src/web/AGENTS.md]
 exemplar: tests/web/e2e/consultar.spec.ts
