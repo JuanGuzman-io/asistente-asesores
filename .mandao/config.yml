@@ -30,7 +30,7 @@ projects:
       typecheck: npm run typecheck
       test: npm test
       build: npm run build
-      secrets: git ls-files -z --cached --others --exclude-standard | xargs -0 uvx --quiet --from detect-secrets detect-secrets-hook --baseline "$(git rev-parse --show-toplevel)/.secrets.baseline" --exclude-files '(^|/)_log/'
+      secrets: git ls-files -z --cached --others --exclude-standard | xargs -0 uvx --quiet --from detect-secrets detect-secrets-hook --baseline "$(git rev-parse --show-toplevel)/.secrets.baseline" --exclude-files '(^|/)_log/'  # pragma: allowlist secret
       audit: npm audit --omit=dev --audit-level=high
     tests:
       impacted: >-
