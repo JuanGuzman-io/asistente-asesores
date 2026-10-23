@@ -1,7 +1,7 @@
 # Written by mandao. Do not edit by hand.
 schema_version: 1
 mandao: 0.1.0-beta.0
-config_hash: sha256-fVtoE4NKeGu021WIW+NIZPugLFSSQRA/GfxF7vmz32I=
+config_hash: sha256-NjADLHAv7L3Rf0oXX2B7byG1hZA0OpMPX3Rf858JcLM=
 layers:
   - kind: core
     id: core
@@ -499,6 +499,12 @@ files:
     hash: sha256-/2l0Pbpp/Z8lUpGHrxB/EYHmJxOe9jn43uU6Pkpj6e8=
     scope: project
   - path: CLAUDE.md
+    harness: claude
+    from: block:claude-pointer
+    ownership: managed-block
+    hash: sha256-eXTWuxwIwfWrDwzLk+LV2GpoFYgeYSM4Q4aaWmUQZdA=
+    scope: project
+  - path: src/server/CLAUDE.md
     harness: claude
     from: block:claude-pointer
     ownership: managed-block
