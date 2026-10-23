@@ -319,3 +319,74 @@ T6 passes. The extractive answer meets D12, and the ids are 1-based, the same co
 - **Full suite:** "82 passed, 2 warnings" (Qdrant/SQLite thread warning on GC and a Starlette deprecation), neither from this task.
 
 **OPEN (F1):** D12 says to use the fragments "that pass the threshold", but D4 only defines a threshold for the best fragment. Under D4 as written, the implementation is consistent. Clear it up in the design or in the T10 calibration.
+
+## T8 — attempt 1
+
+VERDICT: FAIL
+
+T8 falla por un solo punto, y su arreglo es pequeño. Las cuatro comprobaciones que pediste pasan: la PII no llega a ningún log, el rollback funciona cuando el INSERT falla, el SQL usa parámetros y los CHECK coinciden con data-model.md. El bloqueo viene de una de las tres decisiones: `repositorio=None` en `consultar` deja que el caso de uso devuelva una respuesta sin registrarla, y eso contradice D10, BR-6 y DP-7. La falla es del núcleo, no de seguridad.
+
+**Lo que comprobé**
+
+- **Spec:** S-11.1 se cumple (cinco campos más `modo`, `fecha_hora` UTC ISO 8601 con `+00:00`, fuentes registradas iguales a las devueltas). S-11.2 se cumple en el repositorio (triggers BEFORE y AFTER; `in_transaction is False` y cero filas desde otra conexión). "No registrar 413/415/422" es de T9.
+- **CHECK frente a data-model.md:** coinciden (`estado`: `EXITOSA`, `SIN_INFORMACION`, `BLOQUEADA`; `modo`: `modelo`, `extractivo`, `ninguno`; `request_id` NOT NULL UNIQUE; índice sobre `fecha_hora`; `user_version = 1`).
+- **SQL parametrizado:** INSERT con `?` en las siete columnas y prueba con texto de inyección. El único f-string es `PRAGMA user_version = {VERSION_ESQUEMA}`, constante entera.
+- **Rollback:** `except BaseException: rollback(); raise`, con el `commit()` dentro del `try`.
+- **PII:** el código nuevo no importa `logging` ni imprime nada; `test_pii_registrar_no_escribe_la_pregunta_en_los_logs` revisa `caplog` en DEBUG.
+- **TDD:** hay evidencia de rojo. `redTests.changed` lista solo `test_repositorio.py` (ruff --fix I001). ASSUMPTION: no vi la versión roja original.
+- **Gates:** todos en PASS; suite 110 passed y 3 warnings de `QdrantClient.__del__`, sin relación con T8.
+- **Prueba inestable de T3:** coincide con esos warnings de GC/hilos de Qdrant; no bloquea T8.
+- **AGENTS.md y límites de módulo:** correctos.
+
+**Las tres decisiones**
+
+1. **`repositorio=None` (bloquea).** D10: "el caso de uso arma el resultado y lo inserta en `consultas` ... antes de devolverlo"; DP-7 aplica. La razón dada ("no romper T5/T6") no figura como excepción en design.md. Arreglo: hacer `repositorio` obligatorio y pasar un `RepositorioDoble` (o un fixture) en las llamadas de T5/T6, sin tocar aserciones.
+2. **`getattr(redactor, "modo", "modelo")` (no bloquea, arreglar junto con 1).** El Protocol ya exige `modo`. Declarar `modo` en `RedactorDoble` y usar `redactor.modo`.
+3. **`fecha_hora` en UTC con precisión de segundos:** aceptable.
+
+**Para T9 (OPEN, no bloquea T8)**
+
+- `http/app.py` comparte una sola conexión con `check_same_thread=False`; la tabla ACID pide "una conexión por petición" y WAL. `crear_esquema` de persistencia aún no se llama al arrancar.
+- El handler del 500 de T9 no debe registrar la pregunta ni `repr(resultado)`.
+
+## Findings (JSON)
+
+```json
+{"version":1,"findings":[
+{"id":"F1","status":"open","severity":"medium","lens":"core","title":"consultar puede devolver una respuesta sin registrarla (repositorio=None por defecto) en contra de D10/BR-6/DP-7","file":"src/server/aplicacion/consultar.py","line":285,"evidence":"`repositorio: RepositorioConsultas | None = None` y `if repositorio is not None:`; D10: 'El caso de uso arma el resultado y lo inserta en `consultas` en una transacción antes de devolverlo'. DP-7 aplica según el Principle check y no hay excepción justificada. Arreglo: parámetro obligatorio y pasar un doble en las llamadas de T5/T6 sin tocar aserciones."},
+{"id":"F2","status":"open","severity":"low","lens":"core","title":"getattr con valor por defecto 'modelo' esconde redactores sin el atributo modo que exige el Protocol","file":"src/server/aplicacion/consultar.py","line":316,"evidence":"`return resultado, getattr(redactor, \"modo\", MODO_MODELO)`; el Protocol Redactor declara `modo: str`. Un redactor sin modo se registra como 'modelo' sin avisar. Arreglo: declarar modo en RedactorDoble y usar `redactor.modo`."},
+{"id":"F3","status":"open","severity":"low","lens":"data","title":"OPEN para T9: la conexión SQLite compartida entre hilos y sin WAL contradice la tabla ACID del diseño ('una conexión por petición', WAL)","file":"src/server/http/app.py","line":27,"evidence":"`sqlite3.connect(ruta_sqlite, check_same_thread=False)` es una conexión única en lifespan; registrar() hace commit/rollback sobre ella. design.md, Data writes: 'WAL; una conexión por petición'. Además, crear_esquema de persistencia todavía no se invoca al arrancar."},
+{"id":"F4","status":"open","severity":"low","lens":"core","title":"Prueba casi tautológica: tabla vacía sin llamar a consultar","file":"tests/server/infraestructura/persistencia/test_repositorio.py","line":765,"evidence":"`test_s111_c1_sin_llamar_a_consultar_no_hay_registros` solo comprueba que una tabla recién creada está vacía; la verificación real de S-11.1/C1 es la de T9. Es ruido, conviene quitarla o moverla a T9."},
+{"id":"F5","status":"resolved","severity":"high","lens":"security","title":"La pregunta (PII) no llega a los logs y el SQL usa parámetros","file":"src/server/infraestructura/persistencia/repositorio.py","line":1,"evidence":"Sin logging en el código nuevo; INSERT con 7 placeholders `?`; pruebas test_pii_registrar_no_escribe_la_pregunta_en_los_logs y test_pii_el_texto_se_enlaza_como_parametro_no_se_interpola_en_el_sql."},
+{"id":"F6","status":"resolved","severity":"high","lens":"data","title":"Rollback ante una falla del INSERT o del commit, sin fila parcial; los CHECK coinciden con data-model.md","file":"src/server/infraestructura/persistencia/repositorio.py","line":1,"evidence":"`try: execute; commit / except BaseException: rollback; raise`; test_falla_insert_consulta_no_deja_fila y test_falla_despues_del_insert_... comprueban in_transaction False y COUNT 0 desde otra conexión; los CHECK de estado y modo son idénticos a data-model.md."}
+]}
+```
+
+## T8 — attempt 2
+
+VERDICT: PASS
+
+El intento 2 de T8 pasa. Los dos hallazgos que bloqueaban o había que corregir (F1 y F2) quedaron resueltos, y el retrabajo no tocó ninguna aserción existente. F3 sigue OPEN para T9, F4 sigue sin tocar y no bloquea, y hay un hallazgo nuevo de documentación, F7, de severidad baja.
+
+**Lo que comprobé**
+
+- **F1, resuelto:** `repositorio` es keyword-only y obligatorio. `consultar()` siempre llama a `repositorio.registrar(...)` antes de `return resultado`; si el registro falla, el error sube sin respuesta (D10, BR-6, DP-7). `test_d10_consultar_exige_repositorio` prueba ambas ramas y quedó registrada en rojo.
+- **F2, resuelto:** `_resolver` devuelve `redactor.modo` directamente.
+- **Retrabajo verificado en el diff:** en `test_consultar.py` las 15 llamadas solo ganan `repositorio=RepositorioDoble()` y `RedactorDoble` gana `modo = "modelo"`; en `test_extractivo.py` solo se añade un `RepositorioDoble` local en 2 llamadas. Ninguna aserción cambia; el rechazo de `run red` sobre `test_extractivo.py` es esperable.
+- **TDD:** evidencia de rojo para la prueba de D10; `redTests.changed` lista solo `test_repositorio.py`, sin aserciones debilitadas. ASSUMPTION: no vi la versión roja del intento 1 de las pruebas de T8 en `test_consultar.py`.
+- **Spec:** S-11.1, S-11.2 y AC-14 se siguen cumpliendo; F5 y F6 siguen resueltos. 413/415/422 queda para T9.
+- **AGENTS.md, límites de módulo, gates y suite (111 passed, 3 warnings ajenos a T8):** correctos.
+
+## Findings (JSON)
+
+```json
+{"version":1,"findings":[
+{"id":"F1","status":"resolved","severity":"medium","lens":"core","title":"consultar puede devolver una respuesta sin registrarla (repositorio=None por defecto) en contra de D10/BR-6/DP-7","file":"src/server/aplicacion/consultar.py","line":285,"evidence":"Ahora `repositorio: RepositorioConsultas` es keyword-only y obligatorio, y `repositorio.registrar(...)` se ejecuta siempre antes de `return resultado`. En src/server no quedan ramas `is not None` sobre el repositorio. test_d10_consultar_exige_repositorio cubre las ramas con y sin soporte y quedó registrada en rojo."},
+{"id":"F2","status":"resolved","severity":"low","lens":"core","title":"getattr con valor por defecto 'modelo' esconde redactores sin el atributo modo que exige el Protocol","file":"src/server/aplicacion/consultar.py","line":319,"evidence":"`return resultado, redactor.modo`; en src/server ya no hay getattr. RedactorDoble declara `modo = \"modelo\"` y RedactorExtractivo `modo = \"extractivo\"`."},
+{"id":"F3","status":"open","severity":"low","lens":"data","title":"OPEN para T9: la conexión SQLite compartida entre hilos y sin WAL contradice la tabla ACID del diseño ('una conexión por petición', WAL)","file":"src/server/http/app.py","line":27,"evidence":"Sin cambios en este intento: `sqlite3.connect(ruta_sqlite, check_same_thread=False)` es una conexión única en lifespan y crear_esquema de persistencia todavía no se invoca al arrancar. Queda para T9."},
+{"id":"F4","status":"open","severity":"low","lens":"core","title":"Prueba casi tautológica: tabla vacía sin llamar a consultar","file":"tests/server/infraestructura/persistencia/test_repositorio.py","line":977,"evidence":"`test_s111_c1_sin_llamar_a_consultar_no_hay_registros` solo comprueba que una tabla recién creada está vacía; la verificación real de S-11.1/C1 (413/415/422 sin registro) es de T9. No bloquea."},
+{"id":"F5","status":"resolved","severity":"high","lens":"security","title":"La pregunta (PII) no llega a los logs y el SQL usa parámetros","file":"src/server/infraestructura/persistencia/repositorio.py","line":1,"evidence":"Sin cambios desde el intento 1: no hay logging en el código nuevo, el INSERT usa 7 placeholders `?` y siguen test_pii_registrar_no_escribe_la_pregunta_en_los_logs y test_pii_el_texto_se_enlaza_como_parametro_no_se_interpola_en_el_sql."},
+{"id":"F6","status":"resolved","severity":"high","lens":"data","title":"Rollback ante una falla del INSERT o del commit, sin fila parcial; los CHECK coinciden con data-model.md","file":"src/server/infraestructura/persistencia/repositorio.py","line":1,"evidence":"Sin cambios desde el intento 1: `try: execute; commit / except BaseException: rollback; raise`; test_falla_insert_consulta_no_deja_fila y test_falla_despues_del_insert_hace_rollback_y_no_deja_fila_incompleta siguen en PASS."},
+{"id":"F7","status":"open","severity":"low","lens":"core","title":"El docstring de test_repositorio.py describe la API anterior (repositorio=None opcional)","file":"tests/server/infraestructura/persistencia/test_repositorio.py","line":758,"evidence":"`consultar(pregunta, *, buscador, redactor, repositorio=None, request_id=None)` y '`repositorio` es opcional para no romper las pruebas de T5/T6' contradicen la implementación corregida en F1 y src/server/AGENTS.md. Es solo documentación; conviene actualizar el texto."}
+]}
+```

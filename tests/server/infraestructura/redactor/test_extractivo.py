@@ -47,6 +47,11 @@ PREGUNTA_MONTO = "¿Cuál es el monto máximo del Crédito Productivo Impulso?"
 PREGUNTA_MONTO_TASA = "¿Cuál es el monto máximo y la tasa del Crédito Productivo Impulso?"
 
 
+class RepositorioDoble:
+    def registrar(self, *, request_id: str, pregunta: str, resultado: object, modo: str) -> None:
+        pass
+
+
 class _Buscador:
     def __init__(self, fragmentos: Sequence[Fragmento]) -> None:
         self._fragmentos = fragmentos
@@ -63,7 +68,10 @@ def test_s_4_1_la_respuesta_extractiva_contiene_el_monto_maximo_del_documento() 
 
 def test_s_4_1_c1_declara_usado_al_menos_un_fragmento_y_consultar_trae_fuente_exitosa() -> None:
     resultado = consultar(
-        PREGUNTA_MONTO, buscador=_Buscador([IMPULSO]), redactor=RedactorExtractivo()
+        PREGUNTA_MONTO,
+        buscador=_Buscador([IMPULSO]),
+        repositorio=RepositorioDoble(),
+        redactor=RedactorExtractivo(),
     )
 
     assert resultado.estado is Estado.EXITOSA
@@ -83,7 +91,10 @@ def test_s_5_2_la_respuesta_empieza_con_la_frase_fija() -> None:
 
 def test_s_5_2_trae_el_fragmento_del_credito_productivo_impulso_con_su_fuente() -> None:
     resultado = consultar(
-        PREGUNTA_MONTO_TASA, buscador=_Buscador([IMPULSO]), redactor=RedactorExtractivo()
+        PREGUNTA_MONTO_TASA,
+        buscador=_Buscador([IMPULSO]),
+        repositorio=RepositorioDoble(),
+        redactor=RedactorExtractivo(),
     )
 
     assert resultado.estado is Estado.EXITOSA

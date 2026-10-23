@@ -49,6 +49,8 @@ class BuscadorDoble:
 
 
 class RedactorDoble:
+    modo = "modelo"
+
     def __init__(
         self, usados: Sequence[int] = (1,), respuesta: str = "Respuesta redactada."
     ) -> None:
@@ -83,7 +85,10 @@ def test_s101_sin_soporte_responde_el_mensaje_fijo_sin_fuentes_y_con_estado_sin_
     redactor = RedactorDoble()
 
     resultado = consultar(
-        "¿Cuál es la tasa de la hipoteca?", buscador=_sin_soporte(), redactor=redactor
+        "¿Cuál es la tasa de la hipoteca?",
+        buscador=_sin_soporte(),
+        repositorio=RepositorioDoble(),
+        redactor=redactor,
     )
 
     assert resultado.respuesta == MENSAJE_FIJO
@@ -95,7 +100,12 @@ def test_s101_sin_soporte_responde_el_mensaje_fijo_sin_fuentes_y_con_estado_sin_
 def test_s101_sin_soporte_no_llama_al_redactor():
     redactor = RedactorDoble()
 
-    consultar("¿Cuál es la tasa de la hipoteca?", buscador=_sin_soporte(), redactor=redactor)
+    consultar(
+        "¿Cuál es la tasa de la hipoteca?",
+        buscador=_sin_soporte(),
+        repositorio=RepositorioDoble(),
+        redactor=redactor,
+    )
 
     assert redactor.llamadas == []
 
@@ -104,7 +114,9 @@ def test_s101_bajo_el_umbral_con_fragmentos_candidatos_no_los_cita_ni_llama_al_r
     redactor = RedactorDoble()
     buscador = _sin_soporte([IMPULSO])
 
-    resultado = consultar("pregunta lejana", buscador=buscador, redactor=redactor)
+    resultado = consultar(
+        "pregunta lejana", buscador=buscador, repositorio=RepositorioDoble(), redactor=redactor
+    )
 
     assert resultado.respuesta == MENSAJE_FIJO
     assert resultado.fuentes == []
@@ -115,7 +127,12 @@ def test_s101_bajo_el_umbral_con_fragmentos_candidatos_no_los_cita_ni_llama_al_r
 def test_s101_la_pregunta_llega_al_buscador_tal_cual():
     buscador = _sin_soporte()
 
-    consultar("¿Qué es Agro Crece?", buscador=buscador, redactor=RedactorDoble())
+    consultar(
+        "¿Qué es Agro Crece?",
+        buscador=buscador,
+        repositorio=RepositorioDoble(),
+        redactor=RedactorDoble(),
+    )
 
     assert buscador.preguntas == ["¿Qué es Agro Crece?"]
 
@@ -123,7 +140,12 @@ def test_s101_la_pregunta_llega_al_buscador_tal_cual():
 def test_s102_base_vacia_responde_el_mensaje_fijo_sin_excepcion():
     redactor = RedactorDoble()
 
-    resultado = consultar("¿Qué créditos hay?", buscador=_sin_soporte([]), redactor=redactor)
+    resultado = consultar(
+        "¿Qué créditos hay?",
+        buscador=_sin_soporte([]),
+        repositorio=RepositorioDoble(),
+        redactor=redactor,
+    )
 
     assert resultado.respuesta == MENSAJE_FIJO
     assert resultado.fuentes == []
@@ -136,7 +158,9 @@ def test_s102_c1_base_vacia_con_soporte_declarado_sin_fragmentos_no_falla():
     redactor = RedactorDoble()
     buscador = BuscadorDoble(ResultadoBusqueda(fragmentos=[], hay_soporte=True))
 
-    resultado = consultar("¿Qué créditos hay?", buscador=buscador, redactor=redactor)
+    resultado = consultar(
+        "¿Qué créditos hay?", buscador=buscador, repositorio=RepositorioDoble(), redactor=redactor
+    )
 
     assert resultado.respuesta == MENSAJE_FIJO
     assert resultado.estado == Estado.SIN_INFORMACION
@@ -147,7 +171,10 @@ def test_s103_pregunta_ajena_a_los_cuatro_temas_es_sin_informacion():
     redactor = RedactorDoble()
 
     resultado = consultar(
-        "¿Va a llover mañana en Bogotá?", buscador=_sin_soporte(), redactor=redactor
+        "¿Va a llover mañana en Bogotá?",
+        buscador=_sin_soporte(),
+        repositorio=RepositorioDoble(),
+        redactor=redactor,
     )
 
     assert resultado.respuesta == MENSAJE_FIJO
@@ -158,7 +185,10 @@ def test_s103_pregunta_ajena_a_los_cuatro_temas_es_sin_informacion():
 
 def test_s103_c1_pregunta_ajena_nunca_queda_bloqueada_por_seguridad():
     resultado = consultar(
-        "¿Va a llover mañana en Bogotá?", buscador=_sin_soporte(), redactor=RedactorDoble()
+        "¿Va a llover mañana en Bogotá?",
+        buscador=_sin_soporte(),
+        repositorio=RepositorioDoble(),
+        redactor=RedactorDoble(),
     )
 
     assert resultado.estado != Estado.BLOQUEADA
@@ -169,7 +199,10 @@ def test_s61_con_soporte_responde_exitosa_con_la_respuesta_del_redactor():
     redactor = RedactorDoble(usados=[1], respuesta="Impulso financia de 1 a 20 millones.")
 
     resultado = consultar(
-        "¿Cuánto financia Impulso?", buscador=_con_soporte([IMPULSO]), redactor=redactor
+        "¿Cuánto financia Impulso?",
+        buscador=_con_soporte([IMPULSO]),
+        repositorio=RepositorioDoble(),
+        redactor=redactor,
     )
 
     assert resultado.respuesta == "Impulso financia de 1 a 20 millones."
@@ -183,6 +216,7 @@ def test_s61_el_redactor_recibe_la_pregunta_y_los_fragmentos_recuperados():
     consultar(
         "¿Cuánto financia Impulso?",
         buscador=_con_soporte([IMPULSO, CONDICIONES]),
+        repositorio=RepositorioDoble(),
         redactor=redactor,
     )
 
@@ -196,6 +230,7 @@ def test_s61_cada_fuente_trae_documento_seccion_y_fragmento():
     resultado = consultar(
         "¿Cuánto financia Impulso?",
         buscador=_con_soporte([IMPULSO]),
+        repositorio=RepositorioDoble(),
         redactor=RedactorDoble(usados=[1]),
     )
 
@@ -212,6 +247,7 @@ def test_s61_las_fuentes_se_deduplican_por_documento_y_seccion():
     resultado = consultar(
         "¿Cuánto financia Impulso?",
         buscador=_con_soporte([IMPULSO, repetido, MICROSEGURO]),
+        repositorio=RepositorioDoble(),
         redactor=RedactorDoble(usados=[1, 2, 3]),
     )
 
@@ -226,6 +262,7 @@ def test_s61_c1_solo_los_fragmentos_declarados_usados_son_fuentes():
     resultado = consultar(
         "¿Cuánto financia Impulso?",
         buscador=_con_soporte([IMPULSO, CONDICIONES, MICROSEGURO]),
+        repositorio=RepositorioDoble(),
         redactor=RedactorDoble(usados=[2]),
     )
 
@@ -238,7 +275,106 @@ def test_s61_c1_las_fuentes_siguen_el_orden_de_los_fragmentos_recuperados():
     resultado = consultar(
         "¿Cuánto financia Impulso?",
         buscador=_con_soporte([IMPULSO, CONDICIONES, MICROSEGURO]),
+        repositorio=RepositorioDoble(),
         redactor=RedactorDoble(usados=[3, 1]),
     )
 
     assert [f.seccion for f in resultado.fuentes] == ["Crédito Productivo Impulso", "Cobertura"]
+
+
+# --- T8 (D10, AC-14, S-11.1, S-11.2): el caso de uso registra cada consulta con un doble ---------
+
+
+class RepositorioDoble:
+    """API asumida: `registrar(*, request_id, pregunta, resultado, modo)` (ver test_repositorio)."""
+
+    def __init__(self, error: Exception | None = None) -> None:
+        self.registros: list[dict[str, object]] = []
+        self._error = error
+
+    def registrar(self, *, request_id: str, pregunta: str, resultado, modo: str) -> None:
+        if self._error is not None:
+            raise self._error
+        self.registros.append(
+            {"request_id": request_id, "pregunta": pregunta, "resultado": resultado, "modo": modo}
+        )
+
+
+class RedactorConModo(RedactorDoble):
+    modo = "extractivo"
+
+
+def test_s111_consultar_registra_la_exitosa_con_el_mismo_resultado_que_devuelve():
+    repo = RepositorioDoble()
+
+    resultado = consultar(
+        "¿Cuánto financia Impulso?",
+        buscador=_con_soporte([IMPULSO]),
+        redactor=RedactorConModo(usados=[1]),
+        repositorio=repo,
+    )
+
+    assert len(repo.registros) == 1
+    registro = repo.registros[0]
+    assert registro["pregunta"] == "¿Cuánto financia Impulso?"
+    assert registro["resultado"] == resultado
+    assert registro["modo"] == "extractivo"
+
+
+def test_s111_consultar_registra_sin_informacion_con_modo_ninguno():
+    repo = RepositorioDoble()
+
+    resultado = consultar(
+        "¿Va a llover?",
+        buscador=_sin_soporte(),
+        redactor=RedactorConModo(),
+        repositorio=repo,
+    )
+
+    assert len(repo.registros) == 1
+    assert repo.registros[0]["resultado"] == resultado
+    assert resultado.estado == Estado.SIN_INFORMACION
+    assert repo.registros[0]["modo"] == "ninguno"
+
+
+def test_s111_consultar_usa_el_request_id_recibido_o_genera_un_uuid_v4():
+    import uuid
+
+    repo = RepositorioDoble()
+    rid = str(uuid.uuid4())
+    buscador = _sin_soporte()
+
+    consultar("p", buscador=buscador, redactor=RedactorDoble(), repositorio=repo, request_id=rid)
+    consultar("p", buscador=buscador, redactor=RedactorDoble(), repositorio=repo)
+
+    assert repo.registros[0]["request_id"] == rid
+    assert uuid.UUID(str(repo.registros[1]["request_id"])).version == 4
+
+
+def test_s112_si_el_repositorio_falla_consultar_propaga_el_error_sin_devolver_respuesta():
+    import pytest
+
+    repo = RepositorioDoble(error=RuntimeError("disco lleno"))
+
+    with pytest.raises(RuntimeError, match="disco lleno"):
+        consultar(
+            "¿Cuánto financia Impulso?",
+            buscador=_con_soporte([IMPULSO]),
+            redactor=RedactorConModo(usados=[1]),
+            repositorio=repo,
+        )
+    with pytest.raises(RuntimeError, match="disco lleno"):
+        consultar(
+            "¿Va a llover?", buscador=_sin_soporte(), redactor=RedactorDoble(), repositorio=repo
+        )
+
+
+def test_d10_consultar_exige_repositorio():
+    import pytest
+
+    with pytest.raises(TypeError):
+        consultar(
+            "¿Cuánto financia Impulso?", buscador=_con_soporte([IMPULSO]), redactor=RedactorDoble()
+        )  # type: ignore[call-arg]
+    with pytest.raises(TypeError):
+        consultar("¿Va a llover?", buscador=_sin_soporte(), redactor=RedactorDoble())  # type: ignore[call-arg]

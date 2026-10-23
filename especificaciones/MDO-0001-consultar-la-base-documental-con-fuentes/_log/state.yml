@@ -2,7 +2,7 @@
 progress:
   schema_version: 1
   spec: MDO-0001-consultar-la-base-documental-con-fuentes
-  updated_at: 2026-10-23T16:38:44.649Z
+  updated_at: 2026-10-23T16:48:39.521Z
   current: null
   open_questions: []
   next_step: ""
@@ -124,6 +124,65 @@ progress:
             - test_cada_fragmento_va_precedido_por_documento_mayor_que_seccion
             - test_usa_como_maximo_dos_fragmentos_de_los_tres_recibidos
             - test_con_un_solo_fragmento_declara_solo_el_id_uno
+    - task: T8
+      files:
+        - path: tests/server/infraestructura/persistencia/test_repositorio.py
+          sha256: 78eb9c3a17c9eab1e7af96cc01a66c721122b9522813c7cabb0db5b19be6da4b
+          tests:
+            - test_esquema_crea_consultas_con_las_columnas_del_modelo_de_datos
+            - test_esquema_fija_user_version_1_indice_por_fecha_y_es_idempotente
+            - test_s111_exitosa_queda_con_los_cinco_campos_y_el_modo
+            - test_s111_sin_informacion_queda_con_fuentes_lista_vacia
+            - test_s111_la_fuente_con_tildes_se_guarda_sin_perder_texto
+            - test_s111_cada_consulta_tiene_su_propio_registro
+            - test_s111_las_fuentes_registradas_coinciden_con_las_devueltas_por_consultar
+            - test_s111_c1_sin_llamar_a_consultar_no_hay_registros
+            - test_estado_acepta_los_tres_valores_incluida_bloqueada
+            - test_modo_acepta_los_tres_valores
+            - test_modo_invalido_se_rechaza_y_no_deja_fila
+            - test_check_de_la_tabla_rechaza_estado_y_modo_fuera_de_los_valores
+            - test_request_id_es_unico
+            - test_falla_insert_consulta_no_deja_fila
+            - test_falla_despues_del_insert_hace_rollback_y_no_deja_fila_incompleta
+            - test_tras_una_falla_el_repositorio_sigue_registrando
+            - test_s112_si_el_almacenamiento_falla_consultar_propaga_el_error
+            - test_pii_registrar_no_escribe_la_pregunta_en_los_logs
+            - test_pii_la_pregunta_se_guarda_tal_cual_en_la_base_local
+            - test_pii_el_texto_se_enlaza_como_parametro_no_se_interpola_en_el_sql
+        - path: tests/server/infraestructura/redactor/test_extractivo.py
+          sha256: 220523d0947453934702191648348d8cc951dfc10f6e3284c7a2bf475628587e
+          tests:
+            - test_s_4_1_la_respuesta_extractiva_contiene_el_monto_maximo_del_documento
+            - test_s_4_1_c1_declara_usado_al_menos_un_fragmento_y_consultar_trae_fuente_exitosa
+            - test_s_5_2_la_respuesta_empieza_con_la_frase_fija
+            - test_s_5_2_trae_el_fragmento_del_credito_productivo_impulso_con_su_fuente
+            - test_s_5_2_c1_no_afirma_responder_toda_la_pregunta_ni_da_una_tasa
+            - test_cada_fragmento_va_precedido_por_documento_mayor_que_seccion
+            - test_usa_como_maximo_dos_fragmentos_de_los_tres_recibidos
+            - test_con_un_solo_fragmento_declara_solo_el_id_uno
+        - path: tests/server/aplicacion/test_consultar.py
+          sha256: 1e841216cf61a1c73089438600c4651d0e57f2ad04bc545a55b33b567c30f4f7
+          tests:
+            - test_s101_el_mensaje_fijo_es_exactamente_el_del_pdf
+            - test_s101_sin_soporte_responde_el_mensaje_fijo_sin_fuentes_y_con_estado_sin_informacion
+            - test_s101_sin_soporte_no_llama_al_redactor
+            - test_s101_bajo_el_umbral_con_fragmentos_candidatos_no_los_cita_ni_llama_al_redactor
+            - test_s101_la_pregunta_llega_al_buscador_tal_cual
+            - test_s102_base_vacia_responde_el_mensaje_fijo_sin_excepcion
+            - test_s102_c1_base_vacia_con_soporte_declarado_sin_fragmentos_no_falla
+            - test_s103_pregunta_ajena_a_los_cuatro_temas_es_sin_informacion
+            - test_s103_c1_pregunta_ajena_nunca_queda_bloqueada_por_seguridad
+            - test_s61_con_soporte_responde_exitosa_con_la_respuesta_del_redactor
+            - test_s61_el_redactor_recibe_la_pregunta_y_los_fragmentos_recuperados
+            - test_s61_cada_fuente_trae_documento_seccion_y_fragmento
+            - test_s61_las_fuentes_se_deduplican_por_documento_y_seccion
+            - test_s61_c1_solo_los_fragmentos_declarados_usados_son_fuentes
+            - test_s61_c1_las_fuentes_siguen_el_orden_de_los_fragmentos_recuperados
+            - test_s111_consultar_registra_la_exitosa_con_el_mismo_resultado_que_devuelve
+            - test_s111_consultar_registra_sin_informacion_con_modo_ninguno
+            - test_s111_consultar_usa_el_request_id_recibido_o_genera_un_uuid_v4
+            - test_s112_si_el_repositorio_falla_consultar_propaga_el_error_sin_devolver_respuesta
+            - test_d10_consultar_exige_repositorio
   pending_commits: []
   approved_manifests:
     - task: T1
@@ -324,10 +383,55 @@ progress:
         - src/server/infraestructura/redactor/extractivo.py
         - tests/server/infraestructura/redactor/test_extractivo.py
       receipts: []
+    - task: T8
+      attempt: 2
+      files:
+        - path: src/server/AGENTS.md
+          status: " M"
+          sha256: bb2f91f4be8ed1826ec866311d819f7374ab1dd78a3f5cd69f4ca5c987104970
+        - path: src/server/aplicacion/consultar.py
+          status: " M"
+          sha256: 5d974c6b08e87facd67e52234c13b6298c8b21e11d0a2d0ccc48f12bb2ddc869
+        - path: src/server/dominio/puertos.py
+          status: " M"
+          sha256: 3a989f9e7e3199306f4032f4a0095b911fd7bfefe6f2b9a577e45efd639ad370
+        - path: src/server/infraestructura/persistencia/__init__.py
+          status: ??
+          sha256: e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855
+        - path: src/server/infraestructura/persistencia/esquema.py
+          status: ??
+          sha256: 685cd7ca13cf394b2fd4f112b49885c1b4b992439beeccb07c8569c22ef7ce46
+        - path: src/server/infraestructura/persistencia/repositorio.py
+          status: ??
+          sha256: 8cc30fbf7290568a3d5e2285080848a639b24e12162f473f35e7d05147044547
+        - path: src/server/infraestructura/redactor/extractivo.py
+          status: " M"
+          sha256: 0950dfb94ee733cc28a4436b2b4190104252c25d6f8b07983bd462cc84160208
+        - path: tests/server/aplicacion/test_consultar.py
+          status: " M"
+          sha256: 1e841216cf61a1c73089438600c4651d0e57f2ad04bc545a55b33b567c30f4f7
+        - path: tests/server/infraestructura/persistencia/test_repositorio.py
+          status: ??
+          sha256: 2b27795c5b9e48ab76cf4d22c1cf8f875afb72250d219691856929d4326fd318
+        - path: tests/server/infraestructura/redactor/test_extractivo.py
+          status: " M"
+          sha256: 220523d0947453934702191648348d8cc951dfc10f6e3284c7a2bf475628587e
+      reviewed:
+        - src/server/AGENTS.md
+        - src/server/aplicacion/consultar.py
+        - src/server/dominio/puertos.py
+        - src/server/infraestructura/redactor/extractivo.py
+        - tests/server/aplicacion/test_consultar.py
+        - tests/server/infraestructura/redactor/test_extractivo.py
+        - src/server/infraestructura/persistencia/__init__.py
+        - src/server/infraestructura/persistencia/esquema.py
+        - src/server/infraestructura/persistencia/repositorio.py
+        - tests/server/infraestructura/persistencia/test_repositorio.py
+      receipts: []
   loop_brake:
-    task: T6
+    task: T8
     action: commit
-    execution_rows: 41
+    execution_rows: 53
     approval_rows: 6
     repeats: 1
 approvals:
@@ -445,4 +549,12 @@ cut_estimates:
     base: 63912
     turns_left: 133
     savings: 5.13
+    decision: "go on: below 50"
+  - at: 2026-10-23T16:38:58.062Z
+    task: T8
+    boundary_id: implement:T8
+    context: 284120
+    base: 63912
+    turns_left: 118
+    savings: 4.88
     decision: "go on: below 50"

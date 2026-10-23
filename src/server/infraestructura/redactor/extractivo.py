@@ -10,6 +10,8 @@ MAXIMO_FRAGMENTOS = 2
 class RedactorExtractivo:
     """Respuesta sin modelo (D12): frase fija y hasta 2 fragmentos con `Documento > Sección`."""
 
+    modo = "extractivo"
+
     def redactar(self, pregunta: str, fragmentos: Sequence[Fragmento]) -> RespuestaRedactada:
         usados = fragmentos[:MAXIMO_FRAGMENTOS]
         bloques = [f"{f.documento} > {f.seccion}\n{f.texto}" for f in usados]
