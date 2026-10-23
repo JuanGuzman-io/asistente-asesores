@@ -2,8 +2,12 @@
 progress:
   schema_version: 1
   spec: MDO-0001-consultar-la-base-documental-con-fuentes
-  updated_at: 2026-10-23T17:53:42.248Z
-  current: null
+  updated_at: 2026-10-23T19:21:38.359Z
+  current:
+    task: T14
+    phase: implementing
+    harness: claude
+    model: claude-opus-5-5
   open_questions: []
   next_step: ""
   deferred_to_ci: []
@@ -362,6 +366,35 @@ progress:
             - test_s13_1_c1_el_cuerpo_del_500_no_lleva_trazas_rutas_sql_ni_la_pregunta
             - test_s11_2_si_falla_el_insert_de_consultas_responde_el_mismo_500_generico
             - test_nfr4_el_log_del_500_lleva_request_id_y_tipo_de_error_sin_pregunta_ni_mensaje
+    - task: T13
+      files:
+        - path: tests/server/infraestructura/redactor/test_gemini.py
+          sha256: f6f03254ce68db919036ee28799d480172b474e30f8eeb00c3c5d1467c942711
+          tests:
+            - test_D7_salida_valida_se_entrega_con_modo_modelo
+            - test_D9_una_sola_llamada_al_modelo_registrado_en_el_registry
+            - test_D7_pide_json_con_esquema_estructurado
+            - test_S_5_1_parte_sin_soporte_agrega_la_frase_del_codigo_y_conserva_el_monto
+            - test_S_5_1_C1_no_da_ni_estima_una_tasa_si_el_modelo_la_inventa
+            - test_S_5_1_parcial_con_soporte_termina_exitosa_con_la_fuente_citada
+            - test_D7_ninguna_parte_con_soporte_termina_sin_informacion_suficiente_y_sin_fuentes
+            - test_S_4_2_salida_invalida_se_descarta_y_se_entrega_el_extractivo
+            - test_D9_fallo_del_modelo_o_salida_ilegible_pasa_al_extractivo_sin_propagar
+            - test_D9_sin_clave_no_se_crea_el_cliente_y_se_usa_el_extractivo
+            - test_D9_la_fabrica_recibe_la_clave_configurada
+            - test_D9_si_la_fabrica_del_cliente_falla_pasa_al_extractivo
+            - test_D9_modo_refleja_la_ultima_llamada_extractivo_y_luego_modelo
+            - test_D9_el_respaldo_queda_registrado_como_modo_extractivo_en_consultar
+            - test_D7_fragmentos_y_pregunta_viajan_en_contents_delimitados_no_en_system_instruction
+            - test_D5_una_instruccion_dentro_de_un_fragmento_no_cambia_el_comportamiento
+            - test_D5_si_el_modelo_obedece_la_instruccion_inyectada_el_guardrail_la_descarta
+            - test_D5_un_fragmento_con_etiquetas_delimitadoras_no_puede_cerrar_su_bloque
+            - test_D5_una_pregunta_con_etiquetas_delimitadoras_no_puede_cerrar_su_bloque
+            - test_D7_system_instruction_es_el_texto_de_prompt_md_v1
+            - test_D7_prompt_dice_que_los_fragmentos_son_datos_y_pide_listar_partes_sin_soporte
+            - test_D9_la_clave_y_la_pregunta_no_aparecen_en_logs_ni_en_excepciones
+            - test_D9_la_clave_no_aparece_en_logs_con_salida_valida
+            - test_T13_D9_fabrica_por_defecto_arma_http_options_con_corte_local_y_plazo_de_servidor
   pending_commits: []
   approved_manifests:
     - task: T1
@@ -764,12 +797,19 @@ progress:
         - tests/server/aplicacion/test_respaldo.py
         - tests/server/http/test_errores.py
       receipts: []
-  loop_brake:
-    task: T12
-    action: commit
-    execution_rows: 89
-    approval_rows: 6
-    repeats: 1
+    - task: T13
+      attempt: 1
+      files:
+        - path: src/server/infraestructura/redactor/gemini.py
+          status: " M"
+          sha256: cd0a814b9b7b7ceedf27d171ba91c69540041edbe6dd992413951e61860bd70b
+        - path: tests/server/infraestructura/redactor/test_gemini.py
+          status: " M"
+          sha256: f6f03254ce68db919036ee28799d480172b474e30f8eeb00c3c5d1467c942711
+      reviewed:
+        - src/server/infraestructura/redactor/gemini.py
+        - tests/server/infraestructura/redactor/test_gemini.py
+      receipts: []
 approvals:
   - step: shown
     by: Juan D. Guzmán
@@ -943,3 +983,11 @@ cut_estimates:
     turns_left: 28
     savings: 2.45
     decision: new session
+  - at: 2026-10-23T19:17:25.276Z
+    task: T13
+    boundary_id: implement:T13
+    context: 69742
+    base: 64632
+    turns_left: 73
+    savings: -0.25
+    decision: stay

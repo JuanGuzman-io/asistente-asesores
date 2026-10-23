@@ -20,7 +20,8 @@ logger = logging.getLogger(__name__)
 MODELO = "gemini-3.5-flash-lite"
 VERSION_PROMPT = "v1"
 RUTA_PROMPT = Path(__file__).with_name("prompt.md")
-TIMEOUT_MS = 5000  # D9: un solo intento, sin reintentos
+TIMEOUT_MS = 5000  # D9: corte local de 5 s, un solo intento, sin reintentos
+SERVER_TIMEOUT_S = 10  # el API rechaza plazos de servidor menores a 10 s
 MODO_MODELO = "modelo"
 MODO_EXTRACTIVO = "extractivo"
 
@@ -33,7 +34,10 @@ def _fabrica_por_defecto(api_key: str) -> Any:
     from google import genai
     from google.genai import types
 
-    return genai.Client(api_key=api_key, http_options=types.HttpOptions(timeout=TIMEOUT_MS))
+    opciones = types.HttpOptions(
+        timeout=TIMEOUT_MS, headers={"X-Server-Timeout": str(SERVER_TIMEOUT_S)}
+    )
+    return genai.Client(api_key=api_key, http_options=opciones)
 
 
 def _neutralizar(texto: str) -> str:

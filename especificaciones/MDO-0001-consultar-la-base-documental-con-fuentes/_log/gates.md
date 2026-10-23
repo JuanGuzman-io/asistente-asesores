@@ -274,3 +274,20 @@ Every configured gate passed; declared none: build.
 | audit | SKIPPED | — |
 | sast | PASS | 0 |
 | metrics | PASS | 0 |
+
+## T13 — attempt 1
+
+Every configured gate passed; declared none: build.
+
+| Gate | Status | Exit |
+|---|---|---|
+| scan-markers | PASS | — |
+| format | PASS | 0 |
+| lint | PASS | 0 |
+| typecheck | PASS | 0 |
+| test | PASS | 0 |
+| build | SKIPPED | — |
+| secrets | PASS | 0 |
+| audit | SKIPPED | — |
+| sast | PASS | 0 |
+| metrics | PASS | 0 |

@@ -521,3 +521,31 @@ def test_D9_la_clave_no_aparece_en_logs_con_salida_valida(caplog):
 
     assert CLAVE not in caplog.text
     assert PREGUNTA not in caplog.text
+
+
+# --- cliente real: plazo local de 5 s y plazo de servidor aceptado por el API (T13, D9) ----
+
+
+def test_T13_D9_fabrica_por_defecto_arma_http_options_con_corte_local_y_plazo_de_servidor(
+    monkeypatch,
+):
+    from google import genai
+
+    from src.server.infraestructura.redactor.gemini import _fabrica_por_defecto
+
+    capturado = {}
+
+    class ClienteCapturado:
+        def __init__(self, **kwargs):
+            capturado.update(kwargs)
+
+    monkeypatch.setattr(genai, "Client", ClienteCapturado)  # sin red: solo se capturan los kwargs
+
+    _fabrica_por_defecto(CLAVE)
+
+    opciones = capturado["http_options"]
+    assert opciones.timeout == 5000  # corte local de 5 s (NFR-3)
+    assert {k.lower(): str(v) for k, v in (opciones.headers or {}).items()}.get(
+        "x-server-timeout"
+    ) == "10"  # el API rechaza un plazo de servidor menor a 10 s
+    assert opciones.retry_options is None  # D9: un solo intento

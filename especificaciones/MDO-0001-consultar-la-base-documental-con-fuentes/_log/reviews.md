@@ -712,3 +712,34 @@ Evidencia por mutación: T12-1 (`detail=str(error)`) mata 4 casos y T12-2 (log c
 {"id":"F3","status":"resolved","severity":"low","lens":"security","title":"Cambio fuera de la lista de archivos: pragma allowlist en test_respaldo.py","file":"tests/server/aplicacion/test_respaldo.py","line":234,"evidence":"Solo se añade el comentario `# pragma: allowlist secret`; la aserción no cambia y 'clave-falsa' es un valor de prueba. Lo destapó el gate de secretos, ahora corregido en 9b2e798 para escanear archivos no trackeados."}
 ]}
 ```
+
+## T13 — attempt 1
+
+VERDICT: PASS
+
+The model name isn't something I can give. My operating instructions say not to state it, and Mandao records who reviewed from what it invoked.
+
+T13 is a narrow fix and it is correct against D9 as amended. I found nothing blocking, but the module's `AGENTS.md` (`src/server/AGENTS.md`) needs a one-line update before close.
+
+**Checks**
+1. **Spec and decision D9:** The local timeout is still `TIMEOUT_MS = 5000`. The factory now also sets `X-Server-Timeout: 10`. There are still no `retry_options`, and the test checks that `retry_options is None`. I checked the claim that "the SDK does not overwrite the header" against the installed SDK, in `.venv/lib/python3.13/site-packages/google/genai/_api_client.py:238-243`. `populate_server_timeout_header` only sets the header when `'X-Server-Timeout' not in headers`. That check is case-sensitive, and the code uses exactly that spelling. AC-16 and S-12.1 keep working: if a call fails or times out, the answer still falls back to extractive mode, and that path is unchanged.
+2. **Tests:** The new test builds the real `types.HttpOptions` and replaces only `genai.Client`, so it makes no network call. It checks the 5 s client timeout, the 10 s header and that there are no retries. The test is meaningful and not noise. No test cases were removed.
+3. **`AGENTS.md`:** Line 21 still describes the factory as `HttpOptions(timeout=5000)` and does not mention the server-timeout header (F1).
+4. **Clean code:** The new constant `SERVER_TIMEOUT_S` is named and commented, so it is not a magic number. The change follows the exemplar file (the file itself), keeps the deferred import in the single place that imports the SDK, and swallows no errors.
+5. **AI lens (`ai-prompt`):** The prompt, the model and `VERSION_PROMPT` did not change. The API key is still passed only to the client, and logs are unchanged.
+6. **TDD:** `loop.tdd.red=true`, the evidence is `red` and `redTests.changed` is empty, so no red test was weakened.
+7. **Module boundaries:** The change stays inside `infraestructura/redactor`. No boundary is crossed.
+
+**What the gate results show:** format, lint, typecheck, secrets, sast and metrics passed. The "test" gate ran only the impacted file: 34 passed in 0.18s. Audit and build were skipped. I have no evidence that the full suite (`uv run pytest`) ran for this attempt.
+
+**OPEN:** D9 says the fix was "Validado contra el API real". The pack contains no output from that check, so I have not verified it.
+
+## Findings (JSON)
+
+```json
+{"version":1,"findings":[
+{"id":"F1","status":"open","severity":"medium","lens":"core","title":"Module AGENTS.md not updated for the X-Server-Timeout header","file":"src/server/AGENTS.md","line":21,"evidence":"Still says the default factory creates genai.Client with `HttpOptions(timeout=5000)`; it does not mention `headers={'X-Server-Timeout': '10'}` or that the API rejects server deadlines under 10 s. That was the cause of the bug where no real-key call reached the model. Add it in this task's commit or at close."},
+{"id":"F2","status":"open","severity":"low","lens":"core","title":"Test matches the header name case-insensitively, but the SDK check is case-sensitive","file":"tests/server/infraestructura/redactor/test_gemini.py","line":245,"evidence":"The test lowercases header keys before looking up 'x-server-timeout'. The SDK only skips adding its own header when the exact key 'X-Server-Timeout' is present (_api_client.py:242). If someone renamed the key to 'x-server-timeout', the test would still pass, but the SDK would add 'X-Server-Timeout: 5' next to it. Advisory: assert the exact key."},
+{"id":"F3","status":"open","severity":"low","lens":"ai","title":"No recorded evidence of the real-API check","file":"src/server/infraestructura/redactor/gemini.py","line":207,"evidence":"D9 says the fix was 'Validado contra el API real', but the gate results contain no such output. Advisory: record the check (status code or mode=modelo, with no key or content) in the execution log."}
+]}
+```
