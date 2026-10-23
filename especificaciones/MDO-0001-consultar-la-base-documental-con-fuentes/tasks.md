@@ -29,7 +29,7 @@ tarea empieza con pruebas rojas; el modelo y los embeddings se reemplazan por do
 
 **Delivery checkpoint:** run `mandao run verify-plan <spec> --delivery 1` before delivery 2; it passes when `scope.clear` is true.
 
-### Delivery 2 — AC-8, AC-6, AC-12, AC-13, AC-14, AC-7, AC-9, AC-10
+### Delivery 2 — AC-8, AC-6, AC-12, AC-13, AC-14, AC-10
 
 #### AC-3, AC-8, AC-11 — Consulta válida con soporte documental; Caracteres especiales; Sin soporte documental
 
@@ -91,7 +91,7 @@ tarea empieza con pruebas rojas; el modelo y los embeddings se reemplazan por do
 
 **Delivery checkpoint:** run `mandao run verify-plan <spec> --delivery 3` before delivery 4; it passes when `scope.clear` is true.
 
-### Delivery 4 — AC-3, AC-11, AC-5, AC-4, AC-16, AC-7, AC-9
+### Delivery 4 — AC-3, AC-11, AC-5, AC-4, AC-7, AC-9, AC-16
 
 #### AC-16 — Falla del modelo
 
@@ -610,7 +610,7 @@ parallel_safe: false
 verify: uv run pytest tests/server -q
 ```
 
-### [ ] T17 — El 422 responde un mensaje fijo y claro, sin detalles de Pydantic ni la entrada
+### [x] T17 — El 422 responde un mensaje fijo y claro, sin detalles de Pydantic ni la entrada
 
 - **What:** ajuste del PE del 2026-10-23 en verify ([C-11](requirements.md#c-11)). `manejar_validacion`
   deja de componer "La petición no es válida. " + `loc: msg`: devuelve el mensaje fijo del validador de

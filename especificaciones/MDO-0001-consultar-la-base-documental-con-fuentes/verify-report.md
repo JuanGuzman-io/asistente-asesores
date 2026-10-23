@@ -108,7 +108,7 @@ None.
 ```
 $ node .mandao/bin/mandao.mjs run verify-plan MDO-0001
 "missingRed":[], "deferred":[], "findings":[], "blockers":[],
-"securityScans":[{"project":"asistente-asesores","secrets":"covered","sast":"covered","pendingCi":false}]
+securityScans: asistente-asesores · escaneo de secretos covered · sast covered · pendingCi false
 
 $ node .mandao/bin/mandao.mjs run gates MDO-0001 T14
 format PASS · lint PASS · typecheck PASS · test NOT_INSTALLED (127) · build SKIPPED (none)
