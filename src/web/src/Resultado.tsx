@@ -23,7 +23,7 @@ function ListaFuentes({ fuentes }: { fuentes: Fuente[] }) {
 
 export function Resultado({ resultado }: Props) {
   return (
-    <section aria-label="Resultado de la consulta" aria-live="polite">
+    <section aria-label="Resultado de la consulta">
       <p>
         <span>Estado: </span>
         <strong>{resultado.estado}</strong>

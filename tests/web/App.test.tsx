@@ -30,9 +30,7 @@ let fetchMock: ReturnType<typeof vi.fn>;
 
 beforeEach(() => {
   pendientes = [];
-  fetchMock = vi.fn(
-    () => new Promise<Response>((resolve) => pendientes.push(resolve)),
-  );
+  fetchMock = vi.fn(() => new Promise<Response>((resolve) => pendientes.push(resolve)));
   vi.stubGlobal("fetch", fetchMock);
 });
 afterEach(() => {
@@ -44,7 +42,7 @@ async function enviar(pregunta = "¿Cuál es el monto?") {
   const user = userEvent.setup();
   render(<App />);
   const campo = screen.getByLabelText("Pregunta");
-  await user.type(campo, pregunta);
+  if (pregunta !== "") await user.type(campo, pregunta);
   await user.click(screen.getByRole("button", { name: "Consultar" }));
   return { user, campo };
 }
@@ -85,13 +83,13 @@ describe("App: procesamiento (FR-1)", () => {
 describe("App: errores y reintento (FR-3, FR-4)", () => {
   const ERROR = { requestId: "abc-123", detail: "interno" };
 
-  it("S-3.1: el error se ve con role=alert, su mensaje y el código de referencia", async () => {
-    await enviar();
-    pendientes[0]!(json(ERROR, 500));
-    const alerta = await screen.findByRole("alert");
-    expect(alerta.textContent).toContain(
-      "El servicio tuvo un problema. Intenta de nuevo en unos minutos.",
+  it("S-3.1: un 422 se ve con role=alert, su detail y el código de referencia", async () => {
+    await enviar("");
+    pendientes[0]!(
+      json({ detail: "La pregunta no puede estar vacía.", requestId: "abc-123", status: 422 }, 422),
     );
+    const alerta = await screen.findByRole("alert");
+    expect(alerta.textContent).toContain("La pregunta no puede estar vacía.");
     expect(alerta.textContent).toContain("Código de referencia: abc-123");
     expect(screen.queryByText("Procesando consulta…")).toBeNull();
   });
@@ -100,19 +98,13 @@ describe("App: errores y reintento (FR-3, FR-4)", () => {
     const { user, campo } = await enviar("mi pregunta");
     pendientes[0]!(json(ERROR, 500));
     await screen.findByRole("alert");
-    const campoFinal = screen.getByLabelText("Pregunta") as
-      HTMLTextAreaElement | HTMLInputElement;
+    const campoFinal = screen.getByLabelText("Pregunta") as HTMLTextAreaElement | HTMLInputElement;
     expect(campoFinal.value).toBe("mi pregunta");
     expect(campoFinal.disabled).toBe(false);
     expect(campoFinal.readOnly).toBe(false);
-    expect(
-      (screen.getByRole("button", { name: "Consultar" }) as HTMLButtonElement)
-        .disabled,
-    ).toBe(false);
+    expect((screen.getByRole("button", { name: "Consultar" }) as HTMLButtonElement).disabled).toBe(false);
     await user.type(campo, " más");
-    expect((screen.getByLabelText("Pregunta") as HTMLInputElement).value).toBe(
-      "mi pregunta más",
-    );
+    expect((screen.getByLabelText("Pregunta") as HTMLInputElement).value).toBe("mi pregunta más");
   });
 
   it("S-4.1: un nuevo envío limpia el error anterior y permite una segunda petición", async () => {
@@ -148,5 +140,15 @@ describe("App: accesibilidad (NFR-1)", () => {
     const region = screen.getByRole("status");
     expect(region.getAttribute("aria-live")).toBe("polite");
     expect(region.textContent).toContain("Procesando consulta…");
+  });
+
+  it("NFR-1: el resultado se inserta en una región aria-live='polite' que ya existía", async () => {
+    await enviar();
+    const previas = Array.from(document.querySelectorAll('[aria-live="polite"]'));
+    pendientes[0]!(json(OK));
+    const resultado = await screen.findByRole("region", { name: "Resultado de la consulta" });
+    const contenedor = resultado.parentElement?.closest('[aria-live="polite"]');
+    expect(contenedor).toBeTruthy();
+    expect(previas).toContain(contenedor);
   });
 });

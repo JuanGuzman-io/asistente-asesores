@@ -3,10 +3,7 @@
 // con `resultado` del tipo Resultado de api.ts.
 import { cleanup, render, screen } from "@testing-library/react";
 import { afterEach, describe, expect, it } from "vitest";
-import type {
-  Estado,
-  Resultado as DatosResultado,
-} from "../../src/web/src/api";
+import type { Estado, Resultado as DatosResultado } from "../../src/web/src/api";
 import { Resultado } from "../../src/web/src/Resultado";
 
 const FUENTE = {
@@ -14,11 +11,7 @@ const FUENTE = {
   seccion: "Crédito Productivo Impulso",
   fragmento: "Monto hasta 50 millones.",
 };
-const ESTADOS: Estado[] = [
-  "Exitosa",
-  "Sin información suficiente",
-  "Bloqueada por seguridad",
-];
+const ESTADOS: Estado[] = ["Exitosa", "Sin información suficiente", "Bloqueada por seguridad"];
 
 function pintar(parcial: Partial<DatosResultado>) {
   const resultado: DatosResultado = {
@@ -41,9 +34,7 @@ describe("Resultado: consulta exitosa (FR-2)", () => {
 
   it("S-2.1: muestra la fuente como 'documento > sección' con su fragmento", () => {
     pintar({ fuentes: [FUENTE] });
-    expect(
-      screen.getByText("Productos de Crédito > Crédito Productivo Impulso"),
-    ).toBeTruthy();
+    expect(screen.getByText("Productos de Crédito > Crédito Productivo Impulso")).toBeTruthy();
     expect(screen.getByText(FUENTE.fragmento)).toBeTruthy();
     expect(screen.queryByText("Sin fuentes")).toBeNull();
   });
@@ -55,22 +46,21 @@ describe("Resultado: estados con su propio rótulo (AC-1/C2)", () => {
       respuesta: "No tengo información suficiente para responder.",
       estado: "Sin información suficiente",
     });
-    expect(
-      screen.getByText("No tengo información suficiente para responder."),
-    ).toBeTruthy();
+    expect(screen.getByText("No tengo información suficiente para responder.")).toBeTruthy();
     expect(screen.getByText("Sin fuentes")).toBeTruthy();
     expect(screen.getByText("Sin información suficiente")).toBeTruthy();
     expect(screen.queryByText("Exitosa")).toBeNull();
   });
 
   it("S-2.2/C2: el rótulo de Sin información suficiente difiere del de Exitosa", () => {
+    // Se lee la línea "Estado: …" pintada, sin buscar por el texto esperado.
+    const rotulo = () => screen.getByText("Estado:", { exact: false }).closest("p")?.textContent;
     const a = pintar({ estado: "Exitosa" });
-    const rotuloExitosa = screen.getByText("Exitosa").textContent;
+    const rotuloExitosa = rotulo();
     a.unmount();
     pintar({ estado: "Sin información suficiente" });
-    expect(screen.getByText("Sin información suficiente").textContent).not.toBe(
-      rotuloExitosa,
-    );
+    expect(rotulo()).toContain("Sin información suficiente");
+    expect(rotulo()).not.toBe(rotuloExitosa);
   });
 
   it("S-2.3: Bloqueada por seguridad muestra la respuesta, su rótulo y 'Sin fuentes'", () => {
@@ -87,8 +77,7 @@ describe("Resultado: estados con su propio rótulo (AC-1/C2)", () => {
     for (const estado of ESTADOS) {
       const { unmount } = pintar({ estado });
       expect(screen.getAllByText(estado)).toHaveLength(1);
-      for (const otro of ESTADOS.filter((e) => e !== estado))
-        expect(screen.queryByText(otro)).toBeNull();
+      for (const otro of ESTADOS.filter((e) => e !== estado)) expect(screen.queryByText(otro)).toBeNull();
       unmount();
     }
   });
@@ -114,9 +103,7 @@ describe("Resultado: texto del servicio como texto (AC-1/C3, D4)", () => {
 
   it("S-2.4/C3: documento y sección con HTML tampoco crean elementos", () => {
     const { container } = pintar({
-      fuentes: [
-        { documento: "<b>D</b>", seccion: '<a href="x">S</a>', fragmento: "f" },
-      ],
+      fuentes: [{ documento: "<b>D</b>", seccion: '<a href="x">S</a>', fragmento: "f" }],
     });
     expect(container.querySelector("b, a")).toBeNull();
     expect(screen.queryByRole("link")).toBeNull();

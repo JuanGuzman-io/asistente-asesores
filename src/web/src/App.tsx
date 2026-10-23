@@ -60,7 +60,8 @@ export function App() {
         {procesando && "Procesando consulta…"}
       </div>
       {error && <Alerta error={error} />}
-      {resultado && <Resultado resultado={resultado} />}
+      {/* Siempre montada: los lectores de pantalla anuncian el resultado al insertarse en ella. */}
+      <div aria-live="polite">{resultado && <Resultado resultado={resultado} />}</div>
     </main>
   );
 }

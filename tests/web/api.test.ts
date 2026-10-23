@@ -15,6 +15,13 @@ function problema(status: number, cuerpo: Record<string, unknown>): Response {
   });
 }
 
+function json(cuerpo: unknown): Response {
+  return new Response(JSON.stringify(cuerpo), {
+    status: 200,
+    headers: { "Content-Type": "application/json" },
+  });
+}
+
 function stubFetch(impl: (input: RequestInfo | URL, init?: RequestInit) => Promise<Response>) {
   const fn = vi.fn(impl);
   vi.stubGlobal("fetch", fn);
@@ -28,24 +35,47 @@ afterEach(() => {
 describe("consultar: respuesta válida (D3)", () => {
   it("S-2.1 base: 200 válido devuelve ok con respuesta, fuentes y estado", async () => {
     const cuerpo = { respuesta: "El monto máximo es $50.000.000.", fuentes: [FUENTE], estado: "Exitosa" };
-    const fn = stubFetch(async () => new Response(JSON.stringify(cuerpo), { status: 200, headers: { "Content-Type": "application/json" } }));
+    const fn = stubFetch(async () => json(cuerpo));
     const r = await consultar("¿Cuál es el monto máximo?");
     expect(r).toEqual({ tipo: "ok", resultado: cuerpo });
     expect(String(fn.mock.calls[0]?.[0])).toBe("/api/consultar");
     expect(fn.mock.calls[0]?.[1]?.method).toBe("POST");
-    expect(JSON.parse(String(fn.mock.calls[0]?.[1]?.body))).toEqual({ pregunta: "¿Cuál es el monto máximo?" });
+    expect(JSON.parse(String(fn.mock.calls[0]?.[1]?.body))).toEqual({
+      pregunta: "¿Cuál es el monto máximo?",
+    });
   });
 
-  it.each(["Sin información suficiente", "Bloqueada por seguridad"])("D3: acepta el estado %s", async (estado) => {
-    const cuerpo = { respuesta: "x", fuentes: [], estado };
-    stubFetch(async () => new Response(JSON.stringify(cuerpo), { status: 200, headers: { "Content-Type": "application/json" } }));
-    expect(await consultar("p")).toEqual({ tipo: "ok", resultado: cuerpo });
+  it.each(["Sin información suficiente", "Bloqueada por seguridad"])(
+    "D3: acepta el estado %s",
+    async (estado) => {
+      const cuerpo = { respuesta: "x", fuentes: [], estado };
+      stubFetch(async () => json(cuerpo));
+      expect(await consultar("p")).toEqual({ tipo: "ok", resultado: cuerpo });
+    },
+  );
+
+  it("D3: 200 válido descarta los campos que no están en el contrato", async () => {
+    const cuerpo = {
+      respuesta: "x",
+      fuentes: [{ ...FUENTE, url: "https://interno/doc", puntaje: 0.9 }],
+      estado: "Exitosa",
+      requestId: "r-9",
+      debug: { prompt: "secreto" },
+    };
+    stubFetch(async () => json(cuerpo));
+    const r = await consultar("p");
+    expect(r).toEqual({ tipo: "ok", resultado: { respuesta: "x", fuentes: [FUENTE], estado: "Exitosa" } });
+    for (const s of ["url", "interno", "puntaje", "requestId", "debug", "secreto"]) {
+      expect(JSON.stringify(r)).not.toContain(s);
+    }
   });
 });
 
 describe("consultar: errores del servicio (FR-3)", () => {
   it("S-3.1: 422 problem+json usa el detail y el requestId como código de referencia", async () => {
-    stubFetch(async () => problema(422, { detail: "La pregunta no puede estar vacía.", requestId: "abc-123", status: 422 }));
+    stubFetch(async () =>
+      problema(422, { detail: "La pregunta no puede estar vacía.", requestId: "abc-123", status: 422 }),
+    );
     expect(await consultar("")).toEqual({
       tipo: "error",
       mensaje: "La pregunta no puede estar vacía.",
@@ -103,7 +133,7 @@ describe("consultar: sin conexión y tiempo agotado (S-3.3)", () => {
   });
 });
 
-describe("consultar: sin detalles técnicos (S-3.4, S-3.4/C1, AC-2/C1)", () => {
+describe("consultar: errores sin detalles técnicos (S-3.4, S-3.4/C1, AC-2/C1)", () => {
   const SECRETOS = [
     "Traceback",
     "/usr/lib/python3/site-packages",
@@ -115,10 +145,13 @@ describe("consultar: sin detalles técnicos (S-3.4, S-3.4/C1, AC-2/C1)", () => {
   it("S-3.4: 500 con cuerpo HTML da el mensaje genérico sin el cuerpo", async () => {
     stubFetch(
       async () =>
-        new Response("<html><body><pre>Traceback /usr/lib/python3/site-packages NullPointerException</pre></body></html>", {
-          status: 500,
-          headers: { "Content-Type": "text/html" },
-        }),
+        new Response(
+          "<html><body><pre>Traceback /usr/lib/python3/site-packages NullPointerException</pre></body></html>",
+          {
+            status: 500,
+            headers: { "Content-Type": "text/html" },
+          },
+        ),
     );
     const r = await consultar("p");
     expect(r).toEqual({ tipo: "error", mensaje: GENERICO });
@@ -127,7 +160,13 @@ describe("consultar: sin detalles técnicos (S-3.4, S-3.4/C1, AC-2/C1)", () => {
   });
 
   it("S-3.4/C1: 500 con texto plano da el mensaje genérico sin el cuerpo", async () => {
-    stubFetch(async () => new Response("Internal error: stack trace at line 42 in /srv/app/main.py", { status: 500, headers: { "Content-Type": "text/plain" } }));
+    stubFetch(
+      async () =>
+        new Response("Internal error: stack trace at line 42 in /srv/app/main.py", {
+          status: 500,
+          headers: { "Content-Type": "text/plain" },
+        }),
+    );
     const r = await consultar("p");
     expect(r).toEqual({ tipo: "error", mensaje: GENERICO });
     const serializado = JSON.stringify(r);
@@ -135,13 +174,27 @@ describe("consultar: sin detalles técnicos (S-3.4, S-3.4/C1, AC-2/C1)", () => {
     expect(serializado).not.toContain("/srv/app");
   });
 
+  it("S-3.4/C1: un 500 problem+json no filtra su detail ni otros campos", async () => {
+    stubFetch(async () =>
+      problema(500, { detail: "Traceback en /srv/app/x.py", requestId: "k-1", trace: "t" }),
+    );
+    const r = await consultar("p");
+    expect(r).toEqual({ tipo: "error", mensaje: GENERICO, codigoReferencia: "k-1" });
+    expect(JSON.stringify(r)).not.toContain("Traceback");
+  });
+});
+
+describe("consultar: 200 fuera del contrato (S-3.4, D3)", () => {
   it("S-3.4: 200 con estado fuera de los tres da el mensaje genérico sin nombres de campos ni valores", async () => {
     stubFetch(
       async () =>
-        new Response(JSON.stringify({ respuesta: "texto-secreto", fuentes: [], estado: "Estado inventado" }), {
-          status: 200,
-          headers: { "Content-Type": "application/json" },
-        }),
+        new Response(
+          JSON.stringify({ respuesta: "texto-secreto", fuentes: [], estado: "Estado inventado" }),
+          {
+            status: 200,
+            headers: { "Content-Type": "application/json" },
+          },
+        ),
     );
     const r = await consultar("p");
     expect(r).toEqual({ tipo: "error", mensaje: GENERICO });
@@ -163,15 +216,10 @@ describe("consultar: sin detalles técnicos (S-3.4, S-3.4/C1, AC-2/C1)", () => {
   });
 
   it("S-3.4: 200 con cuerpo que no es JSON da el mensaje genérico", async () => {
-    stubFetch(async () => new Response("<html>ok</html>", { status: 200, headers: { "Content-Type": "text/html" } }));
+    stubFetch(
+      async () => new Response("<html>ok</html>", { status: 200, headers: { "Content-Type": "text/html" } }),
+    );
     expect(await consultar("p")).toEqual({ tipo: "error", mensaje: GENERICO });
-  });
-
-  it("S-3.4/C1: un 500 problem+json no filtra su detail ni otros campos", async () => {
-    stubFetch(async () => problema(500, { detail: "Traceback en /srv/app/x.py", requestId: "k-1", trace: "t" }));
-    const r = await consultar("p");
-    expect(r).toEqual({ tipo: "error", mensaje: GENERICO, codigoReferencia: "k-1" });
-    expect(JSON.stringify(r)).not.toContain("Traceback");
   });
 });
 

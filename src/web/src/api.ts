@@ -52,6 +52,15 @@ function esResultado(valor: unknown): valor is Resultado {
   );
 }
 
+// Copia solo los campos del contrato: nada fuera de él llega a la interfaz.
+function limpiar({ respuesta, fuentes, estado }: Resultado): Resultado {
+  return {
+    respuesta,
+    fuentes: fuentes.map(({ documento, seccion, fragmento }) => ({ documento, seccion, fragmento })),
+    estado,
+  };
+}
+
 function error(mensaje: string, codigoReferencia?: string): RespuestaConsulta {
   return codigoReferencia === undefined
     ? { tipo: "error", mensaje }
@@ -76,7 +85,7 @@ function mensajeDeEstado(status: number, cuerpo: unknown): string {
 async function traducir(respuesta: Response): Promise<RespuestaConsulta> {
   const cuerpo = await leerJson(respuesta);
   if (respuesta.status === 200) {
-    return esResultado(cuerpo) ? { tipo: "ok", resultado: cuerpo } : error(MENSAJE_GENERICO);
+    return esResultado(cuerpo) ? { tipo: "ok", resultado: limpiar(cuerpo) } : error(MENSAJE_GENERICO);
   }
   const requestId = esRegistro(cuerpo) && esTexto(cuerpo.requestId) ? cuerpo.requestId : undefined;
   return error(mensajeDeEstado(respuesta.status, cuerpo), requestId);
