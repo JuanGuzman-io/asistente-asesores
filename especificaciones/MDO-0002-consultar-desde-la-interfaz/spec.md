@@ -277,6 +277,7 @@ Propuestas; solo `/mandao-close` las aplica, con aprobación.
 - `standards.md#conventions`: el linter del frontend es ESLint con typescript-eslint (cierra el OPEN); exemplar de cliente `src/web/src/api.ts`.
 - `architecture.md#stack`: versiones del frontend (D7) y el proxy de Vite (D2); módulo `src/web` como proyecto `web` (profile `app`).
 - `critical-flows.md`: suite e2e `tests/web/e2e/` para "Consulta respondida con fuentes y registrada", desde la interfaz.
+- `ux.md#design-tokens`: la paleta de Banco W de `src/web/src/estilos.css` (turquesa `#00b1bb`, naranja `#ff6900`, morado `#5f259f`, negro `#1b1b1b`, fondo `#faf9f6`), con modo oscuro y contraste AA (C-4).
 
 ## Product Impact
 
@@ -375,3 +376,8 @@ v22.23.2
 OK: cumple ^22.22.2
 ```
 </details>
+
+### C-4 — ¿Ajuste visual con los colores de Banco W? (2026-10-23)
+- **Answer:** sí, solo visual: la paleta de Banco W (turquesa principal, naranja de acento, morado en los títulos de fuente), sin logos, con CSS propio y sin dependencias nuevas. Histórico y sugerencias de preguntas siguen fuera de alcance.
+- **Answered by:** PE.
+- **Effect:** `src/web/src/estilos.css`; amplía `story.md#out-of-scope` solo en lo visual; Constitution Impact (`ux.md#design-tokens`).
