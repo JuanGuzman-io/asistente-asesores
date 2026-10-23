@@ -109,3 +109,54 @@ describe("Resultado: texto del servicio como texto (AC-1/C3, D4)", () => {
     expect(screen.queryByRole("link")).toBeNull();
   });
 });
+
+describe("Resultado: Markdown con formato y sin HTML ni enlaces (D4 enmendado, AC-1/C3)", () => {
+  const MD = [
+    "Esto es lo que encontré:",
+    "",
+    "### Condiciones",
+    "",
+    "| Concepto | Valor |",
+    "|---|---|",
+    "| Monto máximo | $50.000.000 |",
+    "",
+    "- Documento de identidad.",
+    "- Evidencia de ingresos.",
+  ].join("\n");
+
+  it("D4: títulos, tablas y listas de la respuesta se ven con formato", () => {
+    pintar({ respuesta: MD });
+    expect(screen.getByRole("heading", { name: "Condiciones" })).toBeTruthy();
+    expect(screen.getByRole("table")).toBeTruthy();
+    expect(screen.getByRole("cell", { name: "$50.000.000" })).toBeTruthy();
+    expect(screen.getByText("Documento de identidad.").tagName).toBe("LI");
+    expect(screen.queryByText(/###|\|---/)).toBeNull();
+  });
+
+  it("D4: un salto de línea simple se conserva", () => {
+    const { container } = pintar({ respuesta: "Línea uno\nLínea dos" });
+    expect(container.querySelector(".respuesta br")).not.toBeNull();
+  });
+
+  it("D4: el Markdown de los fragmentos también se ve con formato", () => {
+    pintar({ fuentes: [{ ...FUENTE, fragmento: "### Beneficios\n\n- Formación financiera." }] });
+    expect(screen.getByRole("heading", { name: "Beneficios" })).toBeTruthy();
+    expect(screen.getByText("Formación financiera.").tagName).toBe("LI");
+  });
+
+  it("AC-1/C3: un enlace Markdown o una URL suelta quedan como texto, sin crear enlaces", () => {
+    const { container } = pintar({
+      respuesta: "Ver [el portal](https://ejemplo.com) o https://otro.ejemplo.com",
+      fuentes: [{ ...FUENTE, fragmento: "[aquí](javascript:alert(1))" }],
+    });
+    expect(container.querySelector("a")).toBeNull();
+    expect(screen.queryByRole("link")).toBeNull();
+    expect(screen.getByText(/el portal/)).toBeTruthy();
+    expect(screen.getByText("aquí")).toBeTruthy();
+  });
+
+  it("AC-1/C3: una imagen Markdown no se carga", () => {
+    const { container } = pintar({ respuesta: "![logo](https://ejemplo.com/a.png)" });
+    expect(container.querySelector("img")).toBeNull();
+  });
+});

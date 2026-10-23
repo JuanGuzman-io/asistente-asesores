@@ -1,0 +1,146 @@
+/* Markdown del servicio (TextoMarkdown): respuesta y fragmentos de fuentes.
+   Usa los tokens de estilos.css; todo va bajo .md para no tocar el resto de la pantalla. */
+.md > :first-child {
+  margin-top: 0;
+}
+
+.md > :last-child {
+  margin-bottom: 0;
+}
+
+.md p {
+  margin: 0 0 12px;
+}
+
+.md h3,
+.md h4 {
+  margin: 20px 0 8px;
+  color: var(--texto);
+  font-weight: 600;
+  letter-spacing: -0.01em;
+}
+
+.md h3 {
+  font-size: 1rem;
+  line-height: 1.5rem;
+}
+
+.md h4 {
+  font-size: 0.875rem;
+  line-height: 1.25rem;
+}
+
+.md strong {
+  color: var(--texto);
+  font-weight: 600;
+}
+
+.md ul,
+.md ol {
+  margin: 0 0 12px;
+  padding-left: 20px;
+  display: grid;
+  gap: 4px;
+}
+
+.md li::marker {
+  color: var(--naranja);
+}
+
+.md-tabla {
+  overflow-x: auto;
+  margin: 4px 0 16px;
+  border: 1px solid var(--borde);
+  border-radius: 12px;
+}
+
+.md table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 0.875rem;
+  line-height: 1.25rem;
+  font-variant-numeric: tabular-nums;
+}
+
+.md th,
+.md td {
+  padding: 8px 12px;
+  text-align: left;
+  vertical-align: top;
+}
+
+.md th {
+  background: rgb(0 177 187 / 0.1);
+  color: var(--texto);
+  font-weight: 600;
+}
+
+.md td {
+  border-top: 1px solid var(--borde);
+}
+
+.md hr {
+  margin: 16px 0;
+  border: 0;
+  border-top: 1px solid var(--borde);
+}
+
+.md code {
+  padding: 1px 6px;
+  border: 1px solid var(--borde);
+  border-radius: 6px;
+  background: var(--vidrio-suave);
+  font-family: var(--mono);
+  font-size: 0.875em;
+}
+
+.md pre {
+  overflow-x: auto;
+  margin: 0 0 12px;
+  padding: 12px;
+  border: 1px solid var(--borde);
+  border-radius: 12px;
+  background: var(--vidrio-suave);
+}
+
+.md pre code {
+  padding: 0;
+  border: 0;
+  background: none;
+}
+
+.md blockquote {
+  margin: 0 0 12px;
+  padding-left: 12px;
+  border-left: 3px solid var(--turquesa);
+}
+
+/* En los fragmentos de fuente todo va un punto más chico. */
+.fuentes .md h3 {
+  margin-top: 12px;
+  font-size: 0.875rem;
+  line-height: 1.25rem;
+}
+
+.fuentes .md table {
+  font-size: 0.8125rem;
+}
+
+/* .fuentes li y .fuentes strong (estilos.css) son para la tarjeta de cada fuente;
+   dentro del fragmento las listas y negritas vuelven a su forma normal. */
+.fuentes .md ul {
+  list-style: disc;
+}
+
+.fuentes .md li {
+  display: list-item;
+  padding: 0;
+  border: 0;
+  border-radius: 0;
+  background: none;
+}
+
+.fuentes .md strong {
+  display: inline;
+  font-size: inherit;
+}

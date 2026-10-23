@@ -1,9 +1,9 @@
-// Resultado de una consulta (D4): respuesta, estado y fuentes, siempre como texto de React.
+// Resultado de una consulta (D4 enmendado): respuesta, estado y fuentes; el Markdown del servicio
+// se pinta con formato mediante TextoMarkdown, sin HTML ni enlaces (AC-1/C3).
 import { CheckCircle, FileText, Question, ShieldWarning } from "@phosphor-icons/react";
 import type { Icon } from "@phosphor-icons/react";
 import type { Estado, Fuente, Resultado as DatosResultado } from "./api";
-
-const PRE_WRAP = { whiteSpace: "pre-wrap" } as const;
+import { TextoMarkdown } from "./TextoMarkdown";
 
 const ICONO_ESTADO: Record<Estado, Icon> = {
   Exitosa: CheckCircle,
@@ -26,7 +26,9 @@ function ListaFuentes({ fuentes }: { fuentes: Fuente[] }) {
           </span>
           <div>
             <strong>{`${fuente.documento} > ${fuente.seccion}`}</strong>
-            <blockquote style={PRE_WRAP}>{fuente.fragmento}</blockquote>
+            <blockquote className="md">
+              <TextoMarkdown texto={fuente.fragmento} />
+            </blockquote>
           </div>
         </li>
       ))}
@@ -46,9 +48,9 @@ export function Resultado({ resultado }: Props) {
         </strong>
       </p>
       <h2>Respuesta</h2>
-      <p className="respuesta" style={PRE_WRAP}>
-        {resultado.respuesta}
-      </p>
+      <div className="respuesta md">
+        <TextoMarkdown texto={resultado.respuesta} />
+      </div>
       <h2>Fuentes</h2>
       <ListaFuentes fuentes={resultado.fuentes} />
     </section>
