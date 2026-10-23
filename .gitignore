@@ -1,0 +1,11 @@
+node_modules/
+.env
+
+# mandao:begin
+# Managed by mandao 0.1.0-beta.0.
+graphify-out/
+.mandao/run.lock
+.mandao/cli.log
+.mandao/cache/
+.claude/settings.local.json
+# mandao:end

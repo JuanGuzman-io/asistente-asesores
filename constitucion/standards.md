@@ -1,0 +1,68 @@
+---
+schema_version: 1
+level: workspace
+status: approved
+last_reviewed: 2026-10-23
+---
+
+# Standards
+
+The Reviewer enforces only what is written here (plus the spec, the contract and security.md).
+
+## Design principles
+
+| ID | Principle | Concrete rule for this stack |
+|---|---|---|
+| DP-1 | Seguridad por defecto | La entrada se valida con Pydantic en `http` antes de llegar al caso de uso; `Información restringida.md` (y cualquier documento marcado `CONFIDENCIAL`) no se indexa; ningún texto de documento se trata como instrucción. |
+| DP-2 | Calidad | Toda respuesta `Exitosa` cita al menos una fuente existente; sin coincidencia suficiente el estado es `Sin información suficiente` con el mensaje fijo. |
+| DP-3 | TDD | Prueba roja antes de cada comportamiento; los casos del entregable 7 son pruebas obligatorias. |
+| DP-4 | Uso responsable de IA | Un modelo solo recibe fragmentos ya filtrados; su salida pasa por el guardrail de salida y debe citar fuentes recuperadas. |
+| DP-5 | Mantenibilidad (SRP + DIP) | Un módulo, una responsabilidad; `aplicacion` depende de puertos de `dominio`, nunca de un adaptador concreto. |
+| DP-6 | Optimización de costos | Sin coincidencia sobre el umbral no se llama al modelo; los embeddings son locales y se calculan una vez; al modelo se envían solo los fragmentos necesarios; sin clave, modo extractivo sin costo. |
+| DP-7 | Observabilidad | Cada consulta se persiste y emite un log JSON con `requestId`, `estado` y `latenciaMs`. |
+| DP-8 | ACID en escrituras | El registro de una consulta es una sola transacción: se guarda completo o no se guarda. |
+| DP-9 | Simplicidad | No se crea una abstracción sin un segundo uso real o un requisito que la pida. |
+
+## Principle precedence
+
+1. The architecture explicitly chosen in `architecture.md`.
+2. The framework conventions documented by the stack skill.
+3. Generic principles only where the first two are silent.
+
+Do not wrap a framework capability in a duplicate abstraction. Record architecture as a team choice;
+never infer it from the framework.
+
+## Conventions
+- Backend: Python con tipado estático (OPEN: mypy o pyright) y formato/lint con ruff. Frontend:
+  TypeScript `strict`. Nombres de dominio en español según `glossary.md`.
+- Pruebas en `tests/` espejando `src/`: pytest para el backend, Vitest para el frontend.
+- Las pruebas nunca llaman a Gemini ni descargan modelos: usan dobles de `Redactor` y de embeddings.
+- Exemplar files: OPEN — se nombran cuando exista el primer módulo de cada tipo.
+
+## Errors
+Los errores de validación devuelven 400 con un mensaje legible; los inesperados devuelven 500 sin
+detalles internos y quedan en el log. Un error tragado es bloqueante.
+
+## Logging
+JSON estructurado. Nunca se registran secretos, credenciales, datos personales ni el contenido de
+documentos confidenciales.
+
+## Dependencies
+Nuevas dependencias las aprueba el tech lead; solo licencias permisivas (MIT, Apache-2.0, BSD); versiones
+fijadas en el lockfile. Para Gemini se usa `google-genai` (SDK oficial, `googleapis/python-genai`);
+nunca `google-generativeai`, deprecado y sin soporte desde el 2025-11-30 (su página de PyPI).
+
+## Clean-code thresholds (level 0 gates, blocking)
+
+| Metric | Threshold | Tool |
+|---|---|---|
+| Cyclomatic complexity per function | ≤ 10 | ruff (backend); linter del frontend OPEN |
+| Function length (lines) | ≤ 50 | linter |
+| File length (lines) | ≤ 300 | linter |
+| Duplication | sin bloques duplicados > 10 líneas | revisión |
+| Layer-violating imports | none | revisión / regla de lint |
+| Dead code | none | typecheck + lint |
+
+## Gates
+OPEN: se proponen cuando existan `pyproject.toml` y `package.json` (format, lint, typecheck, test,
+secrets, audit) y se aprueban en `projects[].gates` de `.mandao/config.yml`.

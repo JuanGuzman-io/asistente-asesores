@@ -1,0 +1,10 @@
+# Model per role and harness. Change with `mandao models set <role> <model>`; see `mandao models`.
+schema_version: 1
+mode: simple
+profile: peak
+harnesses:
+  claude:
+    leader: claude-opus-5-5
+    reviewer: claude-opus-5-5
+    implementer: claude-sonnet-5-5
+    tester: claude-sonnet-5-5

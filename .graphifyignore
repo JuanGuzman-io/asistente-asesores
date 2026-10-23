@@ -1,0 +1,31 @@
+# mandao:begin
+# Managed by mandao 0.1.0-beta.0: generated files and build outputs stay out of the code graph.
+.claude/agents/mandao-implementer.md
+.claude/agents/mandao-leader.md
+.claude/agents/mandao-reviewer.md
+.claude/agents/mandao-tester.md
+.claude/skills/mandao-audit/
+.claude/skills/mandao-clarify/
+.claude/skills/mandao-close/
+.claude/skills/mandao-constitution/
+.claude/skills/mandao-implement/
+.claude/skills/mandao-init/
+.claude/skills/mandao-perf/
+.claude/skills/mandao-quick/
+.claude/skills/mandao-resume/
+.claude/skills/mandao-specify/
+.claude/skills/mandao-story/
+.claude/skills/mandao-tasks/
+.claude/skills/mandao-verify/
+.mandao/bin/
+.mandao/commitlint.config.mjs
+.mandao/guide.md
+.mandao/templates/
+dist/
+build/
+out/
+coverage/
+.next/
+.turbo/
+target/
+# mandao:end
