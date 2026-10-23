@@ -3,9 +3,9 @@
   <defs>
     <radialGradient id="color" cx="30%" cy="25%" r="90%">
       <stop offset="0" stop-color="#2fd3c9"/>
-      <stop offset="0.45" stop-color="#00b1bb"/>
-      <stop offset="0.75" stop-color="#5f259f"/>
-      <stop offset="1" stop-color="#ff6900"/>
+      <stop offset="0.5" stop-color="#00b1bb"/>
+      <stop offset="0.8" stop-color="#ff6900"/>
+      <stop offset="1" stop-color="#5f259f"/>
     </radialGradient>
     <radialGradient id="brillo" cx="34%" cy="28%" r="40%">
       <stop offset="0" stop-color="#fff" stop-opacity="0.85"/>

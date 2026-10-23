@@ -1,5 +1,5 @@
 /* Estilos de Bot-W (spec C-5; mock en especificaciones/MDO-0002-consultar-desde-la-interfaz/mockups/).
-   Tokens en :root; modo nocturno por prefers-color-scheme. Paleta de Banco W: turquesa, morado y naranja,
+   Tokens en :root; modo nocturno por prefers-color-scheme. Paleta de Banco W: mandan el turquesa y el naranja; el morado solo acompaña,
    en el fondo degradado y en el orbe. Toda animación vive bajo prefers-reduced-motion: no-preference. */
 :root {
   color-scheme: light dark;
@@ -32,9 +32,9 @@
   --mancha: 0.45;
   --trama: radial-gradient(rgb(20 22 26 / 0.07) 1px, transparent 1px);
   --trama-tamano: 28px 28px;
-  --anillo: rgb(95 37 159 / 0.28);
+  --anillo: rgb(0 140 150 / 0.3);
   --anillo-interno: rgb(0 177 187 / 0.3);
-  --sombra-esfera: 0 24px 60px -18px rgb(95 37 159 / 0.55);
+  --sombra-esfera: 0 24px 60px -18px rgb(0 120 130 / 0.5);
   --sombra-caja: 0 20px 50px -24px rgb(31 24 64 / 0.28);
   --foco: rgb(0 115 122 / 0.55);
   --anillo-foco: 0 0 0 4px rgb(0 177 187 / 0.18);
@@ -179,12 +179,15 @@ button {
 }
 
 .mancha-turquesa {
+  opacity: calc(var(--mancha) + 0.1);
   left: -12%;
   top: -22%;
   background: radial-gradient(circle, var(--turquesa) 0%, transparent 70%);
 }
 
 .mancha-morado {
+  width: min(560px, 90vw);
+  opacity: calc(var(--mancha) - 0.25);
   right: -14%;
   top: 4%;
   background: radial-gradient(circle, var(--morado) 0%, transparent 70%);
@@ -193,7 +196,8 @@ button {
 .mancha-naranja {
   left: 30%;
   bottom: -38%;
-  opacity: calc(var(--mancha) - 0.15);
+  width: min(860px, 120vw);
+  opacity: var(--mancha);
   background: radial-gradient(circle, var(--naranja) 0%, transparent 70%);
 }
 
@@ -337,8 +341,8 @@ button {
   width: 8px;
   height: 8px;
   border-radius: 50%;
-  background: var(--morado);
-  color: var(--morado);
+  background: var(--turquesa);
+  color: var(--turquesa);
   box-shadow: var(--resplandor);
 }
 
@@ -355,7 +359,7 @@ button {
 
 .orbe-halo {
   inset: 18%;
-  background: radial-gradient(circle, rgb(0 177 187 / 0.5), rgb(95 37 159 / 0.28) 55%, transparent 72%);
+  background: radial-gradient(circle, rgb(0 177 187 / 0.5), rgb(255 105 0 / 0.22) 55%, transparent 72%);
   filter: blur(22px);
 }
 
@@ -366,7 +370,7 @@ button {
 }
 
 .orbe-pulsos span:nth-child(2) {
-  border-color: rgb(95 37 159 / 0.5);
+  border-color: rgb(255 105 0 / 0.5);
 }
 
 .orbe-pulsos span:nth-child(3) {
@@ -387,13 +391,21 @@ button {
 
 .orbe-mini .orbe-esfera,
 .orbe-logo .orbe-esfera {
-  box-shadow: 0 6px 16px -6px rgb(95 37 159 / 0.6);
+  box-shadow: 0 6px 16px -6px rgb(0 120 130 / 0.55);
 }
 
 .orbe-color {
   position: absolute;
   inset: -30%;
-  background: conic-gradient(from 0deg, #00b1bb, #2fd3c9, #5f259f, #ff6900, #ffb36b, #00b1bb);
+  background: conic-gradient(
+    from 0deg,
+    #00b1bb 0%,
+    #2fd3c9 22%,
+    #ffb36b 40%,
+    #ff6900 55%,
+    #5f259f 70%,
+    #00b1bb 84%
+  );
   filter: blur(calc(var(--esfera) * 0.11));
 }
 
@@ -540,11 +552,11 @@ button {
 }
 
 .puntos span:nth-child(2) {
-  background: var(--morado);
+  background: var(--naranja);
 }
 
 .puntos span:nth-child(3) {
-  background: var(--naranja);
+  background: var(--turquesa);
 }
 
 .lineas-carga {
@@ -565,7 +577,7 @@ button {
     90deg,
     rgb(127 127 140 / 0.12) 0%,
     rgb(0 177 187 / 0.25) 40%,
-    rgb(95 37 159 / 0.2) 60%,
+    rgb(255 105 0 / 0.2) 60%,
     rgb(127 127 140 / 0.12) 100%
   );
   background-size: 300% 100%;
@@ -692,7 +704,7 @@ button {
   border-radius: 12px;
   display: grid;
   place-items: center;
-  background: linear-gradient(135deg, var(--turquesa), var(--morado));
+  background: linear-gradient(135deg, var(--turquesa), #008a93);
   color: #ffffff;
 }
 
