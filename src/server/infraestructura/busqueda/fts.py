@@ -15,14 +15,14 @@ PALABRAS_VACIAS = frozenset(
 _RAIZ = SnowballStemmer("spanish")
 
 
-def _sin_tildes(texto: str) -> str:
+def sin_tildes(texto: str) -> str:
     descompuesto = unicodedata.normalize("NFD", texto.casefold())
     return "".join(c for c in descompuesto if not unicodedata.combining(c))
 
 
 def raices(texto: str) -> list[str]:
     """Normalización compartida (D4): la usan el texto indexado y la pregunta, así coinciden."""
-    palabras = re.findall(r"[a-z0-9]+", _sin_tildes(texto))
+    palabras = re.findall(r"[a-z0-9]+", sin_tildes(texto))
     return [_RAIZ.stem_word(p) for p in palabras if p not in PALABRAS_VACIAS]
 
 

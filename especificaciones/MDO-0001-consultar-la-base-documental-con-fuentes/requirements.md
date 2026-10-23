@@ -407,7 +407,7 @@ no hacen llamadas de red (verificado ejecutándolas sin red).
 
 <a id="c-4"></a>
 ### C-4 — ¿Cómo se fija Python y se registra la hora? (2026-10-23)
-- **Answer:** Python 3.13 fijado con `.python-version`; el README instala con `uv`. Fecha y hora en UTC, mostradas en hora local (MDO-0003).
+- **Answer:** Python 3.13 fijado con `.python-version`; el README instala con `uv`. Fecha y hora en UTC, mostradas en hora local (MDO-0002).
 - **Answered by:** PE (Product Engineer).
 - **Effect:** design.md D1; FR-11 (UTC, ISO 8601).
 
