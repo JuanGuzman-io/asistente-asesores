@@ -574,3 +574,96 @@ T10, intento 2: F1 a F6 quedan resueltos, D11 se mantiene y ninguna aserción se
 {"id":"F9","status":"open","severity":"low","lens":"data","title":"_claves_en_qdrant lanza KeyError si un punto no tiene payload 'clave'","file":"src/server/infraestructura/busqueda/indice.py","line":466,"evidence":"`str(p.payload[\"clave\"]) for p in puntos if p.payload`. En producción, VERSION_FORMATO recrea las colecciones anteriores; un punto insertado a mano solo con `hash` (como los huérfanos de test_buscador) rompería un reindexado posterior. Sugerencia: `.get(\"clave\")` y tratarlo como obsoleto."}
 ]}
 ```
+
+## T11 — test review 1 (via claude)
+
+TEST REVIEW: PASS
+
+Esta conclusión sale solo de leer el código. No ejecuté nada y no tengo la salida de las pruebas, así que no afirmo que pasen. Lo que sí confirmé leyendo es que las tres mutaciones que el tester dice haber probado las matan las pruebas indicadas, con exactamente el número de fallos que declara (2, 2 y 7).
+
+## Assertions
+
+### tests/server/aplicacion/test_respaldo.py (18 casos)
+
+- **`test_s12_1_con_el_cliente_lanzando_error_...` (9 casos parametrizados).** Mata capturar solo `(RuntimeError, OSError, ValueError)` en `gemini.py:79`: `APIError` hereda de `Exception` (`google/genai/errors.py:56`), `ServerError` y `ClientError` de `APIError`, y los timeouts de `httpx` de `TransportError → RequestError → HTTPError → Exception`, no de `OSError`. Fallarían 6 casos más el secuencial: 7. También mata reintentos (`cliente.llamadas == 1`), quitar el `except` genérico y un respaldo con otro formato (`ENCABEZADO`, orden de fuentes, `modo == "extractivo"`).
+- **`test_s12_1_con_el_cliente_que_agota_el_tiempo_...`.** Mata quitar el `except` y añadir reintentos; no el `except` estrecho (`TimeoutError` es `OSError`).
+- **`test_s12_1_el_modo_registrado_sigue_a_cada_consulta_modelo_y_luego_extractivo`.** Mata quitar `self.modo = MODO_EXTRACTIVO` (`gemini.py:109`) → `["modelo","modelo"]`; leer `redactor.modo` antes de `redactar` → `["extractivo", ...]`; y el `except` estrecho (`ServerError` se propaga).
+- **`test_s12_1_si_la_fabrica_del_cliente_falla_...`.** Mata crear el cliente fuera del `try` y propagar el error de la fábrica.
+- **`test_s12_1_el_error_del_cliente_no_se_propaga_ni_filtra_...`.** Mata registrar `str(error)` en lugar de `type(error).__name__` (`gemini.py:82`).
+- **`test_s12_2_sin_clave_no_se_llama_a_la_fabrica_...` (`None`, `""`).** Mata quitar la guarda `if not self._api_key` (`gemini.py:73`) y cambiarla a `is None`.
+- **`test_s12_2_sin_clave_la_fabrica_por_defecto_no_crea_genai_client`.** Mata la misma guarda con la fábrica real.
+- **`test_d9_la_fabrica_por_defecto_usa_httpoptions_timeout_5000_...`.** Mata cambiar `TIMEOUT_MS`, quitar `http_options` y añadir `retry_options`.
+- **`test_d9_el_cliente_real_creado_por_la_fabrica_...`.** Mata las mismas mutaciones sobre el cliente real; depende de atributos privados (F5).
+
+### tests/server/e2e/test_respaldo_e2e.py (5 casos)
+
+- **`test_s12_1_con_gemini_caido_responde_200_extractiva_...` (error y tiempo agotado).** Mata la propagación hasta el middleware (500), un respaldo sin fuentes, otro `modo`, otra respuesta o `request_id`, y los reintentos.
+- **`test_s12_1_dos_consultas_con_gemini_caido_...`.** Caída sostenida registrada como `extractivo` dos veces; débil frente a mutaciones (F6).
+- **`test_s12_2_crear_app_sin_gemini_api_key_...`.** Mata leer la clave de otra fuente o crear el cliente sin clave.
+- **`test_s12_1_modelo_y_luego_gemini_caido_registra_modelo_y_luego_extractivo`.** Mata quitar `self.modo = MODO_EXTRACTIVO` y, en `RedactorExclusivo` (`rutas.py:29-34`), quitar la copia de `modo` tras `redactar` o hacerla antes.
+
+### Nota del Leader sobre una entrada inválida
+
+La entrada `tests/server/aplicacion/test_respaldo.py tests/server/e2e/test_respaldo_e2e.py` (las dos rutas en un solo argumento) viene de un `run red` mal entrecomillado del tester: pytest salió con exit 4 y 0 pruebas recogidas. Esa fila RED de `execution.md` no es evidencia de rojo. Los dos archivos reales son los inspeccionados arriba y pasaron en su primera ejecución.
+
+### Cobertura de la Definition of Done de T11
+S-12.1 (E2E), S-12.2 (unitaria y E2E), `HttpOptions(timeout=5000)` sin `retry_options` (dos pruebas D9) y E2E con registro: cubiertos. Sin casos sobrantes ni eliminados.
+
+## Findings (JSON)
+
+```json
+{"version":1,"findings":[
+{"id":"F1","status":"resolved","severity":"high","lens":"ai","title":"Ninguna prueba detectaba un modo 'modelo' rancio tras un éxito seguido de una caída","file":"tests/server/aplicacion/test_respaldo.py","line":160,"evidence":"ClienteSecuencial(SALIDA_VALIDA, ServerError) sobre la misma instancia exige ['modelo','extractivo']; el equivalente E2E está en tests/server/e2e/test_respaldo_e2e.py:147. Quitar gemini.py:109 o leer modo antes de redactar hace fallar ambas."},
+{"id":"F2","status":"resolved","severity":"medium","lens":"ai","title":"Los dobles solo lanzaban excepciones de Python","file":"tests/server/aplicacion/test_respaldo.py","line":108,"evidence":"El parametrize incluye httpx.ReadTimeout/ConnectTimeout/TimeoutException y genai APIError/ServerError/ClientError; errors.py:56 muestra que APIError hereda de Exception, así que un except estrecho deja fallar 6 casos más el secuencial (7)."},
+{"id":"F4","status":"resolved","severity":"low","lens":"core","title":"Dependencia de atributos privados del SDK sin documentar","file":"tests/server/aplicacion/test_respaldo.py","line":243,"evidence":"Comentario añadido que explica el acoplamiento a _api_client._http_options."},
+{"id":"F5","status":"open","severity":"low","lens":"core","title":"La prueba D9 sobre el cliente real es redundante con el espía y frágil ante el SDK","file":"tests/server/aplicacion/test_respaldo.py","line":240,"evidence":"Detecta las mismas mutaciones que test_d9_la_fabrica_por_defecto_usa_httpoptions...; solo aporta la comprobación de que el SDK acepta HttpOptions. Advisory: puede quedarse, ya está documentada."},
+{"id":"F6","status":"open","severity":"low","lens":"core","title":"La prueba E2E de dos caídas seguidas no detecta ninguna mutación que no detecten ya las otras","file":"tests/server/e2e/test_respaldo_e2e.py","line":118,"evidence":"Con el modo rancio quitado, sigue pasando porque nunca hubo un éxito; el caso modelo->extractivo (línea 147) es el que discrimina. Advisory: candidata a eliminar como ruido o a conservar como regresión de caída sostenida."},
+{"id":"F7","status":"open","severity":"low","lens":"core","title":"No leí src/server/http/app.py directamente","file":"src/server/http/app.py","line":1,"evidence":"OPEN: que crear_app(redactor=None) lea solo os.environ['GEMINI_API_KEY'] lo tomo de src/server/AGENTS.md y de lo que comprueba test_s12_2_crear_app_sin_gemini_api_key...; no lo verifiqué contra el código fuente."}
+]}
+```
+
+## T11 — attempt 1
+
+VERDICT: PASS
+
+T11 cumple su "Done when" con el código que ya existe. El diff solo agrega dos archivos de prueba y no hace falta tocar producción, así que registrar el REPORTED con `--implementer self` es correcto. Leí `app.py`, `gemini.py`, `consultar.py` y `rutas.py` directamente.
+
+## Lo que pediste comprobar
+
+- **`crear_app(redactor=None)` lee solo `os.environ`:** sí. `src/server/http/app.py:52-54`, en el `lifespan`: `RedactorGemini(api_key=os.environ.get("GEMINI_API_KEY"))`, sin `dotenv` ni otra fuente. Cierra el F7 de la inspección anterior.
+- **`HttpOptions(timeout=5000)` sin `retry_options`:** sí. `gemini.py:36`, con `TIMEOUT_MS = 5000` (línea 23); una sola llamada a `generate_content`, sin bucle.
+- **El registro guarda `modo` extractivo tras un fallo:** sí, sin valor pegado. Todas las salidas por fallo pasan por `_respaldar` (`gemini.py:109`); `consultar.py:46` lee `redactor.modo` después de `redactar`; `RedactorExclusivo` (`rutas.py:32-34`) copia el `modo` bajo el candado.
+
+## Cada punto del "Done when"
+
+| Punto | Código | Prueba |
+|---|---|---|
+| S-12.1 | `gemini.py:79-83`, `:109` | Unitarias con 9 tipos de error más `TimeoutError`; E2E con fila `modo='extractivo'` |
+| S-12.2 | `gemini.py:73-74` | Unitarias con `None`, `""` y espía de `genai.Client`; E2E con `delenv` y espía |
+| `HttpOptions(timeout=5000)` sin `retry_options` | `gemini.py:36` | `test_d9_*` |
+| E2E con Gemini caído, registrado | Ya existía | `test_respaldo_e2e.py` |
+
+## TDD y evidencia
+
+Sin rojo; vía de revisión: `execution.md:92` registra `TEST_REVIEWED` y `reviews.md:578-623` tiene el PASS tras reforzar las pruebas. Coincido con esa inspección. La fila RED de `execution.md:89` (dos rutas en un argumento, exit 4, 0 pruebas) no es evidencia de rojo. `redTests.changed: []`; ningún caso eliminado.
+
+## Gates
+
+Todos PASS según `.mandao/cache/MDO-0001/gates/T11-1.md`: test "23 passed" (solo los dos archivos afectados), metrics "7 passed, 246 deselected". La salida de `verify` no está en el paquete (F3, advertencia).
+
+## Módulos y lente AI
+
+`src/server/AGENTS.md` ya describe el respaldo, el `modo`, la fábrica con timeout y la lectura de la clave. Sin violaciones de límites. Lente AI: no se filtran la clave ni la pregunta, un solo intento, respaldo determinista.
+
+## Findings (JSON)
+
+```json
+{"version":1,"findings":[
+{"id":"F1","status":"resolved","severity":"low","lens":"core","title":"crear_app(redactor=None) lee la clave solo de os.environ (verificado en el código)","file":"src/server/http/app.py","line":52,"evidence":"`app.state.redactor = redactor or RedactorGemini(api_key=os.environ.get(\"GEMINI_API_KEY\"))` dentro del lifespan; sin dotenv ni otra fuente. Cierra el F7 OPEN de la inspección de pruebas."},
+{"id":"F2","status":"open","severity":"low","lens":"core","title":"`redactor or ...` usa el valor de verdad en vez de `is None`","file":"src/server/http/app.py","line":52,"evidence":"Un Redactor inyectado que defina __bool__ o __len__ y se evalúe como falso se sustituiría en silencio por RedactorGemini. Advisory: `redactor if redactor is not None else RedactorGemini(...)`."},
+{"id":"F3","status":"open","severity":"low","lens":"core","title":"El gate test corrió solo los 23 casos afectados, no el comando verify de la tarea","file":".mandao/cache/MDO-0001/gates/T11-1.md","line":46,"evidence":"'collected 23 items'; `verify: uv run pytest tests/server/aplicacion tests/server/e2e -q` no aparece ejecutado en el paquete. Sin cambios de producción el riesgo es mínimo. Advisory: adjuntar esa salida al cerrar la tarea."},
+{"id":"F4","status":"open","severity":"low","lens":"core","title":"El E2E importa un doble desde otro módulo de prueba","file":"tests/server/e2e/test_respaldo_e2e.py","line":17,"evidence":"`from test_flujo_consulta import EmbeddingsOraculo` depende del rootdir/import mode de pytest. Advisory: moverlo a un conftest.py o a un módulo de dobles compartido."},
+{"id":"F5","status":"open","severity":"low","lens":"core","title":"La prueba D9 sobre el cliente real depende de atributos privados del SDK","file":"tests/server/aplicacion/test_respaldo.py","line":247,"evidence":"`cliente._api_client._http_options`; está documentado en el comentario y es redundante con el espía. Advisory, heredado de la inspección de pruebas (F5)."},
+{"id":"F6","status":"open","severity":"low","lens":"core","title":"Sigue apareciendo la PytestUnraisableExceptionWarning de QdrantClient.__del__ en otro hilo","file":"src/server/http/app.py","line":61,"evidence":"La salida del gate test muestra 'sqlite3.ProgrammingError: SQLite objects created in a thread can only be used in that same thread' desde QdrantClient.__del__. No lo introduce T11 y no rompe ninguna prueba; advisory para revisar la mitigación de app.py:59-61."}
+]}
+```

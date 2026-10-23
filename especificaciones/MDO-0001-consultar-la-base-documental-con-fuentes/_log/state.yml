@@ -2,7 +2,7 @@
 progress:
   schema_version: 1
   spec: MDO-0001-consultar-la-base-documental-con-fuentes
-  updated_at: 2026-10-23T17:38:50.977Z
+  updated_at: 2026-10-23T17:48:19.166Z
   current: null
   open_questions: []
   next_step: ""
@@ -329,6 +329,30 @@ progress:
             - test_falla_sqlite_tras_upsert_qdrant_conserva_indice_anterior
             - test_puntos_huerfanos_no_aparecen_en_busqueda
             - test_renombrar_la_seccion_con_el_mismo_texto_vuelve_a_embeber
+    - task: T11
+      files:
+        - path: tests/server/aplicacion/test_respaldo.py tests/server/e2e/test_respaldo_e2e.py
+          sha256: missing
+          tests: []
+        - path: tests/server/aplicacion/test_respaldo.py
+          sha256: bd1b8882940eff706b6a4d4f8d9ca3453247bc03a072786a89ff137e5b097dec
+          tests:
+            - test_s12_1_con_el_cliente_lanzando_error_responde_exitosa_extractiva_y_registra_extractivo
+            - test_s12_1_con_el_cliente_que_agota_el_tiempo_responde_exitosa_extractiva_y_registra_extractivo
+            - test_s12_1_si_la_fabrica_del_cliente_falla_responde_extractiva_y_registra_extractivo
+            - test_s12_1_el_error_del_cliente_no_se_propaga_ni_filtra_la_clave_o_la_pregunta
+            - test_s12_2_sin_clave_no_se_llama_a_la_fabrica_y_la_respuesta_es_extractiva
+            - test_s12_2_sin_clave_la_fabrica_por_defecto_no_crea_genai_client
+            - test_d9_la_fabrica_por_defecto_usa_httpoptions_timeout_5000_y_sin_retry_options
+            - test_d9_el_cliente_real_creado_por_la_fabrica_queda_con_timeout_5000_y_sin_reintentos
+            - test_s12_1_el_modo_registrado_sigue_a_cada_consulta_modelo_y_luego_extractivo
+        - path: tests/server/e2e/test_respaldo_e2e.py
+          sha256: 957b573ffe856dde4b87a9912c0863c2f7d93d08c3b959f8ac64dd3dafa972ff
+          tests:
+            - test_s12_1_con_gemini_caido_responde_200_extractiva_con_fuentes_y_registra_extractivo
+            - test_s12_1_dos_consultas_con_gemini_caido_registran_extractivo_las_dos_veces
+            - test_s12_2_crear_app_sin_gemini_api_key_no_crea_el_cliente_y_responde_extractiva
+            - test_s12_1_modelo_y_luego_gemini_caido_registra_modelo_y_luego_extractivo
   pending_commits: []
   approved_manifests:
     - task: T1
@@ -705,10 +729,23 @@ progress:
         - tests/server/e2e/test_flujo_consulta.py
         - tests/server/evals/test_evals.py
       receipts: []
+    - task: T11
+      attempt: 1
+      files:
+        - path: tests/server/aplicacion/test_respaldo.py
+          status: ??
+          sha256: bd1b8882940eff706b6a4d4f8d9ca3453247bc03a072786a89ff137e5b097dec
+        - path: tests/server/e2e/test_respaldo_e2e.py
+          status: ??
+          sha256: 957b573ffe856dde4b87a9912c0863c2f7d93d08c3b959f8ac64dd3dafa972ff
+      reviewed:
+        - tests/server/aplicacion/test_respaldo.py
+        - tests/server/e2e/test_respaldo_e2e.py
+      receipts: []
   loop_brake:
-    task: T10
+    task: T11
     action: commit
-    execution_rows: 74
+    execution_rows: 83
     approval_rows: 6
     repeats: 1
 approvals:
@@ -858,4 +895,12 @@ cut_estimates:
     base: 63912
     turns_left: 73
     savings: 4.31
+    decision: "go on: below 50"
+  - at: 2026-10-23T17:39:25.495Z
+    task: T11
+    boundary_id: implement:T11
+    context: 483782
+    base: 63912
+    turns_left: 58
+    savings: 4.55
     decision: "go on: below 50"
