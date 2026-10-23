@@ -363,3 +363,51 @@ I'm not stating my model name. The reviewer persona rules say "Do not say which 
 ## Gates (as reported in the pack; I did not run them)
 
 format, lint, typecheck, test and build: PASS. scan-markers: PASS. audit: SKIPPED. Not configured: secrets, sast, metrics.
+
+## T6 — attempt 1
+
+VERDICT: FAIL
+
+I'm failing T6 attempt 1 for one reason. The two new e2e tests are sound, but `src/web/AGENTS.md` was not changed (F1). The task lists that file, and spec.md line 339 says it must document "las dos e2e nuevas". Adding one sentence fixes it.
+
+Sources checked: the review pack, the full `tests/web/e2e/consultar.spec.ts`, spec D5 as amended by C-9, tasks.md T6, `src/web/src/Compositor.tsx`, `src/web/src/api.ts`, `src/web/src/App.tsx` and `src/web/AGENTS.md`. No shell; the e2e result (4 passed, plus `typecheck:e2e` passing) is as reported; e2e is not a gate. Level-0 gates passed and audit was skipped, per `.mandao/cache/MDO-0002/gates/T6-1.md`.
+
+Spec conformance (D5 amended by C-9, T6 "Done when"):
+- Empty-box test (S-1.3, AC-1/C4): met. It can fail (toBeDisabled; request listener attached before page.goto counts any fetch). The settle is one bounded page.evaluate (rAF + 100 ms): it cannot hang or fail spuriously. Limit: with the only submit button disabled, Enter does not submit per HTML, so the App guard is covered by T5 unit tests; acceptable for D5.
+- Forced-422 test (S-3.1, AC-2): met and exercises the UI error path: page.route registered before navigation; "La pregunta no puede estar vacía." can only reach the screen through api.ts mensajeDeEstado for a 422; "Código de referencia: abc-123" is built by Alerta inside role="alert".
+- Unchanged tests: success and no-information untouched and passing.
+- Test policy: the old empty-question e2e was removed because C-9 / D5 replace it. Module boundaries and clean code: no issues. TDD not required. No UI change. Accessibility: role and label locators.
+
+## Findings (JSON)
+
+```json
+{"version":1,"findings":[
+{"id":"F1","status":"open","severity":"medium","lens":"core","title":"src/web/AGENTS.md not updated for the two new e2e tests","file":"src/web/AGENTS.md","line":33,"evidence":"T6 lists src/web/AGENTS.md in its files and spec.md line 339 says AGENTS.md must cover 'las dos e2e nuevas' (C-9). The change manifest only contains tests/web/e2e/consultar.spec.ts. Line 33 still describes the T4 suite plus 'la pregunta vacía ya no llega al backend (T5)'. It does not say that S-1.3 is checked as a disabled button with no request to /api/consultar, that S-3.1 uses page.route to force a 422 and so does not hit the backend (line 20 says all e2e need the real backend), or that the real 422 is covered by MDO-0001 and tests/web/api.test.ts (D5)."},
+{"id":"F2","status":"open","severity":"low","lens":"core","title":"Advisory: empty-box e2e checks only the empty case, not whitespace or the counter","file":"tests/web/e2e/consultar.spec.ts","line":33,"evidence":"S-1.3 also covers spaces, tabs and newlines and the '0/1.000' counter. D5 only requires a disabled button and no request, and the unit tests cover the rest (T5 review). A fill('   ') plus a check that the counter reads 0/1.000 would make it stronger cheaply. Not blocking."},
+{"id":"F3","status":"open","severity":"low","lens":"core","title":"Advisory: forced-422 e2e does not check that the question goes back into the box","file":"tests/web/e2e/consultar.spec.ts","line":65,"evidence":"AC-2 'AND IT MUST conservar la pregunta' (FR-4 as amended by C-9) is covered at unit level only. Adding expect(page.getByLabel('Pregunta')).toHaveValue(...) would cover it on screen. Not blocking."}
+]}
+```
+
+## T6 — attempt 2
+
+VERDICT: PASS
+
+The only rework was in `src/web/AGENTS.md`, and it resolves F1, so T6 attempt 2 passes. The test file is the same as in attempt 1 (SHA-256 in the manifest still `6d72e55e…`), so the attempt-1 assessment of the tests holds:
+- Empty-box test (S-1.3): it can fail. An enabled button fails `toBeDisabled()`, and any fetch on Enter is counted by the `request` listener attached before navigation. The settle (one animation frame then 100 ms) is bounded and cannot hang or fail at random.
+- Forced-422 test (S-3.1): it exercises the browser error path. The message only reaches the screen when `api.ts` maps a 422 to `detail`; "Código de referencia: abc-123" comes from `requestId` inside `role="alert"`.
+
+Source: the attempt-2 pack. No shell. All level-0 gates passed and audit was skipped. e2e is not a gate; 4 passed in attempt 1 and the tests have not changed.
+
+F1 resolved: line 20 says only the successful-query and no-information e2e need the real backend; line 33 describes S-1.3 (disabled button, no request), S-3.1 (422 forced with page.route, no backend), the real 422 covered by MDO-0001 AC-7 and tests/web/api.test.ts (D5), and the other two still need :8000. Matches the test file and spec.md line 339 (C-9).
+
+Other checks unchanged since attempt 1. F2 and F3 stay open as advisories; neither blocks.
+
+## Findings (JSON)
+
+```json
+{"version":1,"findings":[
+{"id":"F1","status":"resolved","severity":"medium","lens":"core","title":"src/web/AGENTS.md not updated for the two new e2e tests","file":"src/web/AGENTS.md","line":33,"evidence":"Attempt 2 changes line 20 (only the successful-query and no-information e2e tests need the real backend) and line 33: S-1.3 is a disabled 'Consultar' button with no request to /api/consultar; S-3.1 forces a 422 problem+json with page.route and does not reach the backend; the real 422 is covered by MDO-0001 AC-7 and tests/web/api.test.ts (D5); the other two tests still need :8000. Accurate against the test file and spec.md line 339 (C-9)."},
+{"id":"F2","status":"open","severity":"low","lens":"core","title":"Advisory: empty-box e2e checks only the empty case, not whitespace or the counter","file":"tests/web/e2e/consultar.spec.ts","line":33,"evidence":"S-1.3 also covers spaces, tabs and newlines and the '0/1.000' counter. D5 only requires a disabled button and no request, and the unit tests cover the rest (T5). A fill('   ') plus a check that the counter reads 0/1.000 would make it stronger cheaply. Not blocking."},
+{"id":"F3","status":"open","severity":"low","lens":"core","title":"Advisory: forced-422 e2e does not check that the question goes back into the box","file":"tests/web/e2e/consultar.spec.ts","line":65,"evidence":"AC-2 'AND IT MUST conservar la pregunta' (FR-4 as amended by C-9) is covered at unit level only. Adding expect(page.getByLabel('Pregunta')).toHaveValue(...) would cover it on screen. Not blocking."}
+]}
+```

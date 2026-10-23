@@ -10,12 +10,8 @@ start:
 progress:
   schema_version: 1
   spec: MDO-0002-consultar-desde-la-interfaz
-  updated_at: 2026-10-23T20:20:51.984Z
-  current:
-    task: T6
-    phase: implementing
-    harness: claude
-    model: claude-opus-5-5
+  updated_at: 2026-10-23T20:25:46.891Z
+  current: null
   open_questions: []
   next_step: ""
   deferred_to_ci:
@@ -313,10 +309,23 @@ progress:
         - src/web/src/pregunta.ts
         - tests/web/pregunta.test.ts
       receipts: []
+    - task: T6
+      attempt: 2
+      files:
+        - path: src/web/AGENTS.md
+          status: " M"
+          sha256: 4596873fc47e7ec3e8cdd3175e35cdcd687690a4497e5c29b2aeb72780e5daa4
+        - path: tests/web/e2e/consultar.spec.ts
+          status: " M"
+          sha256: 6d72e55efa5d8707079b5c1c834802b660f5d4b880368c2f9a3680b356f05bac
+      reviewed:
+        - src/web/AGENTS.md
+        - tests/web/e2e/consultar.spec.ts
+      receipts: []
   loop_brake:
-    task: T5
+    task: T6
     action: commit
-    execution_rows: 31
+    execution_rows: 36
     approval_rows: 3
     repeats: 1
 approvals:
@@ -397,6 +406,14 @@ cut_estimates:
     base: 59024
     turns_left: 58
     savings: 4.24
+    decision: "go on: below 50"
+  - at: 2026-10-23T20:21:45.926Z
+    task: T6
+    boundary_id: implement:T6
+    context: 487997
+    base: 59024
+    turns_left: 43
+    savings: 3.39
     decision: "go on: below 50"
 mock:
   decision: accepted

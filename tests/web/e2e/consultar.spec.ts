@@ -30,17 +30,42 @@ test("consulta exitosa muestra respuesta, estado y fuente @S-1.1 @S-2.1", async 
   await expect(page.getByText("Procesando consulta…")).toBeHidden();
 });
 
-test("pregunta vacía muestra un error con código de referencia @S-3.1", async ({ page }) => {
-  // El campo no tiene `required` ni el formulario bloquea el envío: el clic con el campo vacío llega al backend.
+test("caja vacía: el botón está deshabilitado y no sale ninguna petición @S-1.3", async ({ page }) => {
+  let peticiones = 0;
+  page.on("request", (request) => {
+    if (request.url().endsWith("/api/consultar")) peticiones += 1;
+  });
   await page.goto("/");
-  const respuesta = page.waitForResponse((r) => r.url().endsWith("/api/consultar"));
+  await expect(page.getByRole("button", { name: "Consultar" })).toBeDisabled();
+
+  await page.getByLabel("Pregunta").press("Enter");
+  // Un viaje de ida y vuelta por la página deja asentado cualquier envío pendiente.
+  await page.evaluate(() => new Promise((resolve) => requestAnimationFrame(() => setTimeout(resolve, 100))));
+  expect(peticiones).toBe(0);
+});
+
+test("error visible con un 422 forzado muestra el mensaje y el código de referencia @S-3.1", async ({
+  page,
+}) => {
+  await page.route("**/api/consultar", (route) =>
+    route.fulfill({
+      status: 422,
+      contentType: "application/problem+json",
+      body: JSON.stringify({
+        detail: "La pregunta no puede estar vacía.",
+        requestId: "abc-123",
+        status: 422,
+      }),
+    }),
+  );
+  await page.goto("/");
+  await page.getByLabel("Pregunta").fill("¿Cuál es el monto máximo del Crédito Productivo Impulso?");
   await page.getByRole("button", { name: "Consultar" }).click();
-  expect((await respuesta).status()).toBe(422);
 
   const alerta = page.getByRole("alert");
   await expect(alerta).toBeVisible();
-  await expect(alerta).toContainText(/Código de referencia: \S+/);
-  await expect(alerta).not.toContainText("El servicio tuvo un problema. Intenta de nuevo en unos minutos.");
+  await expect(alerta).toContainText("La pregunta no puede estar vacía.");
+  await expect(alerta).toContainText("Código de referencia: abc-123");
 });
 
 test("pregunta sin información muestra el estado y no hay fuentes @S-2.2", async ({ page }) => {
