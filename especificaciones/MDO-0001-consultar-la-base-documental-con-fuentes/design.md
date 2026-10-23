@@ -161,8 +161,13 @@ la misma transacción que decide la respuesta.
   ninguna llamada llegaba al modelo. Se fija la cabecera `X-Server-Timeout: 10` en `HttpOptions.headers`
   (el SDK no la sobrescribe si ya está) y el corte del cliente sigue en 5 s. Validado contra el API real.
 - Concurrencia (T15): las llamadas al modelo no se serializan con un candado global; un semáforo limita
-  las simultáneas, por debajo del límite de solicitudes del nivel gratuito de Gemini (documentación
-  oficial). Con el candado, 5 consultas concurrentes con modelo dieron 0,9 a 4,4 s (p95 > 3 s, NFR-1).
+  las simultáneas a 5 por defecto, configurable con `GEMINI_MAX_CONCURRENCIA` (decisión del PE,
+  2026-10-23; un valor no entero o menor que 1 detiene el arranque). La página oficial de límites
+  (https://ai.google.dev/gemini-api/docs/rate-limits, última actualización 2026-10-15) no publica cifras del
+  nivel gratuito: los límites son por proyecto y se consultan en AI Studio
+  (https://aistudio.google.com/rate-limit). Si el API responde 429, la consulta cae al modo extractivo
+  con HTTP 200 y el log registra solo el código 429. Con el candado, 5 consultas concurrentes con modelo
+  dieron 0,9 a 4,4 s (p95 > 3 s, NFR-1). El `modo` viaja en `RespuestaRedactada.modo`, no en la instancia.
 - Rechazado: reintentos (con un p95 de 3 s no hay margen; el extractivo es la respuesta de respaldo).
 
 <a id="d10"></a>

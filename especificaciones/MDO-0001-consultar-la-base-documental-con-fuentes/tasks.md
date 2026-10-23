@@ -532,7 +532,7 @@ parallel_safe: false
 verify: uv run pytest tests/server/infraestructura/redactor -q
 ```
 
-### [ ] T15 — Varias consultas con modelo en paralelo, sin pasar de 3 s de p95
+### [x] T15 — Varias consultas con modelo en paralelo, sin pasar de 3 s de p95
 
 - **What:** se reemplaza el candado global de `RedactorExclusivo` (`http/rutas.py`) por un semáforo que
   permite varias llamadas concurrentes al modelo, sin mezclar el `modo` entre peticiones (el `modo` deja de
