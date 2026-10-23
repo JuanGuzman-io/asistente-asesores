@@ -7,7 +7,7 @@ url:
 parent:
 projects: [asistente-asesores]
 lane: normal
-status: in-progress
+status: verified
 sources:
   - { ref: "Prueba técnica.pdf (sha256 ea559182d0cbe46540d0bbd994fa163b6633b42d03100c29632446a0267746b7), p. 2, p. 3, p. 4, p. 5, p. 6", kind: document, date: 2026-10-23 }
   - { ref: "docs/product/intake/prueba-tecnica-2026-10-23.md#I-6, I-1, I-2, I-3, I-5, I-7; Q-2, Q-3, Q-4, Q-6", kind: intake, date: 2026-10-23 }

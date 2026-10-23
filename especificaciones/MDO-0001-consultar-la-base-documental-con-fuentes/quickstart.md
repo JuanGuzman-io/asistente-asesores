@@ -12,7 +12,7 @@ spec: MDO-0001-consultar-la-base-documental-con-fuentes
 2. Repite con `{"pregunta":"¿Va a llover mañana en Bogotá?"}`.
    You should see: "No tengo información suficiente para responder.", `fuentes` vacío y `estado` "Sin información suficiente".
 3. Repite con `{"pregunta":"   "}`.
-   You should see: código 422 y un JSON de error con `detail` y `requestId`.
+   You should see: código 422 y un JSON de error con `requestId` y `detail` "La pregunta no puede estar vacía.".
 4. Repite la pregunta del paso 1 con `-H 'Content-Type: text/plain'`.
    You should see: código 415.
 5. Pregunta por "token interno" o "clave temporal".

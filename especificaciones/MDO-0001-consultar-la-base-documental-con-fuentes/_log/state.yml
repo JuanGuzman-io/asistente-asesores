@@ -1333,3 +1333,11 @@ cut_estimates:
     turns_left: 43
     savings: 0.41
     decision: "go on: below 50"
+  - at: 2026-10-23T20:27:30.870Z
+    task: verify
+    boundary_id: verify
+    context: 172493
+    base: 61621
+    turns_left: 28
+    savings: 0.31
+    decision: "go on: suggestion already shown at boundary"
