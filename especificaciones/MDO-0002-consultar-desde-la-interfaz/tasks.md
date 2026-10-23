@@ -118,7 +118,7 @@ parallel_safe: false
 verify: npm --prefix src/web test -- App
 ```
 
-### [ ] T4 — Tres pruebas de punta a punta pasan con el backend real
+### [x] T4 — Tres pruebas de punta a punta pasan con el backend real
 
 - **What:** Playwright con tres escenarios contra el backend real de MDO-0001 y la interfaz en
   `vite dev` ([D5](spec.md#d5), [C-3](spec.md#c-3)).
@@ -130,9 +130,9 @@ verify: npm --prefix src/web test -- App
 
 ```yaml
 project: web
-kind: test
+kind: chore
 tier: standard
-files: [src/web/playwright.config.ts, src/web/package.json, src/web/package-lock.json, tests/web/e2e/consultar.spec.ts, .gitignore]
+files: [src/web/playwright.config.ts, src/web/package.json, src/web/package-lock.json, tests/web/e2e/consultar.spec.ts, tests/web/e2e/tsconfig.json, src/web/tsconfig.json, src/web/AGENTS.md, .gitignore]
 exemplar: tests/web/App.test.tsx
 ac: [AC-1, AC-2]
 scenarios: [S-1.1, S-2.1, S-2.2, S-3.1]
