@@ -2,7 +2,7 @@
 progress:
   schema_version: 1
   spec: MDO-0003-bloquear-consultas-que-comprometen-la-seguridad
-  updated_at: 2026-10-23T23:33:01.931Z
+  updated_at: 2026-10-23T23:42:35.757Z
   current: null
   open_questions: []
   next_step: ""
@@ -107,6 +107,48 @@ progress:
             - test_s4_3_c1_una_pregunta_no_bloqueada_no_lleva_la_clave_categoria
             - test_s4_3_c2_el_log_no_contiene_la_pregunta_ni_sus_palabras
             - test_s4_2_la_consulta_bloqueada_queda_registrada
+    - task: T4
+      files:
+        - path: tests/server/dominio/test_guardrail_dataset.py
+          sha256: 75ca1247e73739a9d13ed7ca54e15800993b6bd8da3647e099a50f00c9f42e39
+          tests:
+            - test_el_dataset_es_v5
+            - test_cada_categoria_tiene_al_menos_seis_preguntas_bloqueadas
+            - test_toda_bloqueada_declara_una_categoria_valida
+            - test_hay_preguntas_sensibles_y_incluye_la_de_la_clave_olvidada
+            - test_negocio_seguro_es_con_respuesta_del_portafolio_de_microseguros
+            - test_ev8_toda_bloqueada_se_bloquea_con_su_categoria
+            - test_ev9_ninguna_otra_pregunta_se_bloquea
+            - test_el_dataset_incluye_la_pregunta_bloqueada_con_su_categoria
+        - path: tests/server/e2e/test_flujo_bloqueo.py
+          sha256: 75070da3a16949e5db7e44fb1016f0d5143abdeed2dd7e59e8e723b8ba2ad48c
+          tests:
+            - test_una_pregunta_por_categoria_se_bloquea_y_queda_registrada
+            - test_s5_2_c1_fuera_de_tema_responde_sin_informacion_y_no_bloquea
+        - path: tests/server/http/test_bloqueo_api.py
+          sha256: c50dd88913bbe0699bf518648aeea08deeb4ea6840ff68b3c42bcf2a07357ec8
+          tests:
+            - test_s4_3_pregunta_bloqueada_responde_200_con_el_mensaje_fijo_sin_fuentes
+            - test_s4_3_la_linea_de_log_lleva_estado_y_categoria
+            - test_s4_3_c1_cada_categoria_queda_en_su_linea_de_log
+            - test_s4_3_c1_una_pregunta_no_bloqueada_no_lleva_la_clave_categoria
+            - test_s4_3_c2_el_log_no_contiene_la_pregunta_ni_sus_palabras
+            - test_s4_2_la_consulta_bloqueada_queda_registrada
+            - test_nfr_2_el_log_no_repite_ninguna_pregunta_bloqueada_del_dataset
+        - path: tests/server/evals/test_evals.py
+          sha256: 6c14b420d7a1a77e15c6dc646b8529bccb38ad35d5f6ece1ee6db792261960e5
+          tests:
+            - test_dataset_v5_cubre_todos_los_tipos_con_muestra_suficiente
+            - test_s3_1_la_pregunta_del_pdf_trae_primero_el_credito_productivo_impulso
+            - test_ev1_recuperacion_hit_at_3
+            - test_ev2_precision_de_sin_informacion
+            - test_ev3_falsos_sin_informacion
+            - test_ev4_fidelidad_de_las_cifras
+            - test_ev5_fuentes_completas
+            - test_ev7_dato_faltante_muestra_la_seccion_sin_afirmar_el_dato
+            - test_ev8_toda_bloqueada_responde_bloqueada_por_seguridad_sobre_http
+            - test_c9_ningun_coseno_queda_pegado_al_umbral_que_lo_decide
+            - test_ev9_ninguna_pregunta_no_bloqueada_responde_bloqueada_por_seguridad
   pending_commits: []
   approved_manifests:
     - task: T1
@@ -196,6 +238,31 @@ progress:
         - src/server/http/rutas.py
         - tests/server/http/test_bloqueo_api.py
       receipts: []
+    - task: T4
+      attempt: 2
+      files:
+        - path: tests/fixtures/consultas.json
+          status: " M"
+          sha256: 64bb1fa4a0d5f9dff69dc35fc77f66d55e9073a542db3abcabebabc568119098
+        - path: tests/server/dominio/test_guardrail_dataset.py
+          status: ??
+          sha256: 75ca1247e73739a9d13ed7ca54e15800993b6bd8da3647e099a50f00c9f42e39
+        - path: tests/server/e2e/test_flujo_bloqueo.py
+          status: ??
+          sha256: 75070da3a16949e5db7e44fb1016f0d5143abdeed2dd7e59e8e723b8ba2ad48c
+        - path: tests/server/evals/test_evals.py
+          status: " M"
+          sha256: 6c14b420d7a1a77e15c6dc646b8529bccb38ad35d5f6ece1ee6db792261960e5
+        - path: tests/server/http/test_bloqueo_api.py
+          status: " M"
+          sha256: c50dd88913bbe0699bf518648aeea08deeb4ea6840ff68b3c42bcf2a07357ec8
+      reviewed:
+        - tests/fixtures/consultas.json
+        - tests/server/evals/test_evals.py
+        - tests/server/http/test_bloqueo_api.py
+        - tests/server/dominio/test_guardrail_dataset.py
+        - tests/server/e2e/test_flujo_bloqueo.py
+      receipts: []
 approvals:
   - step: shown
     by: Juan D. Guzmán
@@ -235,4 +302,12 @@ cut_estimates:
     base: 64554
     turns_left: 58
     savings: 2.63
+    decision: "go on: below 50"
+  - at: 2026-10-23T23:33:25.261Z
+    task: T4
+    boundary_id: implement:T4
+    context: 333661
+    base: 64554
+    turns_left: 43
+    savings: 1.99
     decision: "go on: below 50"

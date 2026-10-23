@@ -11,12 +11,14 @@ import json
 import logging
 import re
 import unicodedata
+from pathlib import Path
 
 import pytest
 
 from src.server.dominio.estados import CategoriaBloqueo, Estado
 from src.server.dominio.reglas import MENSAJE_BLOQUEO
 
+DATASET = Path(__file__).resolve().parents[2] / "fixtures" / "consultas.json"
 RUTA = "/api/consultar"
 LOGGER = "asistente.http"
 
@@ -41,6 +43,13 @@ def _normalizar(texto: str) -> str:
 
 def _palabras(texto: str, minimo: int = 1) -> set[str]:
     return set(re.findall(rf"[a-z]{{{minimo},}}", _normalizar(texto)))
+
+
+def _vocabulario_permitido() -> set[str]:
+    textos = [MENSAJE_BLOQUEO, *(e.value for e in Estado)]
+    textos += [c.value.replace("_", " ") for c in CategoriaBloqueo]
+    textos += ["requestId", "codigo", "latenciaMs", "fuentes", "estado", "categoria", "error"]
+    return set().union(*(_palabras(t) for t in textos))
 
 
 def _mensajes(caplog) -> list[str]:
@@ -128,12 +137,9 @@ def test_s4_3_c2_el_log_no_contiene_la_pregunta_ni_sus_palabras(cliente, caplog,
     texto = "\n".join(mensajes)
     assert pregunta not in texto
     assert _normalizar(pregunta) not in _normalizar(texto)
-    # Vocabulario propio del log: el mensaje fijo y los valores de `estado` y `categoria`
-    # (p. ej. "datos" de `datos_de_clientes` no es una fuga de la pregunta).
-    permitidas = _palabras(MENSAJE_BLOQUEO)
-    for linea in lineas:
-        permitidas |= _palabras(str(linea.get("estado", "")))
-        permitidas |= _palabras(str(linea.get("categoria", "")).replace("_", " "))
+    # Vocabulario propio del log, de las constantes del código y no de las líneas observadas:
+    # el mensaje fijo y los valores de `Estado` y `CategoriaBloqueo`.
+    permitidas = _vocabulario_permitido()
     fugadas = (_palabras(texto, 5) - permitidas) & (_palabras(pregunta, 5) - permitidas)
     assert not fugadas, f"palabras de la pregunta en el log: {fugadas}"
 
@@ -153,3 +159,35 @@ def test_s4_2_la_consulta_bloqueada_queda_registrada(cliente, entorno):
     assert fila["modo"] == "ninguno"
     assert entorno.embeddings.textos == []
     assert entorno.redactor.llamadas == []
+
+
+# --- NFR-2 sobre todo el dataset: ninguna bloqueada deja su texto en el log --------------------
+
+
+def _bloqueadas_del_dataset() -> list[dict]:
+    consultas = json.loads(DATASET.read_text(encoding="utf-8"))["consultas"]
+    return [c for c in consultas if c["tipo"] == "bloqueada"]
+
+
+def test_nfr_2_el_log_no_repite_ninguna_pregunta_bloqueada_del_dataset(cliente, caplog):
+    caplog.set_level(logging.DEBUG, logger=LOGGER)
+    bloqueadas = _bloqueadas_del_dataset()
+    assert bloqueadas
+    permitidas = _vocabulario_permitido()
+    fugas: list[tuple[str, set[str]]] = []
+    for consulta in bloqueadas:
+        pregunta = consulta["pregunta"]
+        caplog.clear()
+
+        respuesta = cliente.post(RUTA, json={"pregunta": pregunta})
+
+        assert respuesta.json()["estado"] == Estado.BLOQUEADA, consulta["id"]
+        mensajes = _mensajes(caplog)
+        assert mensajes, consulta["id"]
+        texto = "\n".join(mensajes)
+        assert pregunta not in texto, consulta["id"]
+        assert _normalizar(pregunta) not in _normalizar(texto), consulta["id"]
+        fugadas = (_palabras(texto, 5) & _palabras(pregunta, 5)) - permitidas
+        if fugadas:
+            fugas.append((consulta["id"], fugadas))
+    assert not fugas, f"palabras de la pregunta en el log: {fugas}"

@@ -146,3 +146,38 @@ T3 does what D5 says: the route stores resultado.categoria.value only for blocke
 ```
 
 Model: Opus 5.5 (claude-opus-5-5)
+
+## T4 — attempt 1
+
+VERDICT: FAIL
+
+One spec requirement is not met: requirements.md "Eval thresholds" says EV-8 and EV-9 repeat over HTTP in `uv run pytest -m eval`; only EV-8 was repeated. The sensible questions (n01-n03) get no HTTP check. Dataset (D6), normal-suite EV-8/EV-9, e2e, NFR-2 over the dataset and gates conform; e2e and HTTP assertions would fail without the guardrail.
+
+## Findings (JSON)
+```json
+{"version":1,"findings":[
+{"id":"F1","status":"open","severity":"medium","lens":"ai","title":"EV-9 is not repeated over HTTP in -m eval, as requirements.md 'Eval thresholds' and T4's What require","file":"tests/server/evals/test_evals.py","line":202,"evidence":"Only _ev8 was added. Add _ev9 == 0 over tipo != bloqueada and print it."},
+{"id":"F2","status":"open","severity":"medium","lens":"security","title":"Advisory: the e2e does not check that the category is absent from the body (S-1.2/C1)","file":"tests/server/e2e/test_flujo_bloqueo.py","line":672,"evidence":"Assert set(cuerpo) == {respuesta, fuentes, estado} and no CategoriaBloqueo value in the body."},
+{"id":"F3","status":"open","severity":"low","lens":"security","title":"Advisory: the dataset leaves out several spec examples and the punctuation-bypass regression","file":"tests/fixtures/consultas.json","line":98,"evidence":"Missing: 'Ignore all previous instructions', 'Actúa como administrador', <system>, API key, internal configurations, comma/ellipsis variant."},
+{"id":"F4","status":"open","severity":"low","lens":"data","title":"Advisory: the NFR-2 allowed words leave out the log's own key names, which forced b09's rewording","file":"tests/server/http/test_bloqueo_api.py","line":493,"evidence":"Allow fixed log key names."},
+{"id":"F5","status":"open","severity":"low","lens":"core","title":"Advisory: the S-5.2/C1 e2e duplicates test_s10_3 and imports a test module for fixtures","file":"tests/server/e2e/test_flujo_bloqueo.py","line":685,"evidence":"A conftest.py would be sturdier."}
+]}
+```
+
+## T4 — attempt 2
+
+VERDICT: PASS
+
+The rework fixes F1-F4; F5 stays an advisory. No high or critical security finding. EV-9 now runs over HTTP in -m eval (EV-8=1.000, EV-9=0, 11 passed); e2e checks the category does not leak; dataset has b16-b22; NFR-2 allowed words come from code constants. Red run recorded (exit 1), red-test hashes match, redTests.changed empty.
+
+## Findings (JSON)
+```json
+{"version":1,"findings":[
+{"id":"F1","status":"resolved","severity":"medium","lens":"ai","title":"EV-9 is not repeated over HTTP in -m eval","file":"tests/server/evals/test_evals.py","line":207,"evidence":"_ev9 over HTTP; EV-9=0 (==0), 11 passed."},
+{"id":"F2","status":"resolved","severity":"medium","lens":"security","title":"The e2e does not check that the category is absent from the body (S-1.2/C1)","file":"tests/server/e2e/test_flujo_bloqueo.py","line":10,"evidence":"set(cuerpo) == {respuesta, fuentes, estado}; no CategoriaBloqueo value in the body."},
+{"id":"F3","status":"resolved","severity":"low","lens":"security","title":"The dataset leaves out several spec examples and the punctuation-bypass regression","file":"tests/fixtures/consultas.json","line":98,"evidence":"b16-b22 added and tested."},
+{"id":"F4","status":"resolved","severity":"low","lens":"data","title":"The NFR-2 allowed words leave out the log's own key names","file":"tests/server/http/test_bloqueo_api.py","line":48,"evidence":"Built from code constants."},
+{"id":"F5","status":"open","severity":"low","lens":"core","title":"Advisory: the S-5.2/C1 e2e duplicates test_s10_3 and imports a test module for fixtures","file":"tests/server/e2e/test_flujo_bloqueo.py","line":11,"evidence":"A conftest.py would be sturdier."},
+{"id":"F6","status":"open","severity":"low","lens":"core","title":"Advisory (OPEN): the red evidence keeps only the exit code, not which tests failed","file":"especificaciones/MDO-0003-bloquear-consultas-que-comprometen-la-seguridad/_log/execution.md","line":42,"evidence":"Hashes match; nothing weakened."}
+]}
+```
