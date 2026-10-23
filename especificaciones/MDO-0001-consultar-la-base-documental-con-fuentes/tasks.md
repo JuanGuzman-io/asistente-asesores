@@ -331,7 +331,7 @@ parallel_safe: true
 verify: uv run pytest tests/server/infraestructura/persistencia tests/server/aplicacion -q
 ```
 
-### [ ] T9 — La API de consulta valida la entrada y responde el contrato, con errores RFC 9457
+### [x] T9 — La API de consulta valida la entrada y responde el contrato, con errores RFC 9457
 
 - **What:** la ruta FastAPI con el middleware de `requestId`, 413 y 415, la validación Pydantic (NFC,
   `strip()`, 1–1.000 puntos de código) y los handlers RFC 9457, más el log JSON por petición
