@@ -8,9 +8,9 @@ interface Props {
 }
 
 function ListaFuentes({ fuentes }: { fuentes: Fuente[] }) {
-  if (fuentes.length === 0) return <p>Sin fuentes</p>;
+  if (fuentes.length === 0) return <p className="sin-fuentes">Sin fuentes</p>;
   return (
-    <ul>
+    <ul className="fuentes">
       {fuentes.map((fuente, indice) => (
         <li key={indice}>
           <strong>{`${fuente.documento} > ${fuente.seccion}`}</strong>
@@ -23,13 +23,17 @@ function ListaFuentes({ fuentes }: { fuentes: Fuente[] }) {
 
 export function Resultado({ resultado }: Props) {
   return (
-    <section aria-label="Resultado de la consulta">
-      <p>
+    <section aria-label="Resultado de la consulta" className="resultado panel">
+      <p className="linea-estado">
         <span>Estado: </span>
-        <strong>{resultado.estado}</strong>
+        <strong className="etiqueta-estado" data-estado={resultado.estado}>
+          {resultado.estado}
+        </strong>
       </p>
       <h2>Respuesta</h2>
-      <p style={PRE_WRAP}>{resultado.respuesta}</p>
+      <p className="respuesta" style={PRE_WRAP}>
+        {resultado.respuesta}
+      </p>
       <h2>Fuentes</h2>
       <ListaFuentes fuentes={resultado.fuentes} />
     </section>
