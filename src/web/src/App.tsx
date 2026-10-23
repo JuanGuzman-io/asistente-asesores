@@ -1,4 +1,4 @@
-// Pantalla de Bot-W (D3, mock de la spec C-5): formulario y EstadoProcesamiento en useState.
+// Pantalla de W+IA (D3, mock de la spec C-5): formulario y EstadoProcesamiento en useState.
 // Antes de la primera consulta, orbe, saludo y caja centrados; después, la conversación arriba y la caja abajo.
 // Solo se muestra la consulta en curso: un envío nuevo reemplaza la anterior (sin historial).
 import { Plus, WarningCircle } from "@phosphor-icons/react";
@@ -56,7 +56,7 @@ function FilaAsistente({ children }: { children: ReactNode }) {
     <div className="fila-asistente entrada">
       <Orbe tamano="mini" />
       <div className="cuerpo-asistente">
-        <span className="nombre-asistente">Bot-W</span>
+        <span className="nombre-asistente">W+IA</span>
         {children}
       </div>
     </div>
@@ -82,11 +82,11 @@ function Alerta({ error }: { error: ErrorVisible }) {
 function Bienvenida({ escuchando, onOrbe }: { escuchando: boolean; onOrbe: () => void }) {
   return (
     <div className="bienvenida">
-      <button type="button" className="boton-orbe" onClick={onOrbe} aria-label="Escribir a Bot-W">
+      <button type="button" className="boton-orbe" onClick={onOrbe} aria-label="Escribir a W+IA">
         <Orbe tamano="grande" modo={escuchando ? "escuchando" : "reposo"} />
       </button>
       <div className="saludo entrada">
-        <h2>Hola, soy Bot-W.</h2>
+        <h2>Hola, soy W+IA.</h2>
         <p>
           Pregúntame por productos, políticas y procedimientos del banco. Te respondo solo con documentos
           oficiales y te muestro de dónde sale cada dato.
@@ -206,7 +206,7 @@ export function App() {
         conSugerencias={inicio}
       />
       <p className="pie">
-        Bot-W puede equivocarse: confirma siempre en la fuente citada. No escribas datos personales de
+        W+IA puede equivocarse: confirma siempre en la fuente citada. No escribas datos personales de
         clientes.
       </p>
     </div>
