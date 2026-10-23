@@ -405,7 +405,7 @@ verify: uv run pytest tests/server/e2e tests/server/evals -q
 
 ```yaml
 project: asistente-asesores
-kind: feat
+kind: test
 tier: standard
 files: [src/server/aplicacion/consultar.py, src/server/infraestructura/redactor/gemini.py, src/server/config.py, tests/server/aplicacion/test_respaldo.py, tests/server/e2e/test_respaldo_e2e.py]
 exemplar: src/server/aplicacion/consultar.py
