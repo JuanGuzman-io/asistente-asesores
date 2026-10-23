@@ -40,8 +40,19 @@ never infer it from the framework.
 - Exemplar files: OPEN — se nombran cuando exista el primer módulo de cada tipo.
 
 ## Errors
-Los errores de validación devuelven 400 con un mensaje legible; los inesperados devuelven 500 sin
-detalles internos y quedan en el log. Un error tragado es bloqueante.
+Códigos de `POST /api/consultar` (decisión del PE, 2026-10-23; intake Q-2, Q-6):
+
+| Caso | Código |
+|---|---|
+| `Exitosa`, `Sin información suficiente` o `Bloqueada por seguridad`, también con la base documental vacía | 200 |
+| Validación: pregunta vacía, de más de 1.000 caracteres o cuerpo inválido | 422 |
+| Cuerpo mayor a 16 KB | 413 |
+| Tipo de contenido distinto de JSON | 415 |
+| Error inesperado | 500 |
+
+Los errores siguen RFC 9457 (`application/problem+json`) con `requestId` y un mensaje legible; el 500
+no expone detalles internos y queda en el log. Si Gemini falla, la respuesta es extractiva con 200. Un
+error tragado es bloqueante.
 
 ## Logging
 JSON estructurado. Nunca se registran secretos, credenciales, datos personales ni el contenido de

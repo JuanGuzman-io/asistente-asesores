@@ -25,6 +25,14 @@ fuente, consultas sobre productos de crédito, microseguros, procedimientos oper
   fuentes; registro de cada consulta con su estado; frontend local.
 - **Fuera:** autenticación, despliegue, gestión de clientes, edición de documentos desde la interfaz.
 
+## Restricciones de entrega
+Condiciones de la entrega de la prueba, no reglas de comportamiento del asistente.
+
+| ID | Restricción | Source | Date |
+|---|---|---|---|
+| DC-1 | La base documental de ejemplo puede ampliarse con los registros que se consideren necesarios; los archivos finales de `Data/` (los seis, incluido `Políticas de Atención.md`) forman parte de los entregables. | PDF p. 2 | 2026-10-23 |
+| DC-2 | Entrega en repositorio GitHub, máximo 72 horas; se permite el uso de IA y no se requieren herramientas pagas. | PDF p. 1 | 2026-10-23 |
+
 ## Capability map
 
 | Capability | Evidence in code | Documented in | Status |
