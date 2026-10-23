@@ -7,6 +7,128 @@ start:
   branch: feat/MDO-0002-consultar-desde-la-interfaz
   base: main
   created_at: 2026-10-23T16:11:43.547Z
+progress:
+  schema_version: 1
+  spec: MDO-0002-consultar-desde-la-interfaz
+  updated_at: 2026-10-23T16:46:54.207Z
+  current:
+    task: T2
+    phase: implementing
+    harness: claude
+    model: claude-opus-5-5
+  open_questions: []
+  next_step: ""
+  deferred_to_ci: []
+  red_tests:
+    - task: T1
+      files:
+        - path: tests/web/api.test.ts
+          sha256: 7ced665650b45710208960e195a031549afeee85e09662f0775694ec8d68d5b1
+          tests:
+            - "S-2.1 base: 200 válido devuelve ok con respuesta, fuentes y estado"
+            - "D3: acepta el estado %s"
+            - "S-3.1: 422 problem+json usa el detail y el requestId como código de referencia"
+            - "S-3.1 (tabla FR-3): 422 sin detail usa el mensaje de revisión"
+            - "S-3.1 (tabla FR-3): 413 dice que la pregunta es demasiado larga"
+            - "S-3.2: 500 problem+json da el mensaje genérico y el código de referencia"
+            - "S-3.2 (tabla FR-3): el código %i da el mensaje genérico"
+            - "S-3.3: falla de red da el mensaje de conexión, sin código de referencia"
+            - "S-3.3: sin respuesta dentro del tiempo límite inyectado da el mensaje de tiempo agotado"
+            - "S-3.4: 500 con cuerpo HTML da el mensaje genérico sin el cuerpo"
+            - "S-3.4/C1: 500 con texto plano da el mensaje genérico sin el cuerpo"
+            - "S-3.4: 200 con estado fuera de los tres da el mensaje genérico sin nombres de campos ni valores"
+            - "S-3.4: 200 con fuentes que no cumplen el contrato da el mensaje genérico"
+            - "S-3.4: 200 con cuerpo que no es JSON da el mensaje genérico"
+            - "S-3.4/C1: un 500 problem+json no filtra su detail ni otros campos"
+            - "D3: un error inesperado de fetch se devuelve como resultado de error"
+  pending_commits: []
+  approved_manifests:
+    - task: T1
+      attempt: 2
+      files:
+        - path: .gitignore
+          status: " M"
+          sha256: a3dfb7975c331417283fe6ee3ead3b4119c3006b911076d0f58c5dfc376274a0
+        - path: .mandao/config.yml
+          status: " M"
+          sha256: 7cd6a78d4fef8fa513fad15a3c395ed2cd55bca60ecee01329b3a3305b91dbaa
+        - path: .mandao/mandao.lock
+          status: " M"
+          sha256: 307ef1787df97fae061af2e9e68295743e8c5f9c308cc72165a263e6872959d1
+        - path: src/web/.prettierignore
+          status: " A"
+          sha256: 21fb47879bd3ece8fca895a0590624a16b4c6876b6ce27b1b6d8a9cb84cfe533
+        - path: src/web/.prettierrc
+          status: " A"
+          sha256: d86a63a4a27931babdf5183eb642bf7ec543b2d9f12b7559d6ea9e5e5d6c37c7
+        - path: src/web/AGENTS.md
+          status: " M"
+          sha256: 39674e8074f8172e0152fcecc16ee57818c39dc0bb07952946a0962ba0695d30
+        - path: src/web/eslint.config.js
+          status: " A"
+          sha256: c34fe8183f4d4fba446dc6a30e0ad191d036871d635ccef33a0a074b005e6d2a
+        - path: src/web/index.html
+          status: " A"
+          sha256: 4eddec95ccafef4d584865c669ea3c49cad7110684d141612e04efa669052925
+        - path: src/web/package-lock.json
+          status: " A"
+          sha256: 353d39563d4e65d126f4495f55222f0e1fc8786062c0c11405bb3d3a4a4baef8
+        - path: src/web/package.json
+          status: " A"
+          sha256: 7c6018db181ced62736d7e19e2e53183a2a818964a2d85bbc4c04ddd5b4ec136
+        - path: src/web/src/api.ts
+          status: " A"
+          sha256: 95dd77b7e03871a4741c60182d15cf481f647cc6162d304cd5be181b82df016a
+        - path: src/web/src/main.tsx
+          status: " A"
+          sha256: e8bb770fa0bf5e183c4724a59412bfa573f2d506c48c19d481c5ebc4628faeba
+        - path: src/web/tsconfig.json
+          status: " A"
+          sha256: 01dd9e815cbdb26b248ac194cc5ff6b5dbac69eb59118d8c15ace3746a6514d0
+        - path: src/web/vite.config.ts
+          status: " A"
+          sha256: a06f5a9053829032cb2e9779faf576b35729b2d245e5d4affe3e4f5f26f7ca43
+        - path: tests/web/api.test.ts
+          status: " A"
+          sha256: 7ced665650b45710208960e195a031549afeee85e09662f0775694ec8d68d5b1
+      reviewed:
+        - .gitignore
+        - .mandao/config.yml
+        - src/web/.prettierignore
+        - src/web/.prettierrc
+        - src/web/AGENTS.md
+        - src/web/eslint.config.js
+        - src/web/index.html
+        - src/web/package-lock.json
+        - src/web/package.json
+        - src/web/src/api.ts
+        - src/web/src/main.tsx
+        - src/web/tsconfig.json
+        - src/web/vite.config.ts
+        - tests/web/api.test.ts
+      receipts: []
+  loop_brake:
+    task: T1
+    action: commit
+    execution_rows: 6
+    approval_rows: 1
+    repeats: 1
+approvals:
+  - step: shown
+    by: Juan D. Guzmán
+    at: 2026-10-23T16:28:12.851Z
+    sha256:
+      story.md: sha256-NTraXCHpd2riEmG4ex7gl8N/Osw6plM0pkWroIrd5gg=
+      spec.md: sha256-cyLRbWm671QohTyc6b0lEekw/vEYYvpz/MtEn/2GevA=
+cut_estimates:
+  - at: 2026-10-23T16:31:31.274Z
+    task: T1
+    boundary_id: implement:T1
+    context: 63326
+    base: 63921
+    turns_left: 88
+    savings: 0
+    decision: stay
 mock:
   decision: declined
   at: 2026-10-23T16:21:14.616Z

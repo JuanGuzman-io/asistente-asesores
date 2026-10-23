@@ -22,6 +22,13 @@ projects:
   - name: web
     path: src/web
     profile: app
+    gates:
+      format: npm run format:check
+      lint: npm run lint
+      typecheck: npm run typecheck
+      test: npm test
+      build: npm run build
+      audit: npm audit --omit=dev --audit-level=high
 harnesses:
   - claude
 session: { cut_min_savings: 50 }

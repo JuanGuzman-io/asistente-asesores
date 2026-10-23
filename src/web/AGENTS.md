@@ -10,3 +10,14 @@ Project `web` (profile `app`) in a Mandao monorepo workspace.
 - Canonical specs: `../../especificaciones/`
 
 <!-- mandao:end -->
+
+## Interfaz web (`src/web`)
+
+Interfaz para que el asesor consulte al asistente y vea la respuesta, las fuentes, los errores y el estado de la consulta. React + Vite + TypeScript.
+
+- Scripts (`npm run ...`): `dev`, `build`, `preview`, `format:check`, `lint`, `typecheck`, `test`, `e2e`.
+- Seis gates (D6): `format:check`, `lint`, `typecheck`, `test`, `build` y `npm audit --omit=dev --audit-level=high`. Se corren desde `src/web`.
+- Las pruebas viven en `tests/web/` (no dentro de `src/web`); las e2e, en `tests/web/e2e/`, no son gate y necesitan el backend real.
+- `/api` es un proxy de Vite hacia `http://127.0.0.1:8000`; `API_URL` lo cambia. Mismo origen, sin CORS.
+- `src/api.ts` es el cliente de la API y el exemplar: `consultar()` nunca lanza y no devuelve el cuerpo recibido.
+- `Data/` no se sirve nunca: `vite.config.ts` lo niega en `server.fs.deny` y `server.fs.allow` solo admite `src/web` y `tests/web`. `Información restringida.md` es confidencial.
