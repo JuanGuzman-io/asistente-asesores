@@ -214,7 +214,7 @@ parallel_safe: false
 verify: uv run pytest tests/server/infraestructura/busqueda -q
 ```
 
-### [ ] T5 — El caso de uso responde con fuentes o con el mensaje fijo de falta de información
+### [x] T5 — El caso de uso responde con fuentes o con el mensaje fijo de falta de información
 
 - **What:** el caso de uso `consultar` sobre puertos: bajo el umbral o con la base vacía responde el
   mensaje fijo sin llamar al redactor; con soporte arma fuentes `documento`, `seccion`, `fragmento` sin
