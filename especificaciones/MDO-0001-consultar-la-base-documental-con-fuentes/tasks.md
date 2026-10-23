@@ -91,7 +91,7 @@ tarea empieza con pruebas rojas; el modelo y los embeddings se reemplazan por do
 
 **Delivery checkpoint:** run `mandao run verify-plan <spec> --delivery 3` before delivery 4; it passes when `scope.clear` is true.
 
-### Delivery 4 — AC-3, AC-11, AC-5, AC-4, AC-16
+### Delivery 4 — AC-3, AC-11, AC-5, AC-4, AC-16, AC-7, AC-9
 
 #### AC-16 — Falla del modelo
 
@@ -113,9 +113,15 @@ tarea empieza con pruebas rojas; el modelo y los embeddings se reemplazan por do
 
 #### AC-3, AC-11 — Consulta válida con soporte documental; Sin soporte documental
 
-- [ ] T16 [AC-3, AC-11] Las paráfrasis con plurales y conjugaciones encuentran su sección — `src/server/infraestructura/busqueda/fts.py`
+- [x] T16 [AC-3, AC-11] Las paráfrasis con plurales y conjugaciones encuentran su sección — `src/server/infraestructura/busqueda/fts.py`
 
 **Checkpoint:** `uv run pytest tests/server -q` passes (T16); this confirms AC-3, AC-11 before the next group.
+
+#### AC-7, AC-9 — Pregunta vacía o cuerpo inválido; Consulta extensa
+
+- [ ] T17 [AC-7, AC-9] El 422 responde un mensaje fijo y claro, sin detalles de Pydantic ni la entrada — `src/server/http/problemas.py`
+
+**Checkpoint:** `uv run pytest tests/server/http -q` passes (T17); this confirms AC-7, AC-9 before the next group.
 
 **Delivery checkpoint:** run `mandao run verify-plan <spec> --delivery 4`; it passes when `scope.clear` is true.
 
@@ -602,4 +608,35 @@ depends_on: [T15]
 delivery: 4
 parallel_safe: false
 verify: uv run pytest tests/server -q
+```
+
+### [ ] T17 — El 422 responde un mensaje fijo y claro, sin detalles de Pydantic ni la entrada
+
+- **What:** ajuste del PE del 2026-10-23 en verify ([C-11](requirements.md#c-11)). `manejar_validacion`
+  deja de componer "La petición no es válida. " + `loc: msg`: devuelve el mensaje fijo del validador de
+  `pregunta` o, con otro error, "El cuerpo debe ser un JSON con el campo pregunta de tipo texto."
+  ([D8](design.md#d8)). Concreta "un mensaje claro" de AC-7 y alinea con MDO-0002 (S-3.1).
+- **Done when:**
+  - Prueba roja primero: `{"pregunta": ""}` y `{"pregunta": "   "}` responden 422 con `detail` exactamente "La pregunta no puede estar vacía.".
+  - S-7.2 holds: 1.001 puntos de código responde 422 con `detail` exactamente "La pregunta no puede superar los 1.000 caracteres."; el caso de 1.000 sigue procesándose (S-7.2/C1).
+  - `{}`, `{"pregunta": 5}` y un JSON mal formado responden 422 con `detail` exactamente "El cuerpo debe ser un JSON con el campo pregunta de tipo texto.".
+  - S-7.1/C2 holds: ningún `detail` de 422 contiene "La petición no es válida", "Value error", "pregunta:" ni el texto enviado; siguen `requestId`, `application/problem+json`, y ni búsqueda ni registro (S-7.1/C1).
+
+```yaml
+project: asistente-asesores
+kind: fix
+tier: fast
+files: [src/server/http/problemas.py, src/server/http/esquemas.py, tests/server/http/test_consultar_api.py]
+exemplar: src/server/http/problemas.py
+ac: [AC-7, AC-7/C1, AC-9, AC-9/C1]
+scenarios: [S-7.1, S-7.1/C1, S-7.1/C2, S-7.2, S-7.2/C1]
+test_levels: { S-7.1: unit, S-7.1/C1: unit, S-7.1/C2: unit, S-7.2: unit, S-7.2/C1: unit }
+partial_failure_tests: []
+evidence: tdd
+risk_tags: [input, public-api, pii]
+decisions: [D8]
+depends_on: [T16]
+delivery: 4
+parallel_safe: false
+verify: uv run pytest tests/server/http -q
 ```

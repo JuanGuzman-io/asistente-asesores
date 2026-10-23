@@ -172,6 +172,10 @@ la misma transacción que decide la respuesta.
   lleva solo `requestId` y el tipo de la excepción.
 - La validación de `pregunta` usa Pydantic: texto obligatorio, normalizado a NFC, `strip()` y luego 1–1.000
   puntos de código ([C-2](requirements.md#c-2)).
+- `detail` del 422 ([C-11](requirements.md#c-11), T17): el handler no compone `loc: msg` de Pydantic.
+  Si el error es del validador de `pregunta`, devuelve su mensaje fijo ("La pregunta no puede estar vacía." o
+  "La pregunta no puede superar los 1.000 caracteres."). Con cualquier otro error devuelve "El cuerpo debe
+  ser un JSON con el campo pregunta de tipo texto.". Nunca incluye `input` ni `ctx`.
 - Rechazadas: `RequestBodyLimitMiddleware` de Starlette (responde texto plano y no se confirmó su
   versión junto a FastAPI 0.161.1); `strict_content_type=False` (aceptaría cuerpos sin tipo).
 

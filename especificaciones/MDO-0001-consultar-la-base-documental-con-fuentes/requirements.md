@@ -145,13 +145,14 @@ buscar.
 #### S-7.1 — Vacía, solo espacios o cuerpo inválido
 - **Given** `{"pregunta": ""}`, `{"pregunta": "   "}`, `{}`, `{"pregunta": 5}` o un JSON mal formado
 - **When** se envía
-- **Then** responde 422 `application/problem+json` con `requestId` y un `detail` legible
+- **Then** responde 422 `application/problem+json` con `requestId` y un `detail` exacto ([C-11](#c-11)): "La pregunta no puede estar vacía." si `pregunta` es texto vacío o solo espacios; "El cuerpo debe ser un JSON con el campo pregunta de tipo texto." en los demás casos
 - **BUT it must NOT** consultar la base ni registrar la consulta (C1)
+- **BUT it must NOT** llevar en `detail` el prefijo ni los mensajes de Pydantic ("La petición no es válida.", "Value error", la ruta del campo) ni repetir la entrada (C2)
 
 #### S-7.2 — Límite de longitud
 - **Given** una pregunta de 1.001 puntos de código tras normalizar a NFC y quitar los espacios exteriores
 - **When** se envía
-- **Then** responde 422 con un `detail` que menciona el límite de 1.000 caracteres
+- **Then** responde 422 con `detail` exactamente "La pregunta no puede superar los 1.000 caracteres." ([C-11](#c-11))
 - **AND IT MUST** procesar normalmente una pregunta de exactamente 1.000 puntos de código, también si trae espacios exteriores adicionales o llega en forma NFD y queda en 1.000 al normalizar (C1)
 - **BUT it must NOT** recortar, consultar ni registrar la pregunta rechazada (C2)
 
@@ -347,7 +348,7 @@ no hacen llamadas de red (verificado ejecutándolas sin red).
 | AC-5 | C2: extractivo sin afirmar cobertura total | FR-5 / S-5.2, S-5.2 C1 | covered |
 | AC-6 | main | FR-6 / S-6.1 | covered |
 | AC-6 | C1: cada fuente usada | FR-6 / S-6.1 C1 | covered |
-| AC-7 | main | FR-7 / S-7.1 | covered |
+| AC-7 | main | FR-7 / S-7.1, S-7.1 C2 | covered |
 | AC-7 | C1: sin consultar ni registrar | FR-7 / S-7.1 C1 | covered |
 | AC-8 | main | FR-8 / S-8.1, S-8.2 | covered |
 | AC-8 | C1: la búsqueda no falla | FR-8 / S-8.1 C1 | covered |
@@ -421,6 +422,12 @@ no hacen llamadas de red (verificado ejecutándolas sin red).
 - **Answer:** (1) FTS5 aplica el stemmer de español de `py_rust_stemmers` (ya instalado con `fastembed`) al texto indexado y a la pregunta: "¿Cuánto le prestan como máximo a un pequeño comerciante?" respondía `Sin información suficiente` aunque el Crédito Productivo Impulso dice "Dirigido a pequeños comerciantes". (2) Se pidió que el extractivo mostrara solo los fragmentos con al menos el 80 % del puntaje combinado del mejor, para que "¿Qué documentos sirven para actualizar datos?" no mostrara también Solicitud de Crédito. Medido en T16, no cumple el ejemplo: con RRF k = 60, Solicitud de Crédito queda en 97,6 % del mejor porque sale en las dos vías. Con el 80 % del coseno sí sale (75 %), pero c31 pierde su sección esperada. Decisión del PE: **sin filtro**. El extractivo sigue mostrando hasta 2 fragmentos, porque perder una sección correcta pesa más que mostrar una de más; el README lo anota como limitación. (3) El dataset suma esas preguntas y otras paráfrasis con plurales y conjugaciones (v3); se recalibran los umbrales y se informan los EV antes y después. Nada cambia del modelo: Gemini queda como está.
 - **Answered by:** PE (Product Engineer).
 - **Effect:** FR-3 / S-3.3; tabla de evals sobre `consultas@v3`; design.md D4 y D12 (filtro rechazado); README (limitación); tasks.md T16.
+
+<a id="c-11"></a>
+### C-11 — ¿Qué dice el `detail` de un 422? (2026-10-23, verify)
+- **Answer:** un texto fijo, sin el prefijo ni los mensajes de Pydantic ("La petición no es válida. pregunta: Value error, …") y sin repetir la entrada. Vacía o solo espacios: "La pregunta no puede estar vacía.". Más de 1.000 caracteres: "La pregunta no puede superar los 1.000 caracteres.". Otro cuerpo inválido (sin `pregunta`, `pregunta` no texto, JSON mal formado): un mensaje claro sin detalles del framework, "El cuerpo debe ser un JSON con el campo pregunta de tipo texto.". Concreta "un mensaje claro" de AC-7 y alinea con MDO-0002 (S-3.1).
+- **Answered by:** PE (Product Engineer); el texto para otros cuerpos inválidos se resolvió técnicamente con la regla del PE ("un mensaje claro sin detalles del framework").
+- **Effect:** FR-7 / S-7.1 (nueva cláusula C2), S-7.2; design.md D8; tasks.md T17.
 
 <a id="c-9"></a>
 ### C-9 — ¿Qué es una pregunta por un dato que no está, de un producto que sí existe? (2026-10-23, verify)
