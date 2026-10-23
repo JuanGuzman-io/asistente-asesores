@@ -10,5 +10,11 @@ projects:
   - name: asistente-asesores
     path: .
     profile: ai
+    gates:
+      format: uv run ruff format --check .
+      lint: uv run ruff check .
+      typecheck: uv run mypy src
+      test: uv run pytest
+      build: none
 harnesses:
   - claude

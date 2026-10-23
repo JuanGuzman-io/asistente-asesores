@@ -93,7 +93,7 @@ tarea empieza con pruebas rojas; el modelo y los embeddings se reemplazan por do
 
 ## Details
 
-### [ ] T1 — Los documentos oficiales se cargan y fragmentan por sección, sin confidenciales
+### [x] T1 — Los documentos oficiales se cargan y fragmentan por sección, sin confidenciales
 
 - **What:** crea el proyecto backend (Python 3.13 con `uv`, pytest, ruff y mypy estricto) con sus gates
   declarados, y el cargador de `Data/` que excluye confidenciales en dos capas y fragmenta por sección `##`
@@ -109,7 +109,7 @@ tarea empieza con pruebas rojas; el modelo y los embeddings se reemplazan por do
 project: asistente-asesores
 kind: feat
 tier: standard
-files: [pyproject.toml, .python-version, .gitignore, .env.example, .mandao/config.yml, src/server/__init__.py, src/server/config.py, src/server/dominio/modelos.py, src/server/infraestructura/documentos/cargador.py, tests/server/infraestructura/documentos/test_cargador.py]
+files: [pyproject.toml, .python-version, .gitignore, .env.example, .mandao/config.yml, .mandao/mandao.lock, src/server/__init__.py, src/server/config.py, src/server/dominio/modelos.py, src/server/infraestructura/documentos/cargador.py, tests/server/infraestructura/documentos/test_cargador.py]
 exemplar: none (proyecto nuevo; este módulo será el exemplar de infraestructura)
 ac: [AC-1, AC-1/C1]
 scenarios: [S-1.1, S-1.1/C1, S-1.2]

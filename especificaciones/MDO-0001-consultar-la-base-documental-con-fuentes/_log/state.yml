@@ -1,4 +1,293 @@
 # Written by mandao scripts: start request, baseline, progress, approvals, session-cut estimates and the mock decision.
+progress:
+  schema_version: 1
+  spec: MDO-0001-consultar-la-base-documental-con-fuentes
+  updated_at: 2026-10-23T15:42:40.166Z
+  current: null
+  open_questions: []
+  next_step: ""
+  deferred_to_ci: []
+  red_tests:
+    - task: T1
+      files:
+        - path: tests/server/infraestructura/documentos/test_cargador.py
+          sha256: a9a68fb023f874cdb32e79162b11cb52ee72ee629838e2dd288b64e7168c5a2b
+          tests:
+            - test_s11_los_cinco_documentos_oficiales_se_fragmentan_con_documento_y_seccion
+            - test_s11_c1_ningun_fragmento_proviene_de_informacion_restringida
+            - test_s11_cada_seccion_h2_es_un_fragmento_con_sus_subsecciones
+            - test_s11_documento_sin_h2_es_un_solo_fragmento_titulado_con_su_h1
+            - test_s11_c1_un_archivo_de_la_lista_de_excluidos_no_genera_fragmentos
+            - test_s12_documento_confidencial_por_encabezado_se_excluye_aunque_no_este_en_la_lista
+            - test_s12_el_log_nombra_el_excluido_y_no_contiene_su_contenido
+  pending_commits:
+    - task: T1
+      subject: add the Data/ section loader
+      files:
+        - .env.example
+        - .gitignore
+        - .mandao/config.yml
+        - .mandao/mandao.lock
+        - .python-version
+        - pyproject.toml
+        - src/__init__.py
+        - src/server/__init__.py
+        - src/server/AGENTS.md
+        - src/server/CLAUDE.md
+        - src/server/config.py
+        - src/server/dominio/__init__.py
+        - src/server/dominio/modelos.py
+        - src/server/infraestructura/__init__.py
+        - src/server/infraestructura/documentos/__init__.py
+        - src/server/infraestructura/documentos/cargador.py
+        - tests/server/infraestructura/documentos/test_cargador.py
+        - uv.lock
+      manifest:
+        - path: .env.example
+          status: " A"
+          sha256: 1136c3f34c5bdd860b0a5990efb61bcb9cc3eb683763885a730f0a25d6716291
+        - path: .gitignore
+          status: " M"
+          sha256: b630a16644c0e492a0f59994cebfe4c063880239678732ab55fceebad23e026b
+        - path: .mandao/config.yml
+          status: " M"
+          sha256: 4acaaba8c08eddf84a775ee835cfa65a9e34bc7b5505729030f12ebcbdf8eeb3
+        - path: .mandao/mandao.lock
+          status: " M"
+          sha256: c96ab08d1d5d584e9e593daff30c901e1f6d47242d92f907dbe48f7951a2a333
+        - path: .python-version
+          status: " A"
+          sha256: 02e735b3dfe1c32833eb550b7ff8ffa17f5f2bc3fa1e7bae61a8f5a3883ce398
+        - path: pyproject.toml
+          status: " A"
+          sha256: 1098cccf9b688adffc0d79c044ae37db2a61734df74e9336143b7a0d21029185
+        - path: src/__init__.py
+          status: " A"
+          sha256: e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855
+        - path: src/server/__init__.py
+          status: " A"
+          sha256: e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855
+        - path: src/server/AGENTS.md
+          status: " A"
+          sha256: 2d0492d5f726cb9cb4e0378c67dc436f16d27cb4ad040f7b5b11d89010e06148
+        - path: src/server/CLAUDE.md
+          status: " A"
+          sha256: adf66c5ee61900cf7d0a6aadec33ce392fc350ce84d0870ff9ba105f1953a3fc
+        - path: src/server/config.py
+          status: " A"
+          sha256: 5bac3fabab7d287201ace9930ec2235dde97a6947879ff34dacde50588994961
+        - path: src/server/dominio/__init__.py
+          status: " A"
+          sha256: e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855
+        - path: src/server/dominio/modelos.py
+          status: " A"
+          sha256: b0049bafa021fdc15116403f5524ea92e3d4a8d80c5ae85d67a1ae97c3a2bba9
+        - path: src/server/infraestructura/__init__.py
+          status: " A"
+          sha256: e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855
+        - path: src/server/infraestructura/documentos/__init__.py
+          status: " A"
+          sha256: e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855
+        - path: src/server/infraestructura/documentos/cargador.py
+          status: " A"
+          sha256: 562f42bf5dd7387b135678c7fdab64fe87439383a2eeffc559fbb71988fd5923
+        - path: tests/server/infraestructura/documentos/test_cargador.py
+          status: " A"
+          sha256: a9a68fb023f874cdb32e79162b11cb52ee72ee629838e2dd288b64e7168c5a2b
+        - path: uv.lock
+          status: " A"
+          sha256: d955a6bb6de4937b96fb251fe4209b50d33ebc05c43ce78d96e6c237ba3f4f6e
+      reviewed:
+        - .env.example
+        - .gitignore
+        - .mandao/config.yml
+        - .python-version
+        - pyproject.toml
+        - src/__init__.py
+        - src/server/AGENTS.md
+        - src/server/CLAUDE.md
+        - src/server/__init__.py
+        - src/server/config.py
+        - src/server/dominio/__init__.py
+        - src/server/dominio/modelos.py
+        - src/server/infraestructura/__init__.py
+        - src/server/infraestructura/documentos/__init__.py
+        - src/server/infraestructura/documentos/cargador.py
+        - tests/server/infraestructura/documentos/test_cargador.py
+        - uv.lock
+      receipts: []
+    - task: T1
+      subject: add the Data/ section loader
+      files:
+        - .env.example
+        - .gitignore
+        - .mandao/config.yml
+        - .mandao/mandao.lock
+        - .python-version
+        - pyproject.toml
+        - src/__init__.py
+        - src/server/__init__.py
+        - src/server/AGENTS.md
+        - src/server/CLAUDE.md
+        - src/server/config.py
+        - src/server/dominio/__init__.py
+        - src/server/dominio/modelos.py
+        - src/server/infraestructura/__init__.py
+        - src/server/infraestructura/documentos/__init__.py
+        - src/server/infraestructura/documentos/cargador.py
+        - tests/server/infraestructura/documentos/test_cargador.py
+        - uv.lock
+      manifest:
+        - path: .env.example
+          status: " A"
+          sha256: 1136c3f34c5bdd860b0a5990efb61bcb9cc3eb683763885a730f0a25d6716291
+        - path: .gitignore
+          status: " M"
+          sha256: b630a16644c0e492a0f59994cebfe4c063880239678732ab55fceebad23e026b
+        - path: .mandao/config.yml
+          status: " M"
+          sha256: 4acaaba8c08eddf84a775ee835cfa65a9e34bc7b5505729030f12ebcbdf8eeb3
+        - path: .mandao/mandao.lock
+          status: " M"
+          sha256: c96ab08d1d5d584e9e593daff30c901e1f6d47242d92f907dbe48f7951a2a333
+        - path: .python-version
+          status: " A"
+          sha256: 02e735b3dfe1c32833eb550b7ff8ffa17f5f2bc3fa1e7bae61a8f5a3883ce398
+        - path: pyproject.toml
+          status: " A"
+          sha256: 1098cccf9b688adffc0d79c044ae37db2a61734df74e9336143b7a0d21029185
+        - path: src/__init__.py
+          status: " A"
+          sha256: e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855
+        - path: src/server/__init__.py
+          status: " A"
+          sha256: e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855
+        - path: src/server/AGENTS.md
+          status: " A"
+          sha256: 2d0492d5f726cb9cb4e0378c67dc436f16d27cb4ad040f7b5b11d89010e06148
+        - path: src/server/CLAUDE.md
+          status: " A"
+          sha256: adf66c5ee61900cf7d0a6aadec33ce392fc350ce84d0870ff9ba105f1953a3fc
+        - path: src/server/config.py
+          status: " A"
+          sha256: 5bac3fabab7d287201ace9930ec2235dde97a6947879ff34dacde50588994961
+        - path: src/server/dominio/__init__.py
+          status: " A"
+          sha256: e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855
+        - path: src/server/dominio/modelos.py
+          status: " A"
+          sha256: b0049bafa021fdc15116403f5524ea92e3d4a8d80c5ae85d67a1ae97c3a2bba9
+        - path: src/server/infraestructura/__init__.py
+          status: " A"
+          sha256: e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855
+        - path: src/server/infraestructura/documentos/__init__.py
+          status: " A"
+          sha256: e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855
+        - path: src/server/infraestructura/documentos/cargador.py
+          status: " A"
+          sha256: 562f42bf5dd7387b135678c7fdab64fe87439383a2eeffc559fbb71988fd5923
+        - path: tests/server/infraestructura/documentos/test_cargador.py
+          status: " A"
+          sha256: a9a68fb023f874cdb32e79162b11cb52ee72ee629838e2dd288b64e7168c5a2b
+        - path: uv.lock
+          status: " A"
+          sha256: d955a6bb6de4937b96fb251fe4209b50d33ebc05c43ce78d96e6c237ba3f4f6e
+      reviewed:
+        - .env.example
+        - .gitignore
+        - .mandao/config.yml
+        - .python-version
+        - pyproject.toml
+        - src/__init__.py
+        - src/server/AGENTS.md
+        - src/server/CLAUDE.md
+        - src/server/__init__.py
+        - src/server/config.py
+        - src/server/dominio/__init__.py
+        - src/server/dominio/modelos.py
+        - src/server/infraestructura/__init__.py
+        - src/server/infraestructura/documentos/__init__.py
+        - src/server/infraestructura/documentos/cargador.py
+        - tests/server/infraestructura/documentos/test_cargador.py
+        - uv.lock
+      receipts: []
+  approved_manifests:
+    - task: T1
+      attempt: 1
+      files:
+        - path: .env.example
+          status: " A"
+          sha256: 1136c3f34c5bdd860b0a5990efb61bcb9cc3eb683763885a730f0a25d6716291
+        - path: .gitignore
+          status: " M"
+          sha256: b630a16644c0e492a0f59994cebfe4c063880239678732ab55fceebad23e026b
+        - path: .mandao/config.yml
+          status: " M"
+          sha256: 4acaaba8c08eddf84a775ee835cfa65a9e34bc7b5505729030f12ebcbdf8eeb3
+        - path: .mandao/mandao.lock
+          status: " M"
+          sha256: c96ab08d1d5d584e9e593daff30c901e1f6d47242d92f907dbe48f7951a2a333
+        - path: .python-version
+          status: " A"
+          sha256: 02e735b3dfe1c32833eb550b7ff8ffa17f5f2bc3fa1e7bae61a8f5a3883ce398
+        - path: pyproject.toml
+          status: " A"
+          sha256: 1098cccf9b688adffc0d79c044ae37db2a61734df74e9336143b7a0d21029185
+        - path: src/__init__.py
+          status: " A"
+          sha256: e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855
+        - path: src/server/__init__.py
+          status: " A"
+          sha256: e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855
+        - path: src/server/AGENTS.md
+          status: " A"
+          sha256: 2d0492d5f726cb9cb4e0378c67dc436f16d27cb4ad040f7b5b11d89010e06148
+        - path: src/server/CLAUDE.md
+          status: " A"
+          sha256: adf66c5ee61900cf7d0a6aadec33ce392fc350ce84d0870ff9ba105f1953a3fc
+        - path: src/server/config.py
+          status: " A"
+          sha256: 5bac3fabab7d287201ace9930ec2235dde97a6947879ff34dacde50588994961
+        - path: src/server/dominio/__init__.py
+          status: " A"
+          sha256: e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855
+        - path: src/server/dominio/modelos.py
+          status: " A"
+          sha256: b0049bafa021fdc15116403f5524ea92e3d4a8d80c5ae85d67a1ae97c3a2bba9
+        - path: src/server/infraestructura/__init__.py
+          status: " A"
+          sha256: e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855
+        - path: src/server/infraestructura/documentos/__init__.py
+          status: " A"
+          sha256: e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855
+        - path: src/server/infraestructura/documentos/cargador.py
+          status: " A"
+          sha256: 562f42bf5dd7387b135678c7fdab64fe87439383a2eeffc559fbb71988fd5923
+        - path: tests/server/infraestructura/documentos/test_cargador.py
+          status: " A"
+          sha256: a9a68fb023f874cdb32e79162b11cb52ee72ee629838e2dd288b64e7168c5a2b
+        - path: uv.lock
+          status: " A"
+          sha256: d955a6bb6de4937b96fb251fe4209b50d33ebc05c43ce78d96e6c237ba3f4f6e
+      reviewed:
+        - .env.example
+        - .gitignore
+        - .mandao/config.yml
+        - .python-version
+        - pyproject.toml
+        - src/__init__.py
+        - src/server/AGENTS.md
+        - src/server/CLAUDE.md
+        - src/server/__init__.py
+        - src/server/config.py
+        - src/server/dominio/__init__.py
+        - src/server/dominio/modelos.py
+        - src/server/infraestructura/__init__.py
+        - src/server/infraestructura/documentos/__init__.py
+        - src/server/infraestructura/documentos/cargador.py
+        - tests/server/infraestructura/documentos/test_cargador.py
+        - uv.lock
+      receipts: []
 approvals:
   - step: shown
     by: Juan D. Guzmán
@@ -48,3 +337,21 @@ approvals:
       requirements.md: sha256-OKSlYNJnHbrGdifT06fJxPyrWTDk4O6XCutr+tDxFak=
       design.md: sha256-vb1u87Xfaff6mzp69LT5oAa8/NyzYU3N+kcE6MP3YgU=
       research.md: sha256-zIRqEpLE7D8+hZNMwtBpylMa9qw0U68N6Y0kLbftWAQ=
+cut_estimates:
+  - at: 2026-10-23T15:23:40.600Z
+    task: T1
+    boundary_id: implement:T1
+    suggested: true
+    context: 412399
+    base: 59571
+    turns_left: 208
+    savings: 14.38
+    decision: "stop: suggest a new session"
+  - at: 2026-10-23T15:24:56.832Z
+    task: T1
+    boundary_id: implement:T1
+    context: 65905
+    base: 63812
+    turns_left: 208
+    savings: -0.23
+    decision: stay
