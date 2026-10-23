@@ -11,12 +11,12 @@ disable-model-invocation: true
 
 # /mandao-quick
 
-Budget: follow `.mandao/templates/ai/rules/budget.md` at the start and at the end.
-Telemetry: follow `.mandao/templates/ai/rules/telemetry.md` for event calls and categories.
+Budget: follow `.mandao/templates/<profile>/rules/budget.md` at the start and at the end.
+Telemetry: follow `.mandao/templates/<profile>/rules/telemetry.md` for event calls and categories.
 
 Change: $change
 
-Follow `.mandao/templates/ai/rules/context.md` and the gate in `.mandao/templates/ai/rules/quick-gate.md`.
+Follow `.mandao/templates/<profile>/rules/context.md` and the gate in `.mandao/templates/<profile>/rules/quick-gate.md`.
 
 ## 1. Pre-check
 
@@ -57,7 +57,7 @@ Run `node .mandao/bin/mandao.mjs run quick-check` and read its JSON.
 1. Run the level 0 gates configured in `projects[].gates` for the touched project (format, lint,
    typecheck, impacted tests, secrets, audit when dependencies changed, sast, metrics). Report any
    gate that is not configured; never skip silently.
-2. Lite review per `.mandao/templates/ai/rules/review.md`: the core checklist on the diff, without lenses,
+2. Lite review per `.mandao/templates/<profile>/rules/review.md`: the core checklist on the diff, without lenses,
    run by the `mandao-reviewer` agent in a separate context, never by you. Use a model different from
    the one that made the change when available (`mandao-reviewer-alt` if the reviewer shares your
    model). Otherwise record `reduced independence` in the log. A blocking finding means fix it or
@@ -73,7 +73,7 @@ Run `node .mandao/bin/mandao.mjs run quick-check` and read its JSON.
    and lines from the diff, reads the reviewer's model from its agent file and puts every review note in
    the Review column: never type a model name or a review note into the log. Pass what the reviewer said about itself, verbatim,
    as `--claimed-reviewer`; it is only compared.
-3. Commit following `.mandao/templates/ai/rules/commits.md`, with the trailer `Mandao-Quick: <name>` and,
+3. Commit following `.mandao/templates/<profile>/rules/commits.md`, with the trailer `Mandao-Quick: <name>` and,
    when a spec id is active, `Refs: <ID>`. Example (without the emoji when `commits.emoji` is false):
 
    ```

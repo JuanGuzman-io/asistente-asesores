@@ -1,0 +1,433 @@
+# Written by mandao scripts: start request, baseline, progress, approvals, session-cut estimates and the mock decision.
+start:
+  id: MDO-0002
+  title: Consultar desde la interfaz
+  type: story
+  lane: normal
+  branch: feat/MDO-0002-consultar-desde-la-interfaz
+  base: main
+  created_at: 2026-10-23T16:11:43.547Z
+progress:
+  schema_version: 1
+  spec: MDO-0002-consultar-desde-la-interfaz
+  updated_at: 2026-10-23T20:25:46.891Z
+  current: null
+  open_questions: []
+  next_step: ""
+  deferred_to_ci:
+    - task: T4
+      tests:
+        - tests/web/e2e/consultar.spec.ts
+      reason: MDO-0001 backend not in main and not running on :8000 (R-1); PE chose write now, run later
+    - task: T4
+      tests:
+        - tests/web/e2e/consultar.spec.ts
+      reason: MDO-0001 backend not in main and not running on :8000 (R-1); PE chose write now, run later
+    - task: T4
+      tests:
+        - tests/web/e2e/consultar.spec.ts
+      reason: MDO-0001 backend not in main and not running on :8000 (R-1); PE chose write now, run later
+  red_tests:
+    - task: T1
+      files:
+        - path: tests/web/api.test.ts
+          sha256: 7ced665650b45710208960e195a031549afeee85e09662f0775694ec8d68d5b1
+          tests:
+            - "S-2.1 base: 200 válido devuelve ok con respuesta, fuentes y estado"
+            - "D3: acepta el estado %s"
+            - "S-3.1: 422 problem+json usa el detail y el requestId como código de referencia"
+            - "S-3.1 (tabla FR-3): 422 sin detail usa el mensaje de revisión"
+            - "S-3.1 (tabla FR-3): 413 dice que la pregunta es demasiado larga"
+            - "S-3.2: 500 problem+json da el mensaje genérico y el código de referencia"
+            - "S-3.2 (tabla FR-3): el código %i da el mensaje genérico"
+            - "S-3.3: falla de red da el mensaje de conexión, sin código de referencia"
+            - "S-3.3: sin respuesta dentro del tiempo límite inyectado da el mensaje de tiempo agotado"
+            - "S-3.4: 500 con cuerpo HTML da el mensaje genérico sin el cuerpo"
+            - "S-3.4/C1: 500 con texto plano da el mensaje genérico sin el cuerpo"
+            - "S-3.4: 200 con estado fuera de los tres da el mensaje genérico sin nombres de campos ni valores"
+            - "S-3.4: 200 con fuentes que no cumplen el contrato da el mensaje genérico"
+            - "S-3.4: 200 con cuerpo que no es JSON da el mensaje genérico"
+            - "S-3.4/C1: un 500 problem+json no filtra su detail ni otros campos"
+            - "D3: un error inesperado de fetch se devuelve como resultado de error"
+    - task: T2
+      files:
+        - path: tests/web/Resultado.test.tsx
+          sha256: d27e836711c19e9f8d12f540de4f7f2738d7de4b9aec1ad39b3904c062129342
+          tests:
+            - "S-2.1: muestra la respuesta y el estado Exitosa"
+            - "S-2.1: muestra la fuente como 'documento > sección' con su fragmento"
+            - "S-2.2: sin información suficiente muestra mensaje, 'Sin fuentes' y su rótulo"
+            - "S-2.2/C2: el rótulo de Sin información suficiente difiere del de Exitosa"
+            - "S-2.3: Bloqueada por seguridad muestra la respuesta, su rótulo y 'Sin fuentes'"
+            - "S-2.3/C2: cada estado muestra únicamente su propio rótulo, también sin fuentes"
+            - "S-2.4: respuesta y fragmento con <b> y <a> aparecen literales"
+            - "S-2.4/C3: no se crean elementos b ni a"
+            - "S-2.4/C3: documento y sección con HTML tampoco crean elementos"
+    - task: T3
+      files:
+        - path: tests/web/App.test.tsx
+          sha256: 0cb6e767d00c1d2b3ed6bb0f582e9090b510d95197842e1bf8717c6ce744babc
+          tests:
+            - "S-1.1: muestra 'Procesando consulta…' mientras espera"
+            - "S-1.1: al llegar la respuesta pasa a completado y pinta Resultado"
+            - "S-1.2/C1: con la consulta en procesando, el botón no envía otra petición"
+            - "S-1.2/C1: con la consulta en procesando, Enter en el campo no envía otra petición"
+            - "S-3.1: el error se ve con role=alert, su mensaje y el código de referencia"
+            - "S-4.1/C2: tras un error la pregunta sigue en el campo, editable, y el botón habilitado"
+            - "S-4.1: un nuevo envío limpia el error anterior y permite una segunda petición"
+            - "S-4.1: un nuevo envío limpia el resultado anterior"
+            - "NFR-1: el campo tiene la etiqueta 'Pregunta'"
+            - "NFR-1: la región de estado es aria-live='polite' y anuncia el procesamiento"
+    - task: T5
+      files:
+        - path: tests/web/pregunta.test.ts
+          sha256: a5f68cd5b186990455278eea14f0b94a753542ea38a9655c5764693c21899a99
+          tests:
+            - MAXIMO_PREGUNTA es 1000
+            - "S-1.3: %j tiene largo 0 y no es válida"
+            - "S-1.4: 1.000 'é' precompuestas son válidas, largo 1000"
+            - "S-1.4: 1.000 'é' descompuestas (e + tilde combinable) cuentan 1 cada una tras NFC"
+            - "S-1.4: 1.000 emojis son válidos, cada uno cuenta 1"
+            - "S-1.4: los espacios a los lados no cuentan"
+            - "S-1.4: 1.001 caracteres no son válidos, largo 1001"
+            - un solo carácter es válido
+        - path: tests/web/App.test.tsx
+          sha256: 81a55e0850eee5c60f1f24a3a70828d3eccb499799eb43ecf4ba4433185abaed
+          tests:
+            - "S-1.1: muestra 'Procesando consulta…' mientras espera"
+            - "S-1.1: al llegar la respuesta pasa a completado y pinta Resultado"
+            - "S-1.2/C1: con la consulta en procesando, el botón no envía otra petición"
+            - "S-1.2/C1: con la consulta en procesando, Enter en el campo no envía otra petición"
+            - "S-3.1: un 422 se ve con role=alert, su detail y el código de referencia"
+            - "S-4.1/C2: tras un error la pregunta sigue en el campo, editable, y el botón habilitado"
+            - "S-4.1: un nuevo envío limpia el error anterior y permite una segunda petición"
+            - "S-4.1: un nuevo envío limpia el resultado anterior"
+            - "NFR-1: el campo tiene la etiqueta 'Pregunta'"
+            - "NFR-1: la región de estado es aria-live='polite' y anuncia el procesamiento"
+            - "NFR-1: el resultado se inserta en una región aria-live='polite' que ya existía"
+            - "S-1.3: con %j el botón está deshabilitado y el contador dice 0/1.000"
+            - "S-1.3/C4: pulsar el botón deshabilitado o Enter en el campo vacío no envía petición"
+            - "S-1.3: al escribir un carácter que no es espacio el botón se habilita"
+            - "NFR-1: el contador forma parte de la descripción accesible del campo"
+            - "S-1.4: con 1.001 puntos de código el contador dice 1.001/1.000 y el campo queda marcado"
+            - "S-1.4/C4: con 1.001 puntos de código el botón y Enter no envían petición"
+            - "S-1.4: dentro del límite el campo no está marcado como excedido"
+  pending_commits: []
+  approved_manifests:
+    - task: T1
+      attempt: 2
+      files:
+        - path: .gitignore
+          status: " M"
+          sha256: a3dfb7975c331417283fe6ee3ead3b4119c3006b911076d0f58c5dfc376274a0
+        - path: .mandao/config.yml
+          status: " M"
+          sha256: 7cd6a78d4fef8fa513fad15a3c395ed2cd55bca60ecee01329b3a3305b91dbaa
+        - path: .mandao/mandao.lock
+          status: " M"
+          sha256: 307ef1787df97fae061af2e9e68295743e8c5f9c308cc72165a263e6872959d1
+        - path: src/web/.prettierignore
+          status: " A"
+          sha256: 21fb47879bd3ece8fca895a0590624a16b4c6876b6ce27b1b6d8a9cb84cfe533
+        - path: src/web/.prettierrc
+          status: " A"
+          sha256: d86a63a4a27931babdf5183eb642bf7ec543b2d9f12b7559d6ea9e5e5d6c37c7
+        - path: src/web/AGENTS.md
+          status: " M"
+          sha256: 39674e8074f8172e0152fcecc16ee57818c39dc0bb07952946a0962ba0695d30
+        - path: src/web/eslint.config.js
+          status: " A"
+          sha256: c34fe8183f4d4fba446dc6a30e0ad191d036871d635ccef33a0a074b005e6d2a
+        - path: src/web/index.html
+          status: " A"
+          sha256: 4eddec95ccafef4d584865c669ea3c49cad7110684d141612e04efa669052925
+        - path: src/web/package-lock.json
+          status: " A"
+          sha256: 353d39563d4e65d126f4495f55222f0e1fc8786062c0c11405bb3d3a4a4baef8
+        - path: src/web/package.json
+          status: " A"
+          sha256: 7c6018db181ced62736d7e19e2e53183a2a818964a2d85bbc4c04ddd5b4ec136
+        - path: src/web/src/api.ts
+          status: " A"
+          sha256: 95dd77b7e03871a4741c60182d15cf481f647cc6162d304cd5be181b82df016a
+        - path: src/web/src/main.tsx
+          status: " A"
+          sha256: e8bb770fa0bf5e183c4724a59412bfa573f2d506c48c19d481c5ebc4628faeba
+        - path: src/web/tsconfig.json
+          status: " A"
+          sha256: 01dd9e815cbdb26b248ac194cc5ff6b5dbac69eb59118d8c15ace3746a6514d0
+        - path: src/web/vite.config.ts
+          status: " A"
+          sha256: a06f5a9053829032cb2e9779faf576b35729b2d245e5d4affe3e4f5f26f7ca43
+        - path: tests/web/api.test.ts
+          status: " A"
+          sha256: 7ced665650b45710208960e195a031549afeee85e09662f0775694ec8d68d5b1
+      reviewed:
+        - .gitignore
+        - .mandao/config.yml
+        - src/web/.prettierignore
+        - src/web/.prettierrc
+        - src/web/AGENTS.md
+        - src/web/eslint.config.js
+        - src/web/index.html
+        - src/web/package-lock.json
+        - src/web/package.json
+        - src/web/src/api.ts
+        - src/web/src/main.tsx
+        - src/web/tsconfig.json
+        - src/web/vite.config.ts
+        - tests/web/api.test.ts
+      receipts: []
+    - task: T2
+      attempt: 2
+      files:
+        - path: .mandao/config.yml
+          status: " M"
+          sha256: 6c358345f5fcd5166fd96eb3ceae2b532c9f3ad8cb6f27ea071b4cbca2ac4a21
+        - path: .mandao/mandao.lock
+          status: " M"
+          sha256: d064a4449376dbb626d8e3119429dbe37a4194cac6110421ff98854d92e7969b
+        - path: src/web/AGENTS.md
+          status: " M"
+          sha256: 2b7d4e05a7978572d84005a6fcf432e0a43690ffb86189d48c9931fc66df1b35
+        - path: src/web/src/Resultado.tsx
+          status: " A"
+          sha256: fabca93505654de7963fa6c8846f2c86c8346f7b02f43f2445558734dc8316f6
+        - path: src/web/tsconfig.json
+          status: " M"
+          sha256: 0fa1bea67a93462c59ca12454dd79298886c86162e6f5f17160c892b7d5e18e9
+        - path: src/web/vite.config.ts
+          status: " M"
+          sha256: e93015541a286d50199184235bd4efec723b70ece483bb272abaf51d597619c9
+        - path: tests/web/Resultado.test.tsx
+          status: " A"
+          sha256: d27e836711c19e9f8d12f540de4f7f2738d7de4b9aec1ad39b3904c062129342
+      reviewed:
+        - .mandao/config.yml
+        - src/web/AGENTS.md
+        - src/web/src/Resultado.tsx
+        - src/web/tsconfig.json
+        - src/web/vite.config.ts
+        - tests/web/Resultado.test.tsx
+      receipts: []
+    - task: T3
+      attempt: 1
+      files:
+        - path: src/web/AGENTS.md
+          status: " M"
+          sha256: 8d1851d40e6b14ade71d60971f724236f3e4134be702bf2f408cfdfd6bfd55db
+        - path: src/web/src/App.tsx
+          status: " A"
+          sha256: 78911b26cdaaab7a115d201b509161a87ad312fd67f3090e48cb459efa756fda
+        - path: src/web/src/main.tsx
+          status: " M"
+          sha256: 19814c2249f87a81e2af58c3f09f099e5a28fc25986f818a380609046b5ee5a4
+        - path: src/web/vite.config.ts
+          status: " M"
+          sha256: 545cb25f65bb8fecde018262956bd5a6548237d3230c5d0cc9befd55a866a02f
+        - path: tests/web/App.test.tsx
+          status: " A"
+          sha256: 0cb6e767d00c1d2b3ed6bb0f582e9090b510d95197842e1bf8717c6ce744babc
+      reviewed:
+        - src/web/AGENTS.md
+        - src/web/src/App.tsx
+        - src/web/src/main.tsx
+        - src/web/vite.config.ts
+        - tests/web/App.test.tsx
+      receipts: []
+    - task: T4
+      attempt: 2
+      files:
+        - path: .gitignore
+          status: " M"
+          sha256: fa696f3823022c9706068d7edf3720d5799105285ebc7cef4f7738db9a4a473f
+        - path: src/web/AGENTS.md
+          status: " M"
+          sha256: e4e3b2bcdbfc4be14c39709f89fc66bf11ee24284d475253f32cce0533c7c987
+        - path: src/web/package.json
+          status: " M"
+          sha256: f33e5c0b6d86d429bd3d4d121ec2b0bb070a94ce5ed815cb674e94784269cfd7
+        - path: src/web/playwright.config.ts
+          status: " A"
+          sha256: 6be2043501b79ceefb5b7fcbb6dc780871d117f2131a9478319e2752164f9d9a
+        - path: src/web/tsconfig.json
+          status: " M"
+          sha256: bfa9562d262d6b437c22a7167469f418d61d33aa0b73ee4e0d618e937a9e2e17
+        - path: tests/web/e2e/consultar.spec.ts
+          status: " A"
+          sha256: 2df819d5fb87c7cd1b409d43b38bea858543927fad10e8bb0a6c217cd4e54db2
+        - path: tests/web/e2e/tsconfig.json
+          status: " A"
+          sha256: a99cdd2843edeaf5d73fc6b4782cad80da9e5f150e86dde53ff67fca2a84525e
+      reviewed:
+        - .gitignore
+        - src/web/AGENTS.md
+        - src/web/package.json
+        - src/web/playwright.config.ts
+        - src/web/tsconfig.json
+        - tests/web/e2e/consultar.spec.ts
+        - tests/web/e2e/tsconfig.json
+      receipts: []
+    - task: T5
+      attempt: 1
+      files:
+        - path: especificaciones/quick/_log/.integrity.json
+          status: " M"
+          sha256: 62c35d6426f1acf47c54a815232e0716dbd046ed27f68fe0efce456537e7f32b
+        - path: especificaciones/quick/_log/execution.md
+          status: " M"
+          sha256: 567fb82150fa6ad58421ea57c9b6851043ca9b014d8f002dcc41979e4db128af
+        - path: src/web/AGENTS.md
+          status: " M"
+          sha256: 1c268c60ec8ca86ace6aaecaaefd8210a3107bf50bc9d82505b3b118b49213d7
+        - path: src/web/src/App.tsx
+          status: " M"
+          sha256: 87dd951a8b4498b968d51e4c780979b0f82e2e66412b449cf403c4cd751a5057
+        - path: src/web/src/Compositor.tsx
+          status: " M"
+          sha256: c102b06e2294f465bbabec998fc53acd94dbac1722ce73752cf0d74b089b0af2
+        - path: src/web/src/estilos.css
+          status: " M"
+          sha256: ede9f2c1c16e40f39174d569dfe9ae89ab8ef01710816ecbdc71caae83fcff43
+        - path: src/web/src/pregunta.ts
+          status: ??
+          sha256: b820050da5b86fe48a8e4417e8d0da7d96be7d27ef45beebc73d753e24c77f3a
+        - path: tests/web/App.test.tsx
+          status: " M"
+          sha256: fa394741860eb704e647de43ced439848d97a7cae47ef0dc654ef478b0e1e6f5
+        - path: tests/web/pregunta.test.ts
+          status: ??
+          sha256: a5f68cd5b186990455278eea14f0b94a753542ea38a9655c5764693c21899a99
+      reviewed:
+        - especificaciones/quick/_log/.integrity.json
+        - especificaciones/quick/_log/execution.md
+        - src/web/AGENTS.md
+        - src/web/src/App.tsx
+        - src/web/src/Compositor.tsx
+        - src/web/src/estilos.css
+        - tests/web/App.test.tsx
+        - src/web/src/pregunta.ts
+        - tests/web/pregunta.test.ts
+      receipts: []
+    - task: T6
+      attempt: 2
+      files:
+        - path: src/web/AGENTS.md
+          status: " M"
+          sha256: 4596873fc47e7ec3e8cdd3175e35cdcd687690a4497e5c29b2aeb72780e5daa4
+        - path: tests/web/e2e/consultar.spec.ts
+          status: " M"
+          sha256: 6d72e55efa5d8707079b5c1c834802b660f5d4b880368c2f9a3680b356f05bac
+      reviewed:
+        - src/web/AGENTS.md
+        - tests/web/e2e/consultar.spec.ts
+      receipts: []
+  loop_brake:
+    task: T6
+    action: commit
+    execution_rows: 36
+    approval_rows: 3
+    repeats: 1
+approvals:
+  - step: shown
+    by: Juan D. Guzmán
+    at: 2026-10-23T16:28:12.851Z
+    sha256:
+      story.md: sha256-NTraXCHpd2riEmG4ex7gl8N/Osw6plM0pkWroIrd5gg=
+      spec.md: sha256-cyLRbWm671QohTyc6b0lEekw/vEYYvpz/MtEn/2GevA=
+  - step: shown
+    by: Juan D. Guzmán
+    at: 2026-10-23T20:07:52.123Z
+    sha256:
+      story.md: sha256-vQQtYY7Li+z/Ytd0BDr3MvcJ20f1CTHlLOOQcTxV8WA=
+      spec.md: sha256-1QU2DPW6MDwQKOEkv6ifLwUcd6E2pxuJMHHIWBUQNG0=
+      mockups/Main.html: sha256-jOKdmC+aO7TUA78VSLFt7mwzpeDTv0O2B8tLHko98SQ=
+      mockups/Oscuro.html: sha256-cEzdfVbm1QxXQ0lPtLA42HZ4dja/7V4gEt+H4s4jdPs=
+      mockups/Pensando.html: sha256-IhAwKi0Vyzgg645didw5dqC8Zz1sgU+EsHk+PXecwMk=
+      mockups/README.md: sha256-ZcALtVAEqA8fgwnWhTCIxScR53SdDpUZvsIJBV35j4I=
+      mockups/Respuesta.html: sha256-1TKb9IuztLULKIaFEB5ZbhKS3w1eZgJQTx+JRBZfiiM=
+  - step: shown
+    by: Juan D. Guzmán
+    at: 2026-10-23T20:07:55.527Z
+    sha256:
+      story.md: sha256-vQQtYY7Li+z/Ytd0BDr3MvcJ20f1CTHlLOOQcTxV8WA=
+      spec.md: sha256-1QU2DPW6MDwQKOEkv6ifLwUcd6E2pxuJMHHIWBUQNG0=
+      mockups/Main.html: sha256-jOKdmC+aO7TUA78VSLFt7mwzpeDTv0O2B8tLHko98SQ=
+      mockups/Oscuro.html: sha256-cEzdfVbm1QxXQ0lPtLA42HZ4dja/7V4gEt+H4s4jdPs=
+      mockups/Pensando.html: sha256-IhAwKi0Vyzgg645didw5dqC8Zz1sgU+EsHk+PXecwMk=
+      mockups/README.md: sha256-ZcALtVAEqA8fgwnWhTCIxScR53SdDpUZvsIJBV35j4I=
+      mockups/Respuesta.html: sha256-1TKb9IuztLULKIaFEB5ZbhKS3w1eZgJQTx+JRBZfiiM=
+  - step: security-gaps
+    by: Juan D. Guzmán
+    at: 2026-10-23T20:30:44.949Z
+    note: "SAST (PE, 2026-10-23): frontend sin código de servidor ni secretos, que muestra el texto sin interpretar HTML ni enlaces (aba941b), con datos irreales. Secretos cubiertos con detect-secrets (00f6c57). Mejora futura: SAST para TypeScript en CI."
+cut_estimates:
+  - at: 2026-10-23T16:31:31.274Z
+    task: T1
+    boundary_id: implement:T1
+    context: 63326
+    base: 63921
+    turns_left: 88
+    savings: 0
+    decision: stay
+  - at: 2026-10-23T16:47:52.483Z
+    task: T2
+    boundary_id: implement:T2
+    context: 129866
+    base: 63921
+    turns_left: 73
+    savings: 0.64
+    decision: "go on: below 50"
+  - at: 2026-10-23T16:57:33.033Z
+    task: T3
+    boundary_id: implement:T3
+    context: 180879
+    base: 63921
+    turns_left: 58
+    savings: 1.04
+    decision: "go on: below 50"
+  - at: 2026-10-23T17:02:24.973Z
+    task: T4
+    boundary_id: implement:T4
+    context: 201981
+    base: 63921
+    turns_left: 43
+    savings: 0.87
+    decision: "go on: below 50"
+  - at: 2026-10-23T17:09:36.178Z
+    task: verify
+    boundary_id: verify
+    suggested: true
+    context: 233853
+    base: 63921
+    turns_left: 28
+    savings: 0.63
+    decision: new session
+  - at: 2026-10-23T20:15:21.869Z
+    task: T5
+    boundary_id: implement:T5
+    context: 450248
+    base: 59024
+    turns_left: 58
+    savings: 4.24
+    decision: "go on: below 50"
+  - at: 2026-10-23T20:21:45.926Z
+    task: T6
+    boundary_id: implement:T6
+    context: 487997
+    base: 59024
+    turns_left: 43
+    savings: 3.39
+    decision: "go on: below 50"
+  - at: 2026-10-23T20:26:11.733Z
+    task: verify
+    boundary_id: verify
+    context: 512826
+    base: 59024
+    turns_left: 28
+    savings: 2.25
+    decision: "go on: suggestion already shown at boundary"
+mock:
+  decision: accepted
+  source: design
+  at: 2026-10-23T19:07:03.156Z

@@ -9,13 +9,14 @@ Flow: `constitution` → `story` → `specify` → `[clarify]` → `tasks` → `
 
 ## Workspace
 
-- Mode: `single`
+- Mode: `monorepo`
 - Specs: `especificaciones/<id>-<slug>/` (id from the tracker, or a sequential `NNN` when there is none)
 - Workspace constitution: `constitucion/`; each project may extend it in `<project>/constitucion/`
 
 | Project | Path | Profile |
 |---|---|---|
 | asistente-asesores | `.` | ai |
+| web | `src/web` | app |
 
 ## Commands
 

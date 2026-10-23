@@ -16,3 +16,7 @@ graphify-out/
 .mandao/cache/
 .claude/settings.local.json
 # mandao:end
+src/web/dist/
+src/web/playwright-report/
+src/web/test-results/
+src/web/.playwright/

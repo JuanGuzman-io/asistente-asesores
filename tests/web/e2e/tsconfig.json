@@ -1,0 +1,10 @@
+{
+  "extends": "../../../src/web/tsconfig.json",
+  "compilerOptions": {
+    "paths": {
+      "@playwright/test": ["../../../src/web/node_modules/@playwright/test"]
+    }
+  },
+  "include": ["."],
+  "exclude": []
+}
