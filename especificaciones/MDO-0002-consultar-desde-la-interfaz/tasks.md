@@ -21,7 +21,7 @@ tres primeras usan un backend simulado según el contrato y empiezan con pruebas
 ### AC-1 — Realizar consulta y ver la respuesta
 
 - [x] T2 [AC-1] El resultado muestra respuesta, estado distinguible y fuentes como texto — `src/web/src/Resultado.tsx`
-- [ ] T5 [AC-1] La pregunta vacía o de más de 1.000 caracteres no se envía y un contador muestra el largo — `src/web/src/pregunta.ts`
+- [x] T5 [AC-1] La pregunta vacía o de más de 1.000 caracteres no se envía y un contador muestra el largo — `src/web/src/pregunta.ts`
 
 **Checkpoint:** `npm --prefix src/web test -- Resultado` and `npm --prefix src/web test -- pregunta App` passes (T2, T5); this confirms AC-1 before the next group.
 
@@ -29,7 +29,7 @@ tres primeras usan un backend simulado según el contrato y empiezan con pruebas
 
 - [x] T3 [AC-1, AC-2] La pantalla consulta, muestra el procesamiento y los errores, y conserva la pregunta — `src/web/src/App.tsx`
 - [x] T4 [AC-1, AC-2] Tres pruebas de punta a punta pasan con el backend real — `src/web/playwright.config.ts`
-- [ ] T6 [AC-1, AC-2] Las e2e de caja vacía y error visible reemplazan la de pregunta vacía — `tests/web/e2e/consultar.spec.ts`
+- [x] T6 [AC-1, AC-2] Las e2e de caja vacía y error visible reemplazan la de pregunta vacía — `tests/web/e2e/consultar.spec.ts`
 
 **Checkpoint:** `npm --prefix src/web test -- App` and `npm --prefix src/web run e2e` passes (T3, T4, T6); this confirms AC-1, AC-2 before the next group.
 
