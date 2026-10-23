@@ -272,7 +272,7 @@ parallel_safe: true
 verify: uv run pytest tests/server/infraestructura/redactor -q
 ```
 
-### [ ] T7 — Con Gemini, la respuesta solo usa los fragmentos recuperados y nombra la parte faltante
+### [x] T7 — Con Gemini, la respuesta solo usa los fragmentos recuperados y nombra la parte faltante
 
 - **What:** `RedactorGemini` pide salida JSON con esquema (`respuesta`, `fragmentos_usados`,
   `partes_sin_soporte`) con el prompt versionado v1, y el guardrail de salida en código la valida
