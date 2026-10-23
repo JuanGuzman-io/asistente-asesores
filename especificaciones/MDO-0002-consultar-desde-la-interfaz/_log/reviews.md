@@ -173,3 +173,45 @@ This is the review of T2 attempt 2, from `/Users/jguzman/GitHub/Projects/asisten
 {"id":"F9","status":"open","severity":"low","lens":"accessibility","title":"Status label is set apart only by its text","file":"src/web/src/Resultado.tsx","line":378,"evidence":"<strong>{resultado.estado}</strong> has no role and no per-status styling. Advisory; the AC is met by the distinct text."}
 ]}
 ```
+
+## T3 — attempt 1
+
+VERDICT: PASS
+
+Review of MDO-0002 T3, attempt 1. I checked the pack at /Users/jguzman/GitHub/Projects/asistente-asesores.worktrees/MDO-0002-consultar-desde-la-interfaz/.mandao/cache/MDO-0002/reviews/T3-1-pack.md against spec.md (FR-1, FR-3, FR-4, NFR-1, D3), tasks.md T3 "Done when", src/web/AGENTS.md, and the files the diff depends on: api.ts, Resultado.tsx, tsconfig.json and tests/web/api.test.ts.
+
+## Conformance
+
+- **S-1.1 / AC-1:** passes. The "Procesando consulta…" region shows while the request is pending. On a 200 the state becomes `completado` and `Resultado` renders.
+- **S-1.2 / C1 (double submit):** the guard holds at both points.
+  - Button: `disabled={procesando}`.
+  - Handler: `if (estado === "procesando") return;` runs after `preventDefault()`.
+  - The tests cover a second click and Enter in the field, and both expect a single `fetch` call. See F1 for a limit on what those tests prove.
+- **D3:** `EstadoProcesamiento` is the union `"inactivo" | "procesando" | "completado" | "error"`, held in `useState<EstadoProcesamiento>("inactivo")`. There is no state or request library, which matches the rejected alternatives in D3.
+- **T1 advisory (`signal`):** confirmed. App calls `consultar(pregunta)` with no options, so `AbortSignal.timeout(30_000)` still applies (api.ts line 90). src/web/AGENTS.md records this.
+- **AC-2 / FR-3:** passes. App shows only the `mensaje` and `codigoReferencia` from the client. api.ts never throws and never returns the raw body, so the `await` without try/catch does not swallow an error. The reference code renders as "Código de referencia: X", which matches S-3.1.
+- **AC-2/C2 / FR-4 / S-4.1:** passes. The question is never cleared. After an error the input is editable and the button enabled. A new submit clears the previous result or error before `procesando`, and both paths are tested.
+- **main.tsx:** mounts `<App />` inside `StrictMode`.
+- **vite.config.ts:** adds `@testing-library/user-event` to `test.alias`. tsconfig.json already resolves it through the existing `"@testing-library/*"` wildcard in `paths`, so the "add it in both" rule in AGENTS.md is met without editing tsconfig. tsconfig.json is in the declared `files` but is unchanged, which is fine.
+- **AGENTS.md:** src/web/AGENTS.md describes App, the two-level guard, keeping the question, and not passing `signal`.
+- **Clean code / module boundaries:** no blocking issues. App uses only the public exports of `./api` and `./Resultado`. There are no magic numbers in business rules, and the style matches the exemplar `Resultado.tsx`.
+- **TDD:** `loop.tdd.red` is true with evidence `red`, and `redTests.changed` is empty, so no red test was weakened. ASSUMPTION: I accept the red evidence as recorded in the brief. I did not see the red run's output.
+- **Gates:** format, lint, typecheck, test (3 files, 38 tests passed) and build all pass according to .mandao/cache/MDO-0002/gates/T3-1.md. Audit was SKIPPED. That output does not break results down per file, so I make no per-test claim beyond "test gate passed".
+
+## Accessibility lens
+
+- **Label:** the `<label>` wraps the input with the text "Pregunta", and the test finds it with `getByLabelText("Pregunta")`.
+- **Live region:** `role="status" aria-live="polite"` is always mounted and its text changes, which is the correct pattern.
+- **Alert:** errors use `role="alert"`.
+- **Queries:** every query in the tests is by role, label or text, never by class or id, as NFR-1 requires.
+- **Advisories:** see F2 and F3.
+
+## Findings (JSON)
+
+```json
+{"version":1,"findings":[
+{"id":"F1","status":"open","severity":"low","lens":"core","title":"Handler-level double-submit guard is not exercised independently by tests","file":"tests/web/App.test.tsx","line":477,"evidence":"Both S-1.2/C1 tests run with the button already disabled. A disabled default button stops clicks, and it also stops implicit submission on Enter (HTML spec, which user-event follows). So the `if (estado === \"procesando\") return;` guard in App.tsx:332 is never what stops the second request. The guard exists and is correct under React's synchronous flush of discrete events. Advisory: add a test that submits the form directly (e.g. fireEvent.submit on the form) while processing, or make the guard more robust with a useRef flag. Not blocking: the task's Done-when (neither button nor keyboard sends another request) is met and tested."},
+{"id":"F2","status":"open","severity":"low","lens":"accessibility","title":"Result live region is mounted already filled, so screen readers may not announce it","file":"src/web/src/App.tsx","line":363,"evidence":"`{resultado && <Resultado .../>}` inserts the `<section aria-live=\"polite\">` from Resultado.tsx together with its content. Many screen readers only announce changes inside a live region that already exists. NFR-1 says the result is announced in a polite region. Advisory: keep a persistent live container in App, or put a short completion message (e.g. \"Consulta completada\") in the existing role=status region. The error is not affected, because role=alert is announced on insertion."},
+{"id":"F3","status":"open","severity":"low","lens":"core","title":"App-level 'S-3.1' test uses a 500 fixture, not the scenario's 422 with detail","file":"tests/web/App.test.tsx","line":86,"evidence":"S-3.1's Given is 422 problem+json with detail \"La pregunta no puede estar vacía.\" and requestId abc-123. The App test uses `{requestId:\"abc-123\", detail:\"interno\"}` with status 500, which is S-3.2, and asserts the generic message. The 422 mapping is covered in tests/web/api.test.ts:47, and the T3 Done-when asks only for an error with role=alert and its reference code, which the test does check. Advisory: use the 422 fixture so the test matches its label."}
+]}
+```

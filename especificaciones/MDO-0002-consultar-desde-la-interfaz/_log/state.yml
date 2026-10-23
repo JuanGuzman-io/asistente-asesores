@@ -10,9 +10,9 @@ start:
 progress:
   schema_version: 1
   spec: MDO-0002-consultar-desde-la-interfaz
-  updated_at: 2026-10-23T16:57:21.480Z
+  updated_at: 2026-10-23T17:01:23.282Z
   current:
-    task: T3
+    task: T4
     phase: implementing
     harness: claude
     model: claude-opus-5-5
@@ -55,6 +55,21 @@ progress:
             - "S-2.4: respuesta y fragmento con <b> y <a> aparecen literales"
             - "S-2.4/C3: no se crean elementos b ni a"
             - "S-2.4/C3: documento y sección con HTML tampoco crean elementos"
+    - task: T3
+      files:
+        - path: tests/web/App.test.tsx
+          sha256: 0cb6e767d00c1d2b3ed6bb0f582e9090b510d95197842e1bf8717c6ce744babc
+          tests:
+            - "S-1.1: muestra 'Procesando consulta…' mientras espera"
+            - "S-1.1: al llegar la respuesta pasa a completado y pinta Resultado"
+            - "S-1.2/C1: con la consulta en procesando, el botón no envía otra petición"
+            - "S-1.2/C1: con la consulta en procesando, Enter en el campo no envía otra petición"
+            - "S-3.1: el error se ve con role=alert, su mensaje y el código de referencia"
+            - "S-4.1/C2: tras un error la pregunta sigue en el campo, editable, y el botón habilitado"
+            - "S-4.1: un nuevo envío limpia el error anterior y permite una segunda petición"
+            - "S-4.1: un nuevo envío limpia el resultado anterior"
+            - "NFR-1: el campo tiene la etiqueta 'Pregunta'"
+            - "NFR-1: la región de estado es aria-live='polite' y anuncia el procesamiento"
   pending_commits: []
   approved_manifests:
     - task: T1
@@ -153,10 +168,35 @@ progress:
         - src/web/vite.config.ts
         - tests/web/Resultado.test.tsx
       receipts: []
+    - task: T3
+      attempt: 1
+      files:
+        - path: src/web/AGENTS.md
+          status: " M"
+          sha256: 8d1851d40e6b14ade71d60971f724236f3e4134be702bf2f408cfdfd6bfd55db
+        - path: src/web/src/App.tsx
+          status: " A"
+          sha256: 78911b26cdaaab7a115d201b509161a87ad312fd67f3090e48cb459efa756fda
+        - path: src/web/src/main.tsx
+          status: " M"
+          sha256: 19814c2249f87a81e2af58c3f09f099e5a28fc25986f818a380609046b5ee5a4
+        - path: src/web/vite.config.ts
+          status: " M"
+          sha256: 545cb25f65bb8fecde018262956bd5a6548237d3230c5d0cc9befd55a866a02f
+        - path: tests/web/App.test.tsx
+          status: " A"
+          sha256: 0cb6e767d00c1d2b3ed6bb0f582e9090b510d95197842e1bf8717c6ce744babc
+      reviewed:
+        - src/web/AGENTS.md
+        - src/web/src/App.tsx
+        - src/web/src/main.tsx
+        - src/web/vite.config.ts
+        - tests/web/App.test.tsx
+      receipts: []
   loop_brake:
-    task: T2
+    task: T3
     action: commit
-    execution_rows: 18
+    execution_rows: 22
     approval_rows: 1
     repeats: 1
 approvals:
@@ -182,6 +222,14 @@ cut_estimates:
     base: 63921
     turns_left: 73
     savings: 0.64
+    decision: "go on: below 50"
+  - at: 2026-10-23T16:57:33.033Z
+    task: T3
+    boundary_id: implement:T3
+    context: 180879
+    base: 63921
+    turns_left: 58
+    savings: 1.04
     decision: "go on: below 50"
 mock:
   decision: declined

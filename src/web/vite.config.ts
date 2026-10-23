@@ -18,7 +18,13 @@ export default defineConfig(({ mode }) => {
     preview: { proxy: { "/api": apiUrl } },
     test: {
       environment: "jsdom",
-      alias: ["react", "react-dom", "@testing-library/react", "@testing-library/dom"].map(paquete),
+      alias: [
+        "react",
+        "react-dom",
+        "@testing-library/react",
+        "@testing-library/dom",
+        "@testing-library/user-event",
+      ].map(paquete),
       include: ["src/**/*.test.{ts,tsx}", "../../tests/web/**/*.test.{ts,tsx}"],
       exclude: ["../../tests/web/e2e/**", "node_modules/**"],
     },
