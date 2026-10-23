@@ -98,10 +98,11 @@ critical: true
 ### AC-5 — Soporte parcial
 critical: true
 
-- **GIVEN** una pregunta con dos partes, de las que la base documental solo responde una (p. ej. monto y una tasa que no existe en los documentos)
+- **GIVEN** una pregunta con dos partes, de las que la base documental solo responde una (p. ej. monto y una tasa que no existe en los documentos), y el modelo de redacción configurado
 - **WHEN** se consulta
 - **THEN** la respuesta contesta solo la parte con soporte, la cita y dice explícitamente qué parte no está en la base documental (p. ej. "No encontré información sobre la tasa"), con estado `Exitosa`
 - **BUT it must NOT** completar ni estimar la parte faltante (C1)
+- **AND IT MUST**, sin modelo, empezar con "Esto es lo que encontré en la base documental:" y no afirmar que cubre toda la pregunta ([C-1](requirements.md#c-1)) (C2)
 
 ### AC-6 — Contenido de cada fuente
 critical: true
@@ -210,6 +211,5 @@ Ninguna: esta spec no tiene interfaz (la interfaz es MDO-0003).
 <a id="assumptions"></a>
 ## Assumptions and open questions
 
-- ASSUMPTION(source: intake I-6 AC-2): "mismo contenido" significa idéntico tras normalizar espacios y mayúsculas; los documentos parecidos pero distintos no se tratan como duplicados. Confirma el PE.
+- Duplicados y conteo de caracteres: resueltos en [requirements.md#c-2](requirements.md#c-2); modo extractivo de AC-5: [C-1](requirements.md#c-1).
 - ASSUMPTION(source: intake I-5 AC-1, Q-5): el registro de consultas `Bloqueada por seguridad` se verifica en MDO-0002; aquí AC-14 cubre los estados `Exitosa` y `Sin información suficiente`.
-- ASSUMPTION(source: AC-5, respuesta del PE 2026-10-23): en modo extractivo (AC-16) la indicación de la parte faltante puede no estar disponible, porque sin modelo no se redacta; se precisa en `/mandao-specify`.

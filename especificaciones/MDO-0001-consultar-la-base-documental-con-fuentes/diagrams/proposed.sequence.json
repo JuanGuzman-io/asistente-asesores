@@ -1,0 +1,78 @@
+{
+  "schema_version": 1,
+  "diagram_type": "sequence",
+  "meta": {
+    "title": "MDO-0001 — POST /api/consultar",
+    "output": "diagrams/proposed.html",
+    "viewBox": [1180, 640],
+    "column_fit": "spread",
+    "animation": "trace",
+    "quality_profile": "standard"
+  },
+  "participants": [
+    { "id": "asesor", "type": "external", "label": "Asesor", "sublabel": "cliente HTTP" },
+    { "id": "http", "type": "backend", "label": "http", "sublabel": "middleware + validación" },
+    { "id": "app", "type": "backend", "label": "aplicacion", "sublabel": "consultar()" },
+    { "id": "busqueda", "type": "database", "label": "busqueda", "sublabel": "FTS5 + coseno en memoria" },
+    { "id": "redactor", "type": "backend", "label": "redactor", "sublabel": "Gemini o extractivo" },
+    { "id": "gemini", "type": "external", "label": "Gemini", "sublabel": "opcional, 5 s" },
+    { "id": "repo", "type": "database", "label": "persistencia", "sublabel": "consultas (SQLite)" }
+  ],
+  "segments": [
+    { "from": 150, "to": 230, "label": "Entrada" },
+    { "from": 240, "to": 330, "label": "Búsqueda y umbral" },
+    { "from": 340, "to": 470, "label": "Redacción y guardrail" },
+    { "from": 480, "to": 560, "label": "Registro y respuesta" }
+  ],
+  "messages": [
+    { "id": "post", "from": "asesor", "to": "http", "y": 160, "label": "POST {pregunta}", "variant": "emphasis" },
+    { "id": "reject", "from": "http", "to": "asesor", "y": 190, "label": "413 / 415 / 422 problem+json", "variant": "dashed" },
+    { "id": "call", "from": "http", "to": "app", "y": 220, "label": "consultar(pregunta)", "variant": "default" },
+    { "id": "search", "from": "app", "to": "busqueda", "y": 255, "label": "buscar (RRF, top 3)", "variant": "default" },
+    { "id": "frags", "from": "busqueda", "to": "app", "y": 295, "label": "fragmentos (bajo umbral → Sin información)", "variant": "return" },
+    { "id": "draft", "from": "app", "to": "redactor", "y": 350, "label": "redactar(pregunta, fragmentos)", "variant": "default" },
+    { "id": "model", "from": "redactor", "to": "gemini", "y": 380, "label": "JSON schema", "variant": "dashed" },
+    { "id": "model-out", "from": "gemini", "to": "redactor", "y": 410, "label": "respuesta, ids, partes", "variant": "return" },
+    { "id": "guard", "from": "redactor", "to": "app", "y": 445, "label": "validado o extractivo", "variant": "security" },
+    { "id": "save", "from": "app", "to": "repo", "y": 495, "label": "INSERT consulta", "variant": "emphasis" },
+    { "id": "result", "from": "app", "to": "http", "y": 525, "label": "Resultado", "variant": "return" },
+    { "id": "ok", "from": "http", "to": "asesor", "y": 550, "label": "200 {respuesta, fuentes, estado}", "variant": "return" }
+  ],
+  "activations": [
+    { "participant": "http", "from": 155, "to": 556, "type": "backend" },
+    { "participant": "app", "from": 215, "to": 530, "type": "backend" },
+    { "participant": "busqueda", "from": 250, "to": 290, "type": "database" },
+    { "participant": "redactor", "from": 345, "to": 450, "type": "backend" },
+    { "participant": "gemini", "from": 375, "to": 415, "type": "external" },
+    { "participant": "repo", "from": 490, "to": 510, "type": "database" }
+  ],
+  "cards": [
+    {
+      "dot": "emerald",
+      "title": "Camino feliz",
+      "items": [
+        "Validación antes de buscar (D8)",
+        "Búsqueda híbrida con umbral (D4)",
+        "Registro antes de responder (D10)"
+      ]
+    },
+    {
+      "dot": "rose",
+      "title": "Guardrails",
+      "items": [
+        "Bajo el umbral no se llama al modelo",
+        "Ids y cifras validados en código (D7)",
+        "Confidenciales fuera del índice (D3)"
+      ]
+    },
+    {
+      "dot": "orange",
+      "title": "Respaldo",
+      "items": [
+        "Sin clave, error o 5 s → extractivo (D9, D12)",
+        "Falla al guardar → 500 sin registro",
+        "Todo nuevo: no existe código previo"
+      ]
+    }
+  ]
+}
