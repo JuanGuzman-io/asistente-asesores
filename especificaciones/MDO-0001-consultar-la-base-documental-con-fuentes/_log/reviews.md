@@ -436,3 +436,53 @@ T7 cumple su "Done when" (tasks.md:280-285) y las cláusulas de D7 y D9. Ningún
 {"id":"F7","status":"resolved","severity":"low","lens":"security","title":"Licencia MIT-0 de la transitiva cffi","file":"uv.lock","line":1,"evidence":"standards.md:62 permite 'solo licencias permisivas'. MIT-0 es permisiva (MIT sin la cláusula de atribución). No hace falta una decisión nueva del PE; se recomienda añadirla a la excepción ya aprobada para trazabilidad."}
 ]}
 ```
+
+## T9 — attempt 1
+
+VERDICT: PASS
+
+## Resumen
+
+Revisé T9 con el paquete `.mandao/cache/MDO-0001/reviews/T9-1-pack.md` y los gates de `.mandao/cache/MDO-0001/gates/T9-1.md`. Los lentes activos son core, security y data. Ninguno de mis hallazgos bloquea; todos son consultivos.
+
+**Pruebas.** El gate de pruebas de T9 da 41 passed. `T9-1-fullsuite.txt` muestra una sola corrida: 211 passed, 2 warnings. Las otras dos corridas mencionadas no están en ese archivo, así que no las puedo verificar.
+
+**Spec y contrato:**
+- **S-7.1, S-7.2, C1 y C2:** se cumplen. NFC, `strip()`, 1 a 1.000 puntos de código; una pregunta rechazada no se recorta, no se busca y no se registra.
+- **S-9.1:** se cumple. 413 por `Content-Length` y también chunked (el middleware cuenta los bytes); 16.384 bytes exactos pasan el middleware y dan 422.
+- **S-9.2:** se cumple. 415 con `text/plain`, otros tipos y sin `Content-Type`; acepta JSON con `charset` y en mayúsculas.
+- **S-14.1 y AC-3:** se cumplen. Exactamente `respuesta`, `fuentes` y `estado`, y `X-Request-Id`.
+- **S-11.1/C1 y AC-14/C1:** se cumplen. 413, 415 y 422 no dejan filas.
+- **RFC 9457:** se cumple, también en 404, 405 y 500.
+- **`detail` del 422:** solo `loc` y `msg`; ninguna prueba lo protege (F7).
+- **La pregunta en logs:** `registrar_peticion` nunca la recibe; el 500 registra solo el tipo de la excepción.
+
+**Pendientes de revisiones anteriores:** cerrados (F1 a F5).
+
+**Evidencia de rojo.** Formalmente cumple; todas fallaron por el `TypeError` del kwarg. Revisé cada aserción fina de forma independiente: WAL, conexión por petición, log JSON y 500 sin PII discriminan. La concurrente de `modo` solo discrimina si las peticiones se solapan de verdad; pido evidencia de mutación (F6).
+
+**`RedactorExclusivo` frente al p95 de 3 s.** Aceptable para esta entrega (ejecución local de un usuario, NFR-1 con locust, T9 sin tag `perf`), pero bajo carga concurrente con Gemini la espera se acumula hasta N×5 s. Deuda (F8).
+
+**Clave y entrypoint.** Leer la clave de `os.environ` cumple security.md. `AGENTS.md` documenta un comando de arranque incompleto y no existe una `app` a nivel de módulo (F10).
+
+## Findings (JSON)
+
+```json
+{"version":1,"findings":[
+{"id":"F1","status":"resolved","severity":"high","lens":"data","title":"Conexión SQLite por petición y WAL (F3 de T8)","file":"src/server/http/rutas.py","line":40,"evidence":"Cada petición abre su conexión con closing(sqlite3.connect(ruta_sqlite)) en su hilo, sin check_same_thread=False. El lifespan activa PRAGMA journal_mode=WAL. Lo protegen test_acid_cada_peticion_abre_su_propia_conexion_sqlite_y_la_cierra y test_el_arranque_crea_la_tabla_consultas_vacia_con_wal."},
+{"id":"F2","status":"resolved","severity":"medium","lens":"data","title":"crear_esquema de consultas al arrancar","file":"src/server/http/app.py","line":43,"evidence":"El lifespan llama a crear_esquema(conexion) antes de indexar. La prueba comprueba la tabla, user_version 1 y que empieza vacía."},
+{"id":"F3","status":"resolved","severity":"high","lens":"data","title":"modo seguro entre hilos (F2 de T7)","file":"src/server/http/rutas.py","line":19,"evidence":"RedactorExclusivo serializa redactar y copia modo bajo el candado a una instancia por petición. consultar solo lee redactor.modo después de redactar, así que el valor inicial leído sin candado nunca se registra."},
+{"id":"F4","status":"resolved","severity":"high","lens":"security","title":"413, 415 y 422 sin registro","file":"src/server/http/middleware.py","line":45,"evidence":"415 y 413 se responden en el middleware antes de llegar a la app, y el 422 ocurre antes del caso de uso. Lo cubren test_s11_1_c1_tras_413_415_y_422..., _sin_efectos en cada caso y la vía chunked."},
+{"id":"F5","status":"resolved","severity":"high","lens":"security","title":"El 500 no lleva la pregunta ni el mensaje de la excepción","file":"src/server/http/middleware.py","line":30,"evidence":"Se captura Exception, se responde con DETALLES[500] y solo se registra type(error).__name__. Además la excepción no se re-lanza al servidor, que de otro modo registraría la traza con PII."},
+{"id":"F6","status":"open","severity":"medium","lens":"core","title":"Falta evidencia de mutación para la prueba concurrente de modo","file":"tests/server/http/test_consultar_api.py","line":306,"evidence":"El rojo falló por TypeError en crear_app, no por la carrera. Si las dos peticiones no se solapan, cada wait(1.0) vence y la prueba pasa aunque no haya aislamiento: ninguna aserción comprueba que hubo solapamiento. ASSUMPTION: el TestClient comparte el portal y despacha concurrentemente al threadpool. OPEN: registrar la mutación (pasar app.state.redactor sin envolver) y verla fallar, o afirmar el solapamiento en la prueba."},
+{"id":"F7","status":"open","severity":"medium","lens":"security","title":"Ninguna prueba garantiza que el detail del 422 no refleje la entrada","file":"tests/server/http/test_consultar_api.py","line":394,"evidence":"La implementación es correcta: manejar_validacion usa solo loc y msg. Pero test_nfr4_una_peticion_rechazada... solo revisa caplog y no comprueba que SECRETO esté ausente de respuesta.text. FastAPI por defecto incluye 'input' en el 422, así que volver al handler por defecto no rompería ninguna prueba. Consultivo: ninguna regla escrita exige esto en la respuesta, solo en los logs."},
+{"id":"F8","status":"open","severity":"medium","lens":"performance","title":"El candado serializa las llamadas a Gemini (hasta 5 s cada una)","file":"src/server/http/rutas.py","line":32,"evidence":"Con N peticiones concurrentes con modelo, la última espera hasta N×5 s, en conflicto con NFR-1 y performance.md (p95 ≤ 3 s) bajo la prueba de carga. Aceptable hoy por la ejecución local de un usuario (security.md) y porque T9 no tiene el tag perf. Alternativa sin candado: que RespuestaRedactada devuelva el modo (cambio de puerto). Debe resolverse o medirse antes de T10/NFR-1."},
+{"id":"F9","status":"open","severity":"low","lens":"core","title":"El 500 vive en el middleware y no en un handler de Exception como dice D8; T12 apunta a otros archivos","file":"src/server/http/middleware.py","line":30,"evidence":"D8 pide un handler de Exception. El middleware es la mejor opción, porque ServerErrorMiddleware re-lanza la excepción al servidor y este registraría la traza con PII. Aun así conviene anotar la desviación en design.md o en el plan de T12, que lista problemas.py y app.py."},
+{"id":"F10","status":"open","severity":"low","lens":"core","title":"Entrypoint de uvicorn documentado como placeholder","file":"src/server/AGENTS.md","line":21,"evidence":"AGENTS.md dice 'uvicorn src.server.http.app:...' y no existe una app a nivel de módulo ni una fábrica nombrada. OPEN: que una tarea posterior (README o arranque) la cree y AGENTS.md la nombre."},
+{"id":"F11","status":"open","severity":"low","lens":"core","title":"ConsultaSalida.estado es str y no el enum del contrato","file":"src/server/http/esquemas.py","line":33,"evidence":"El contrato de design.md fija 'Exitosa' | 'Sin información suficiente' | 'Bloqueada por seguridad'. Con str, OpenAPI no lo expresa ante MDO-0003. Sugerencia: Literal o Estado."},
+{"id":"F12","status":"open","severity":"low","lens":"core","title":"El 405 pierde la cabecera Allow","file":"src/server/http/problemas.py","line":47,"evidence":"manejar_http no copia exc.headers, y RFC 9110 exige Allow en un 405."},
+{"id":"F13","status":"open","severity":"low","lens":"security","title":"Un Content-Length no numérico responde 413 y no 400","file":"src/server/http/middleware.py","line":89,"evidence":"Se rechaza igual (falla cerrado), pero con un código engañoso. El servidor real suele rechazarlo antes."},
+{"id":"F14","status":"open","severity":"low","lens":"core","title":"conftest.py fuera de la lista de archivos y type: ignore obsoleto","file":"tests/server/http/conftest.py","line":107,"evidence":"conftest.py no está en files de T9, aunque es infraestructura de prueba razonable. El ignore[call-arg] quedó sobrando porque redactor ya existe en crear_app, y mypy solo revisa src, así que no lo detecta."},
+{"id":"F15","status":"open","severity":"low","lens":"core","title":"El logger asistente.http tiene handler propio y también propaga","file":"src/server/http/logs.py","line":8,"evidence":"Si uvicorn o la raíz configuran un handler, cada línea JSON sale dos veces."}
+]}
+```

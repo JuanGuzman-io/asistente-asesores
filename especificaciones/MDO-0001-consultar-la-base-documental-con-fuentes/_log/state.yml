@@ -2,7 +2,7 @@
 progress:
   schema_version: 1
   spec: MDO-0001-consultar-la-base-documental-con-fuentes
-  updated_at: 2026-10-23T16:59:52.086Z
+  updated_at: 2026-10-23T17:11:58.047Z
   current: null
   open_questions: []
   next_step: ""
@@ -234,6 +234,39 @@ progress:
             - test_D7_prompt_dice_que_los_fragmentos_son_datos_y_pide_listar_partes_sin_soporte
             - test_D9_la_clave_y_la_pregunta_no_aparecen_en_logs_ni_en_excepciones
             - test_D9_la_clave_no_aparece_en_logs_con_salida_valida
+    - task: T9
+      files:
+        - path: tests/server/http/test_consultar_api.py
+          sha256: 96b9b8e19f61be5fb0b8cb252b7eba8f0648aa6c3df44064636b9f6d4ca45d97
+          tests:
+            - test_s14_1_consulta_valida_responde_200_con_exactamente_respuesta_fuentes_estado
+            - test_s14_1_la_respuesta_lleva_x_request_id_uuid_v4_distinto_en_cada_peticion
+            - test_ac3_monto_maximo_del_credito_impulso_cita_el_documento_con_el_monto_que_dice
+            - test_s14_1_una_consulta_valida_queda_registrada_con_el_request_id_de_la_cabecera
+            - test_una_ruta_inexistente_o_con_metodo_no_permitido_responde_problema_con_request_id
+            - test_s7_1_cuerpo_invalido_responde_422_problema_sin_consultar_ni_registrar
+            - test_s7_2_1001_puntos_de_codigo_responde_422_con_el_limite_sin_consultar_ni_registrar
+            - test_s7_2_1001_tras_quitar_espacios_exteriores_tambien_se_rechaza
+            - test_s7_2_1001_en_nfc_enviada_en_nfd_con_mas_puntos_de_codigo_se_rechaza
+            - test_s7_2_c1_mil_puntos_de_codigo_tras_normalizar_se_procesa_con_la_pregunta_normalizada
+            - test_el_arranque_crea_la_tabla_consultas_vacia_con_wal
+            - test_acid_cada_peticion_abre_su_propia_conexion_sqlite_y_la_cierra
+            - test_dos_peticiones_concurrentes_registran_cada_una_su_propio_modo
+            - test_500_inesperado_responde_problema_sin_detalles_y_sin_la_pregunta_en_logs
+            - test_500_por_fallo_al_registrar_no_deja_pregunta_ni_resultado_en_logs
+            - test_nfr4_cada_peticion_valida_emite_una_linea_json_sin_el_texto_de_la_pregunta
+            - test_nfr4_una_peticion_rechazada_emite_su_linea_json_sin_el_texto_de_la_pregunta
+        - path: tests/server/http/test_limites.py
+          sha256: 74eb297a7ecc788152f0a2cdf9b0abe4c1bfdd6ab8c0f3b0910c5e8b34460688
+          tests:
+            - test_s9_1_cuerpo_de_16385_bytes_con_content_length_responde_413_problema
+            - test_s9_1_cuerpo_de_16385_bytes_sin_content_length_responde_413_problema
+            - test_s9_1_cuerpo_muy_superior_al_limite_sin_content_length_responde_413
+            - test_s9_1_cuerpo_de_exactamente_16384_bytes_no_se_rechaza_con_413
+            - test_s9_2_content_type_distinto_de_json_responde_415_problema
+            - test_s9_2_sin_content_type_responde_415_problema
+            - test_s9_2_application_json_con_o_sin_charset_si_se_procesa
+            - test_s11_1_c1_tras_413_415_y_422_la_tabla_consultas_no_tiene_filas_nuevas
   pending_commits: []
   approved_manifests:
     - task: T1
@@ -520,10 +553,55 @@ progress:
         - tests/server/infraestructura/redactor/test_gemini.py
         - tests/server/infraestructura/redactor/test_validacion.py
       receipts: []
+    - task: T9
+      attempt: 1
+      files:
+        - path: src/server/AGENTS.md
+          status: " M"
+          sha256: 14cacf25c993a0d0265d21b91cf4d91a97424caba19909aecce3ae70d4dd74d1
+        - path: src/server/http/app.py
+          status: " M"
+          sha256: 46595291975f1e41227d585124e9e189b4e991d2d2fdbd39f922c1d90a793c95
+        - path: src/server/http/esquemas.py
+          status: ??
+          sha256: 11eb30e8e43abeb7e287dd250e1ae6c8e135dbe4766a2da497f4de7f4389e124
+        - path: src/server/http/logs.py
+          status: ??
+          sha256: c8666a3b5f0ebd94c5805af2d8fb3f6956526ec7c6c2dcbfcbe9839d70afcabb
+        - path: src/server/http/middleware.py
+          status: ??
+          sha256: f7b30d359f25f76d8cec4fc2fea83925f3abb4f2ca020bbff2d123a90cdf812a
+        - path: src/server/http/problemas.py
+          status: ??
+          sha256: 37cccab341493f451a719dac7aa005b7da10e7baf241ebc03ad9bbda6240bd30
+        - path: src/server/http/rutas.py
+          status: ??
+          sha256: bf188478a25a859821185dd8a53b559d272b79497120b2bcb8a8300dcb79fe7f
+        - path: tests/server/http/conftest.py
+          status: ??
+          sha256: 15148292117828b9199a01a637063601c7c1192779cb627fd3c5992607733658
+        - path: tests/server/http/test_consultar_api.py
+          status: ??
+          sha256: 96b9b8e19f61be5fb0b8cb252b7eba8f0648aa6c3df44064636b9f6d4ca45d97
+        - path: tests/server/http/test_limites.py
+          status: ??
+          sha256: 74eb297a7ecc788152f0a2cdf9b0abe4c1bfdd6ab8c0f3b0910c5e8b34460688
+      reviewed:
+        - src/server/AGENTS.md
+        - src/server/http/app.py
+        - src/server/http/esquemas.py
+        - src/server/http/logs.py
+        - src/server/http/middleware.py
+        - src/server/http/problemas.py
+        - src/server/http/rutas.py
+        - tests/server/http/conftest.py
+        - tests/server/http/test_consultar_api.py
+        - tests/server/http/test_limites.py
+      receipts: []
   loop_brake:
-    task: T7
+    task: T9
     action: commit
-    execution_rows: 58
+    execution_rows: 63
     approval_rows: 6
     repeats: 1
 approvals:
@@ -657,4 +735,12 @@ cut_estimates:
     base: 63912
     turns_left: 103
     savings: 5
+    decision: "go on: below 50"
+  - at: 2026-10-23T17:00:11.434Z
+    task: T9
+    boundary_id: implement:T9
+    context: 353377
+    base: 63912
+    turns_left: 88
+    savings: 4.78
     decision: "go on: below 50"
