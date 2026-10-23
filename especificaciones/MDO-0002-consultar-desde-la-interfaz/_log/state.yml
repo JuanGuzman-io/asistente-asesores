@@ -10,8 +10,12 @@ start:
 progress:
   schema_version: 1
   spec: MDO-0002-consultar-desde-la-interfaz
-  updated_at: 2026-10-23T17:08:56.834Z
-  current: null
+  updated_at: 2026-10-23T20:20:51.984Z
+  current:
+    task: T6
+    phase: implementing
+    harness: claude
+    model: claude-opus-5-5
   open_questions: []
   next_step: ""
   deferred_to_ci:
@@ -78,6 +82,40 @@ progress:
             - "S-4.1: un nuevo envío limpia el resultado anterior"
             - "NFR-1: el campo tiene la etiqueta 'Pregunta'"
             - "NFR-1: la región de estado es aria-live='polite' y anuncia el procesamiento"
+    - task: T5
+      files:
+        - path: tests/web/pregunta.test.ts
+          sha256: a5f68cd5b186990455278eea14f0b94a753542ea38a9655c5764693c21899a99
+          tests:
+            - MAXIMO_PREGUNTA es 1000
+            - "S-1.3: %j tiene largo 0 y no es válida"
+            - "S-1.4: 1.000 'é' precompuestas son válidas, largo 1000"
+            - "S-1.4: 1.000 'é' descompuestas (e + tilde combinable) cuentan 1 cada una tras NFC"
+            - "S-1.4: 1.000 emojis son válidos, cada uno cuenta 1"
+            - "S-1.4: los espacios a los lados no cuentan"
+            - "S-1.4: 1.001 caracteres no son válidos, largo 1001"
+            - un solo carácter es válido
+        - path: tests/web/App.test.tsx
+          sha256: 81a55e0850eee5c60f1f24a3a70828d3eccb499799eb43ecf4ba4433185abaed
+          tests:
+            - "S-1.1: muestra 'Procesando consulta…' mientras espera"
+            - "S-1.1: al llegar la respuesta pasa a completado y pinta Resultado"
+            - "S-1.2/C1: con la consulta en procesando, el botón no envía otra petición"
+            - "S-1.2/C1: con la consulta en procesando, Enter en el campo no envía otra petición"
+            - "S-3.1: un 422 se ve con role=alert, su detail y el código de referencia"
+            - "S-4.1/C2: tras un error la pregunta sigue en el campo, editable, y el botón habilitado"
+            - "S-4.1: un nuevo envío limpia el error anterior y permite una segunda petición"
+            - "S-4.1: un nuevo envío limpia el resultado anterior"
+            - "NFR-1: el campo tiene la etiqueta 'Pregunta'"
+            - "NFR-1: la región de estado es aria-live='polite' y anuncia el procesamiento"
+            - "NFR-1: el resultado se inserta en una región aria-live='polite' que ya existía"
+            - "S-1.3: con %j el botón está deshabilitado y el contador dice 0/1.000"
+            - "S-1.3/C4: pulsar el botón deshabilitado o Enter en el campo vacío no envía petición"
+            - "S-1.3: al escribir un carácter que no es espacio el botón se habilita"
+            - "NFR-1: el contador forma parte de la descripción accesible del campo"
+            - "S-1.4: con 1.001 puntos de código el contador dice 1.001/1.000 y el campo queda marcado"
+            - "S-1.4/C4: con 1.001 puntos de código el botón y Enter no envían petición"
+            - "S-1.4: dentro del límite el campo no está marcado como excedido"
   pending_commits: []
   approved_manifests:
     - task: T1
@@ -234,11 +272,52 @@ progress:
         - tests/web/e2e/consultar.spec.ts
         - tests/web/e2e/tsconfig.json
       receipts: []
+    - task: T5
+      attempt: 1
+      files:
+        - path: especificaciones/quick/_log/.integrity.json
+          status: " M"
+          sha256: 62c35d6426f1acf47c54a815232e0716dbd046ed27f68fe0efce456537e7f32b
+        - path: especificaciones/quick/_log/execution.md
+          status: " M"
+          sha256: 567fb82150fa6ad58421ea57c9b6851043ca9b014d8f002dcc41979e4db128af
+        - path: src/web/AGENTS.md
+          status: " M"
+          sha256: 1c268c60ec8ca86ace6aaecaaefd8210a3107bf50bc9d82505b3b118b49213d7
+        - path: src/web/src/App.tsx
+          status: " M"
+          sha256: 87dd951a8b4498b968d51e4c780979b0f82e2e66412b449cf403c4cd751a5057
+        - path: src/web/src/Compositor.tsx
+          status: " M"
+          sha256: c102b06e2294f465bbabec998fc53acd94dbac1722ce73752cf0d74b089b0af2
+        - path: src/web/src/estilos.css
+          status: " M"
+          sha256: ede9f2c1c16e40f39174d569dfe9ae89ab8ef01710816ecbdc71caae83fcff43
+        - path: src/web/src/pregunta.ts
+          status: ??
+          sha256: b820050da5b86fe48a8e4417e8d0da7d96be7d27ef45beebc73d753e24c77f3a
+        - path: tests/web/App.test.tsx
+          status: " M"
+          sha256: fa394741860eb704e647de43ced439848d97a7cae47ef0dc654ef478b0e1e6f5
+        - path: tests/web/pregunta.test.ts
+          status: ??
+          sha256: a5f68cd5b186990455278eea14f0b94a753542ea38a9655c5764693c21899a99
+      reviewed:
+        - especificaciones/quick/_log/.integrity.json
+        - especificaciones/quick/_log/execution.md
+        - src/web/AGENTS.md
+        - src/web/src/App.tsx
+        - src/web/src/Compositor.tsx
+        - src/web/src/estilos.css
+        - tests/web/App.test.tsx
+        - src/web/src/pregunta.ts
+        - tests/web/pregunta.test.ts
+      receipts: []
   loop_brake:
-    task: T4
+    task: T5
     action: commit
-    execution_rows: 27
-    approval_rows: 1
+    execution_rows: 31
+    approval_rows: 3
     repeats: 1
 approvals:
   - step: shown
@@ -247,6 +326,28 @@ approvals:
     sha256:
       story.md: sha256-NTraXCHpd2riEmG4ex7gl8N/Osw6plM0pkWroIrd5gg=
       spec.md: sha256-cyLRbWm671QohTyc6b0lEekw/vEYYvpz/MtEn/2GevA=
+  - step: shown
+    by: Juan D. Guzmán
+    at: 2026-10-23T20:07:52.123Z
+    sha256:
+      story.md: sha256-vQQtYY7Li+z/Ytd0BDr3MvcJ20f1CTHlLOOQcTxV8WA=
+      spec.md: sha256-1QU2DPW6MDwQKOEkv6ifLwUcd6E2pxuJMHHIWBUQNG0=
+      mockups/Main.html: sha256-jOKdmC+aO7TUA78VSLFt7mwzpeDTv0O2B8tLHko98SQ=
+      mockups/Oscuro.html: sha256-cEzdfVbm1QxXQ0lPtLA42HZ4dja/7V4gEt+H4s4jdPs=
+      mockups/Pensando.html: sha256-IhAwKi0Vyzgg645didw5dqC8Zz1sgU+EsHk+PXecwMk=
+      mockups/README.md: sha256-ZcALtVAEqA8fgwnWhTCIxScR53SdDpUZvsIJBV35j4I=
+      mockups/Respuesta.html: sha256-1TKb9IuztLULKIaFEB5ZbhKS3w1eZgJQTx+JRBZfiiM=
+  - step: shown
+    by: Juan D. Guzmán
+    at: 2026-10-23T20:07:55.527Z
+    sha256:
+      story.md: sha256-vQQtYY7Li+z/Ytd0BDr3MvcJ20f1CTHlLOOQcTxV8WA=
+      spec.md: sha256-1QU2DPW6MDwQKOEkv6ifLwUcd6E2pxuJMHHIWBUQNG0=
+      mockups/Main.html: sha256-jOKdmC+aO7TUA78VSLFt7mwzpeDTv0O2B8tLHko98SQ=
+      mockups/Oscuro.html: sha256-cEzdfVbm1QxXQ0lPtLA42HZ4dja/7V4gEt+H4s4jdPs=
+      mockups/Pensando.html: sha256-IhAwKi0Vyzgg645didw5dqC8Zz1sgU+EsHk+PXecwMk=
+      mockups/README.md: sha256-ZcALtVAEqA8fgwnWhTCIxScR53SdDpUZvsIJBV35j4I=
+      mockups/Respuesta.html: sha256-1TKb9IuztLULKIaFEB5ZbhKS3w1eZgJQTx+JRBZfiiM=
 cut_estimates:
   - at: 2026-10-23T16:31:31.274Z
     task: T1
@@ -289,6 +390,14 @@ cut_estimates:
     turns_left: 28
     savings: 0.63
     decision: new session
+  - at: 2026-10-23T20:15:21.869Z
+    task: T5
+    boundary_id: implement:T5
+    context: 450248
+    base: 59024
+    turns_left: 58
+    savings: 4.24
+    decision: "go on: below 50"
 mock:
   decision: accepted
   source: design

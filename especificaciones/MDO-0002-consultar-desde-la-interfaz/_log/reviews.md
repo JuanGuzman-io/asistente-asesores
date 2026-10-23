@@ -320,3 +320,46 @@ The e2e run is still DEFERRED by PE decision (R-1). I am not treating any e2e te
 {"id":"F6","status":"resolved","severity":"low","lens":"core","title":"e2e spec excluded from tsc; a separate -p check may be possible","file":"src/web/package.json","line":15,"evidence":"Added 'typecheck:e2e' using tests/web/e2e/tsconfig.json, with paths pointing to the @playwright/test package dir; not a gate; documented. The pack has no run output for it: the Implementer's claim that it passes is not verified here (ASSUMPTION)."}
 ]}
 ```
+
+## T5 — attempt 1
+
+VERDICT: PASS
+
+I'm not stating my model name. The reviewer persona rules say "Do not say which model you are; Mandao records who reviewed from what it invoked." The brief already records `loop.reviewer.model`.
+
+## Findings (JSON)
+
+```json
+{"version":1,"findings":[
+{"id":"F1","status":"open","severity":"low","lens":"core","title":"e2e S-3.1 still expects an empty question to reach the backend; T5 breaks it until T6 lands","file":"tests/web/e2e/consultar.spec.ts","line":33,"evidence":"Line 34 says 'el clic con el campo vacío llega al backend' and line 38 expects a 422. The button is now disabled when the box is empty, so this e2e will time out. Not blocking: e2e is not a gate, and tasks.md T6 (line 182) replaces this test. src/web/AGENTS.md already describes the new behaviour. T6 must be done before the checkpoint 'npm --prefix src/web run e2e'."},
+{"id":"F2","status":"open","severity":"low","lens":"core","title":"JS trim() and Python str.strip() treat a few whitespace characters differently","file":"src/web/src/pregunta.ts","line":5,"evidence":"D8 claims parity with ConsultaEntrada. Python strip() also removes \\x1c-\\x1f and \\x85. JS trim() also removes \\uFEFF, which Python does not. On these exotic edges the counter or the button can disagree with the backend by one. D8 keeps the backend as the authority and the 422 path is still handled (S-3.1), so this is advisory only. A comment in D8 or pregunta.ts would document it."},
+{"id":"F3","status":"open","severity":"low","lens":"accessibility","title":"Counter contrast at 11px is not shown","file":"src/web/src/estilos.css","line":435,"evidence":".contador uses var(--tenue) at 0.6875rem. Nothing shows it meets 4.5:1 in light or dark mode. Over the limit, the state is also carried by aria-invalid, by font-weight and by the text itself ('1.001/1.000'), so it does not depend on colour alone. Advisory: check the contrast of --tenue."}
+]}
+```
+
+## Spec conformance
+
+- AC-1/C4: met. Compositor.tsx disables the button with `procesando || !preguntaValida(pregunta)`; App.tsx `enviar` also returns early when the question is not valid; the counter "N/1.000" uses a fixed thousands separator.
+- S-1.3 and S-1.3/C4: covered by unit tests (empty, spaces and tabs disable the button and show "0/1.000"; click and Enter make no fetch; typing enables the button and shows "1/1.000"; newline covered in pregunta.test.ts).
+- S-1.4 and S-1.4/C4: 1,001 code points show "1.001/1.000", aria-invalid="true", counter in the accessible description, button disabled, no fetch; exactly 1,000 accepted with emojis, decomposed é and surrounding spaces, fetch called once.
+- D8: constant, largoPregunta and preguntaValida match the decision; no maxLength, required or .length; text sent as typed.
+- Module boundaries: rule in its own pregunta.ts used by Compositor and App; not duplicated.
+- Magic numbers: none (MAXIMO_PREGUNTA).
+- Mock: the counter is not in the approved mock; justified by C-9 / D8, approved after the mock; follows the mock's look (--mono, --tenue).
+- AGENTS.md: new entry for pregunta.ts, counter, aria-describedby/aria-invalid and the handler guard; e2e note updated.
+
+## Lenses
+
+- Security (input): client rule only improves UX; backend stays the authority; counter renders text only; no new dependencies.
+- Accessibility: counter linked via aria-describedby; over-limit exposed with aria-invalid; button keeps the name "Consultar"; contrast advisory (F3).
+
+## TDD (ADR 0022)
+
+- RED run recorded for T5 before REPORTED (execution.md lines 40-41).
+- redTests.changed, App.test.tsx "S-4.1: un nuevo envío limpia el resultado anterior": only change is typing "otra pregunta" before the second click; FR-4 (C-9) empties the box and C-9 forbids sending it empty; fetch-twice and cleared-result assertions intact; not a weakening.
+- S-3.1 changed from enviar("") to enviar("x") with the 422 forced through the fetch mock; preserves intent.
+- pregunta.test.ts: precomposed U+00E9 on line 17 and "e" + U+0301 on line 23; NFC case really exercised.
+
+## Gates (as reported in the pack; I did not run them)
+
+format, lint, typecheck, test and build: PASS. scan-markers: PASS. audit: SKIPPED. Not configured: secrets, sast, metrics.

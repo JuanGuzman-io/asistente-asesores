@@ -806,6 +806,23 @@ button {
   color: var(--tenue);
 }
 
+/* Contador de la pregunta (D8): discreto; al pasar el límite toma el color de peligro. */
+.contador {
+  margin-inline-start: auto;
+  font-family: var(--mono);
+  font-size: 0.6875rem;
+  color: var(--tenue);
+}
+
+.contador.excedido {
+  color: var(--peligro-texto);
+  font-weight: 600;
+}
+
+.caja input[aria-invalid="true"] {
+  color: var(--peligro-texto);
+}
+
 .punto-en-linea {
   width: 6px;
   height: 6px;

@@ -3,6 +3,7 @@
 import { ArrowUp } from "@phosphor-icons/react";
 import { forwardRef } from "react";
 import type { FormEvent } from "react";
+import { MAXIMO_PREGUNTA, largoPregunta, preguntaValida } from "./pregunta";
 
 export const SUGERENCIAS = [
   "Requisitos del Crédito Productivo Impulso",
@@ -30,6 +31,18 @@ function Sugerencias({ onElegir }: { onElegir: (texto: string) => void }) {
   );
 }
 
+// Miles con punto, fijo: no depende de la configuración regional del navegador.
+const conMiles = (n: number) => String(n).replace(/\B(?=(\d{3})+(?!\d))/g, ".");
+
+function Contador({ largo }: { largo: number }) {
+  const clase = largo > MAXIMO_PREGUNTA ? "contador excedido" : "contador";
+  return (
+    <span id="pregunta-contador" className={clase}>
+      {`${conMiles(largo)}/${conMiles(MAXIMO_PREGUNTA)}`}
+    </span>
+  );
+}
+
 export const Compositor = forwardRef<HTMLInputElement, Props>(function Compositor(
   { pregunta, onCambio, onEnviar, procesando, conSugerencias },
   campo,
@@ -38,6 +51,8 @@ export const Compositor = forwardRef<HTMLInputElement, Props>(function Composito
     onCambio(texto);
     if (campo && "current" in campo) campo.current?.focus();
   }
+
+  const largo = largoPregunta(pregunta);
 
   return (
     <form onSubmit={onEnviar} className="compositor">
@@ -48,7 +63,8 @@ export const Compositor = forwardRef<HTMLInputElement, Props>(function Composito
         <input
           ref={campo}
           id="pregunta"
-          aria-describedby="pregunta-ayuda"
+          aria-describedby="pregunta-ayuda pregunta-contador"
+          aria-invalid={largo > MAXIMO_PREGUNTA ? "true" : undefined}
           autoComplete="off"
           autoFocus
           placeholder={conSugerencias ? "¿Qué necesitas saber hoy?" : "Haz otra pregunta…"}
@@ -61,10 +77,11 @@ export const Compositor = forwardRef<HTMLInputElement, Props>(function Composito
             <span>Solo documentos oficiales</span>
             <span className="solo-lector">. Pulsa Enter para enviar.</span>
           </p>
+          <Contador largo={largo} />
           <button
             type="submit"
             className="enviar"
-            disabled={procesando}
+            disabled={procesando || !preguntaValida(pregunta)}
             aria-label="Consultar"
             title="Consultar"
           >

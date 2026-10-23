@@ -3,7 +3,10 @@
 // estado es role="status" con aria-live="polite" y contiene "Procesando consulta…"; el error es
 // role="alert". `EstadoProcesamiento` es interno de App: se observa por su efecto en pantalla
 // (procesando = texto de espera; completado = Resultado; error = alert). `fetch` se simula (D5).
-import { cleanup, render, screen, waitFor } from "@testing-library/react";
+// T5 · AC-1/C4 · S-1.3, S-1.4 · D8 · NFR-1. ASSUMPTION: el contador es texto "N/1.000" (miles con punto)
+// y es parte de la descripción accesible del campo (aria-describedby); el exceso se marca con
+// aria-invalid="true" en el campo (señal accesible, no una clase CSS).
+import { cleanup, fireEvent, render, screen, waitFor } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 import { App } from "../../src/web/src/App";
@@ -84,7 +87,7 @@ describe("App: errores y reintento (FR-3, FR-4)", () => {
   const ERROR = { requestId: "abc-123", detail: "interno" };
 
   it("S-3.1: un 422 se ve con role=alert, su detail y el código de referencia", async () => {
-    await enviar("");
+    await enviar("x");
     pendientes[0]!(
       json({ detail: "La pregunta no puede estar vacía.", requestId: "abc-123", status: 422 }, 422),
     );
@@ -121,6 +124,7 @@ describe("App: errores y reintento (FR-3, FR-4)", () => {
     const { user } = await enviar();
     pendientes[0]!(json(OK));
     await screen.findByText(OK.respuesta);
+    await user.type(screen.getByLabelText("Pregunta"), "otra pregunta");
     await user.click(screen.getByRole("button", { name: "Consultar" }));
     await waitFor(() => expect(fetchMock).toHaveBeenCalledTimes(2));
     expect(screen.queryByText(OK.respuesta)).toBeNull();
@@ -150,5 +154,90 @@ describe("App: accesibilidad (NFR-1)", () => {
     const contenedor = resultado.parentElement?.closest('[aria-live="polite"]');
     expect(contenedor).toBeTruthy();
     expect(previas).toContain(contenedor);
+  });
+});
+
+const botonConsultar = () => screen.getByRole("button", { name: "Consultar" }) as HTMLButtonElement;
+const escribir = (valor: string) =>
+  fireEvent.change(screen.getByLabelText("Pregunta"), { target: { value: valor } });
+const descripcion = () => {
+  const ids = (screen.getByLabelText("Pregunta").getAttribute("aria-describedby") ?? "").split(/\s+/);
+  return ids.map((id) => document.getElementById(id)?.textContent ?? "").join(" ");
+};
+
+describe("App: pregunta vacía (S-1.3, AC-1/C4)", () => {
+  it.each([[""], ["   "], [" \t  \t "]])(
+    "S-1.3: con %j el botón está deshabilitado y el contador dice 0/1.000",
+    (valor) => {
+      render(<App />);
+      escribir(valor);
+      expect(botonConsultar().disabled).toBe(true);
+      expect(screen.getByText("0/1.000")).toBeTruthy();
+    },
+  );
+
+  it("S-1.3/C4: pulsar el botón deshabilitado o Enter en el campo vacío no envía petición", async () => {
+    const user = userEvent.setup();
+    render(<App />);
+    await user.click(botonConsultar());
+    await user.type(screen.getByLabelText("Pregunta"), "{Enter}");
+    escribir("   ");
+    await user.type(screen.getByLabelText("Pregunta"), "{Enter}");
+    expect(fetchMock).not.toHaveBeenCalled();
+  });
+
+  it("S-1.3: al escribir un carácter que no es espacio el botón se habilita", async () => {
+    const user = userEvent.setup();
+    render(<App />);
+    escribir("   ");
+    expect(botonConsultar().disabled).toBe(true);
+    await user.type(screen.getByLabelText("Pregunta"), "a");
+    expect(botonConsultar().disabled).toBe(false);
+    expect(screen.getByText("1/1.000")).toBeTruthy();
+  });
+
+  it("NFR-1: el contador forma parte de la descripción accesible del campo", () => {
+    render(<App />);
+    expect(descripcion()).toContain("0/1.000");
+  });
+});
+
+describe("App: pregunta demasiado larga (S-1.4, AC-1/C4)", () => {
+  it("S-1.4: con 1.001 puntos de código el contador dice 1.001/1.000 y el campo queda marcado", () => {
+    render(<App />);
+    escribir("a".repeat(1001));
+    expect(screen.getByText("1.001/1.000")).toBeTruthy();
+    expect(screen.getByLabelText("Pregunta").getAttribute("aria-invalid")).toBe("true");
+    expect(descripcion()).toContain("1.001/1.000");
+    expect(botonConsultar().disabled).toBe(true);
+  });
+
+  it("S-1.4/C4: con 1.001 puntos de código el botón y Enter no envían petición", async () => {
+    const user = userEvent.setup();
+    render(<App />);
+    escribir("a".repeat(1001));
+    await user.click(botonConsultar());
+    await user.type(screen.getByLabelText("Pregunta"), "{Enter}");
+    expect(fetchMock).not.toHaveBeenCalled();
+  });
+
+  it("S-1.4: dentro del límite el campo no está marcado como excedido", () => {
+    render(<App />);
+    escribir("a".repeat(1000));
+    expect(screen.getByLabelText("Pregunta").getAttribute("aria-invalid")).not.toBe("true");
+  });
+
+  it.each([
+    ["emojis", "\u{1F600}".repeat(1000), "1.000/1.000"],
+    ["'é' descompuestas", "e\u0301".repeat(1000), "1.000/1.000"],
+    ["espacios a los lados", "  " + "a".repeat(1000) + "  ", "1.000/1.000"],
+  ])("S-1.4: con exactamente 1.000 puntos de código (%s) se envía", async (_n, valor, contador) => {
+    const user = userEvent.setup();
+    render(<App />);
+    escribir(valor);
+    expect(screen.getByText(contador)).toBeTruthy();
+    expect(botonConsultar().disabled).toBe(false);
+    await user.click(botonConsultar());
+    await waitFor(() => expect(fetchMock).toHaveBeenCalledTimes(1));
   });
 });

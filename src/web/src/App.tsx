@@ -9,6 +9,7 @@ import type { Resultado as DatosResultado } from "./api";
 import { Cargando } from "./Cargando";
 import { Compositor } from "./Compositor";
 import { Orbe } from "./Orbe";
+import { preguntaValida } from "./pregunta";
 import { Resultado } from "./Resultado";
 
 type EstadoProcesamiento = "inactivo" | "procesando" | "completado" | "error";
@@ -104,7 +105,7 @@ function useConsulta() {
 
   async function enviar(evento: FormEvent) {
     evento.preventDefault();
-    if (estado === "procesando") return;
+    if (estado === "procesando" || !preguntaValida(pregunta)) return;
     setEstado("procesando");
     const texto = pregunta;
     setEnviada(texto);
