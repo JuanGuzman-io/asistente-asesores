@@ -14,29 +14,24 @@ tres primeras usan un backend simulado según el contrato y empiezan con pruebas
 
 ### AC-2 — Ver errores
 
-- [ ] T1 [AC-2] El proyecto web existe y el cliente de la API traduce cada respuesta del servicio — `src/web/package.json`
+- [x] T1 [AC-2] El proyecto web existe y el cliente de la API traduce cada respuesta del servicio — `src/web/package.json`
 
 **Checkpoint:** `npm --prefix src/web test -- api` passes (T1); this confirms AC-2 before the next group.
 
 ### AC-1 — Realizar consulta y ver la respuesta
 
-- [ ] T2 [AC-1] El resultado muestra respuesta, estado distinguible y fuentes como texto — `src/web/src/Resultado.tsx`
+- [x] T2 [AC-1] El resultado muestra respuesta, estado distinguible y fuentes como texto — `src/web/src/Resultado.tsx`
+- [ ] T5 [AC-1] La pregunta vacía o de más de 1.000 caracteres no se envía y un contador muestra el largo — `src/web/src/pregunta.ts`
 
-**Checkpoint:** `npm --prefix src/web test -- Resultado` passes (T2); this confirms AC-1 before the next group.
+**Checkpoint:** `npm --prefix src/web test -- Resultado` and `npm --prefix src/web test -- pregunta App` passes (T2, T5); this confirms AC-1 before the next group.
 
 ### AC-1, AC-2 — Realizar consulta y ver la respuesta; Ver errores
 
-- [ ] T3 [AC-1, AC-2] La pantalla consulta, muestra el procesamiento y los errores, y conserva la pregunta — `src/web/src/App.tsx`
-- [ ] T4 [AC-1, AC-2] Tres pruebas de punta a punta pasan con el backend real — `src/web/playwright.config.ts`
-
-**Checkpoint:** `npm --prefix src/web test -- App` and `npm --prefix src/web run e2e` passes (T3, T4); this confirms AC-1, AC-2 before the next group.
-
-### AC-1, AC-2 — Enmienda C-9: sin envío inválido
-
-- [ ] T5 [AC-1] La pregunta vacía o de más de 1.000 caracteres no se envía y un contador muestra el largo — `src/web/src/pregunta.ts`
+- [x] T3 [AC-1, AC-2] La pantalla consulta, muestra el procesamiento y los errores, y conserva la pregunta — `src/web/src/App.tsx`
+- [x] T4 [AC-1, AC-2] Tres pruebas de punta a punta pasan con el backend real — `src/web/playwright.config.ts`
 - [ ] T6 [AC-1, AC-2] Las e2e de caja vacía y error visible reemplazan la de pregunta vacía — `tests/web/e2e/consultar.spec.ts`
 
-**Checkpoint:** `npm --prefix src/web test -- pregunta App` and `npm --prefix src/web run e2e` passes (T5, T6); this confirms AC-1/C4 and AC-2 before the next group.
+**Checkpoint:** `npm --prefix src/web test -- App` and `npm --prefix src/web run e2e` passes (T3, T4, T6); this confirms AC-1, AC-2 before the next group.
 
 ## Details
 
@@ -164,8 +159,7 @@ verify: npm --prefix src/web run e2e
   - S-1.4 se cumple: con 1.001 puntos de código el contador dice "1.001/1.000", marcado como excedido, y no sale ninguna petición; con exactamente 1.000, aunque haya espacios a los lados, "é" descompuesta o emojis, se envía.
   - `largoPregunta` y `preguntaValida` dan los mismos resultados que el backend en los casos de P4.
   - S-3.1 en pantalla usa una pregunta válida con el 422 simulado; S-1.1, S-1.2 y S-4.1 siguen pasando.
-  - El contador se encuentra por texto y está asociado al campo con `aria-describedby` (NFR-1).
-  - `src/web/AGENTS.md` ya no dice que la pregunta vacía llega al backend.
+  - El contador se encuentra por texto y está asociado al campo con `aria-describedby` (NFR-1); `src/web/AGENTS.md` ya no dice que la pregunta vacía llega al backend.
 
 ```yaml
 project: web
