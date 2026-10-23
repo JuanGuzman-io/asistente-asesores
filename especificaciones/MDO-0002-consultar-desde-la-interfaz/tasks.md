@@ -61,7 +61,7 @@ parallel_safe: false
 verify: npm --prefix src/web test -- api
 ```
 
-### [ ] T2 — El resultado muestra respuesta, estado distinguible y fuentes como texto
+### [x] T2 — El resultado muestra respuesta, estado distinguible y fuentes como texto
 
 - **What:** el componente `Resultado` pinta la respuesta, el rótulo del estado y la lista de fuentes
   ([D3](spec.md#d3), [D4](spec.md#d4)).
@@ -75,7 +75,7 @@ verify: npm --prefix src/web test -- api
 project: web
 kind: feat
 tier: standard
-files: [src/web/src/Resultado.tsx, tests/web/Resultado.test.tsx]
+files: [src/web/src/Resultado.tsx, tests/web/Resultado.test.tsx, src/web/vite.config.ts, src/web/tsconfig.json, src/web/AGENTS.md, .mandao/config.yml, .mandao/mandao.lock]
 exemplar: src/web/src/api.ts
 ac: [AC-1, AC-1/C2, AC-1/C3]
 scenarios: [S-2.1, S-2.2, S-2.2/C2, S-2.3, S-2.3/C2, S-2.4, S-2.4/C3]
