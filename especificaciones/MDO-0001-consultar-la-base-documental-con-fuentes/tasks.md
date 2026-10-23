@@ -362,7 +362,7 @@ parallel_safe: false
 verify: uv run pytest tests/server/http -q
 ```
 
-### [ ] T10 — El flujo crítico pasa de punta a punta y los umbrales quedan calibrados con el dataset
+### [x] T10 — El flujo crítico pasa de punta a punta y los umbrales quedan calibrados con el dataset
 
 - **What:** crea `tests/fixtures/consultas.json` v1 (con respuesta, sin respuesta, fuera de tema y
   parciales sobre `Data/`), la prueba e2e del flujo "Consulta respondida con fuentes y registrada" y las
