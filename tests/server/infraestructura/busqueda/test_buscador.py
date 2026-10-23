@@ -1,9 +1,9 @@
-"""T4 (MDO-0001): búsqueda híbrida FTS5 + Qdrant, RRF, umbral 0,60 / 0,40 (D4, D5).
+"""T4 (MDO-0001): búsqueda híbrida FTS5 + Qdrant, RRF, umbral 0,60 / 0,54 (D4, D5).
 
 API asumida (design.md fija el puerto `BuscadorDocumental`, los umbrales y la fusión, pero no firmas):
 
     src/server/config.py
-        UMBRAL_ALTO = 0.60, UMBRAL_BAJO = 0.40 ("valores iniciales en configuración", D4).
+        UMBRAL_ALTO = 0.60, UMBRAL_BAJO = 0.54 ("valores calibrados en configuración", D4).
 
     src/server/dominio/puertos.py
         ResultadoBusqueda (dataclass congelada): `fragmentos: Sequence[Fragmento]` (hasta 3, mejor
@@ -23,6 +23,10 @@ API asumida (design.md fija el puerto `BuscadorDocumental`, los umbrales y la fu
             5 candidatos por vía, RRF (k = 60), se quedan los 3 primeros, solo hashes presentes en
             `fragmentos` (D11). Hay soporte si el mejor fragmento (el primero tras la fusión) tiene
             coseno >= umbral_alto, o >= umbral_bajo y además salió en FTS.
+
+Cambio del PE (2026-10-23): lo que se embebe y se indexa en FTS es `texto_indexable(fragmento)` =
+`f"{documento} > {seccion}\n{texto}"` (`src/server/infraestructura/busqueda/indice.py`). Los dobles
+de vectores explícitos se indexan por ese texto (`_emb`), escrito aquí en literal a propósito.
 
 Doble de embeddings temático: el texto de un fragmento (sin su título) o la pregunta que hablan del
 mismo producto comparten eje (coseno 1); lo demás cae en un vector hash casi ortogonal. Los casos de
@@ -136,6 +140,11 @@ class EmbeddingsFijo:
         return [self.vectores.get(t) or _hash_vector(t, self.nombre) for t in textos]
 
 
+def _emb(fragmento: Fragmento) -> str:
+    """Texto que llega al modelo de embeddings: `documento > sección\ntexto`."""
+    return f"{fragmento.documento} > {fragmento.seccion}\n{fragmento.texto}"
+
+
 def _con_coseno(c: float) -> list[float]:
     """Vector cuyo coseno con la consulta `_consulta()` es exactamente `c`."""
     vector = [0.0] * DIMENSION
@@ -166,16 +175,16 @@ def buscador(conexion, qdrant, oficiales) -> BuscadorHibrido:
 def _caso_umbral(conexion, qdrant, coseno: float, pregunta: str) -> ResultadoBusqueda:
     """Un fragmento "alfa beta" con el coseno dado respecto de la consulta; FTS depende de la pregunta."""
     fragmento = Fragmento("Doc", "Sección Uno", "alfa beta")
-    embeddings = EmbeddingsFijo({"alfa beta": _con_coseno(coseno), pregunta: _consulta()})
+    embeddings = EmbeddingsFijo({_emb(fragmento): _con_coseno(coseno), pregunta: _consulta()})
     return _indexar(conexion, qdrant, [fragmento], embeddings).buscar(pregunta)
 
 
 # --- Puerto y configuración (D4) ---------------------------------------------------------------
 
 
-def test_d4_umbrales_iniciales_en_configuracion():
+def test_d4_umbrales_calibrados_en_configuracion():
     assert config.UMBRAL_ALTO == pytest.approx(0.60)
-    assert config.UMBRAL_BAJO == pytest.approx(0.40)
+    assert config.UMBRAL_BAJO == pytest.approx(0.54)
 
 
 def test_d4_el_buscador_implementa_el_puerto_y_devuelve_resultado_de_dominio(buscador):
@@ -216,7 +225,7 @@ def test_s31_rrf_conserva_el_orden_y_limita_a_tres_candidatos(conexion, qdrant):
         for i in range(5)
     ]
     cosenos = [0.9, 0.8, 0.7, 0.6, 0.5]
-    vectores = {f.texto: _con_coseno(c) for f, c in zip(fragmentos, cosenos, strict=True)}
+    vectores = {_emb(f): _con_coseno(c) for f, c in zip(fragmentos, cosenos, strict=True)}
     vectores["comun"] = _consulta()
     buscador = _indexar(conexion, qdrant, fragmentos, EmbeddingsFijo(vectores))
 
@@ -237,7 +246,7 @@ def test_s31_rrf_fusiona_ordenes_distintos_de_bm25_y_coseno(conexion, qdrant):
         for i in range(5)
     ]
     cosenos = [0.62, 0.7, 0.9, 0.8, 0.65]
-    vectores = {f.texto: _con_coseno(c) for f, c in zip(fragmentos, cosenos, strict=True)}
+    vectores = {_emb(f): _con_coseno(c) for f, c in zip(fragmentos, cosenos, strict=True)}
     vectores["comun"] = _consulta()
     buscador = _indexar(conexion, qdrant, fragmentos, EmbeddingsFijo(vectores))
     por_texto = dict(conexion.execute("SELECT hash, seccion FROM fragmentos").fetchall())
@@ -258,9 +267,9 @@ def test_d4_sin_candidatos_comunes_usa_el_coseno_real_del_mejor_fragmento(conexi
     pregunta = "alfa"
     a = Fragmento("Doc", "Sección A", "alfa gamma")
     otros = [Fragmento("Doc", f"Sección B{i}", f"bravo{i}") for i in range(1, 6)]
-    vectores = {a.texto: _con_coseno(0.65), pregunta: _consulta()}
+    vectores = {_emb(a): _con_coseno(0.65), pregunta: _consulta()}
     for f, c in zip(otros, [0.95, 0.9, 0.85, 0.8, 0.7], strict=True):
-        vectores[f.texto] = _con_coseno(c)
+        vectores[_emb(f)] = _con_coseno(c)
     buscador = _indexar(conexion, qdrant, [a, *otros], EmbeddingsFijo(vectores))
 
     resultado = buscador.buscar(pregunta)
@@ -274,7 +283,7 @@ def test_d11_los_huerfanos_no_quitan_cupos_a_los_candidatos_vigentes(conexion, q
 
     pregunta = "omega"  # no está en ningún fragmento: solo cuenta la vía vectorial
     vigente = Fragmento("Doc", "Sección Vigente", "alfa beta")
-    embeddings = EmbeddingsFijo({"alfa beta": _con_coseno(0.7), pregunta: _consulta()})
+    embeddings = EmbeddingsFijo({_emb(vigente): _con_coseno(0.7), pregunta: _consulta()})
     buscador = _indexar(conexion, qdrant, [vigente], embeddings)
     huerfanos = [hash_normalizado(f"huerfano {i}") for i in range(6)]  # más cercanos que el vigente
     qdrant.upsert(
@@ -295,7 +304,7 @@ def test_d11_los_huerfanos_no_quitan_cupos_a_los_candidatos_vigentes(conexion, q
     assert [f.seccion for f in resultado.fragmentos] == ["Sección Vigente"]
 
 
-# --- Umbral D4: 0,60 solo vectores; 0,40 si además coincide en FTS ------------------------------
+# --- Umbral D4: 0,60 solo vectores; 0,54 si además coincide en FTS ------------------------------
 
 
 def test_s31_umbral_alto_basta_sin_coincidencia_fts(conexion, qdrant):
@@ -306,11 +315,11 @@ def test_s31_umbral_alto_basta_sin_coincidencia_fts(conexion, qdrant):
 
 
 def test_s31_umbral_bajo_con_coincidencia_fts_da_soporte(conexion, qdrant):
-    assert _caso_umbral(conexion, qdrant, 0.50, "alfa").hay_soporte is True
+    assert _caso_umbral(conexion, qdrant, 0.56, "alfa").hay_soporte is True
 
 
 def test_s32_entre_umbrales_sin_coincidencia_fts_no_hay_soporte(conexion, qdrant):
-    resultado = _caso_umbral(conexion, qdrant, 0.50, "omega")
+    resultado = _caso_umbral(conexion, qdrant, 0.56, "omega")
 
     assert resultado.hay_soporte is False
     assert not resultado.fragmentos
@@ -328,7 +337,7 @@ def test_s31_la_busqueda_ignora_puntos_cuyo_hash_no_esta_en_fragmentos(conexion,
 
     pregunta = "omega"
     fragmento = Fragmento("Doc", "Sección Uno", "alfa beta")
-    embeddings = EmbeddingsFijo({"alfa beta": _con_coseno(0.2), pregunta: _consulta()})
+    embeddings = EmbeddingsFijo({_emb(fragmento): _con_coseno(0.2), pregunta: _consulta()})
     buscador = _indexar(conexion, qdrant, [fragmento], embeddings)
     huerfano = hash_normalizado("huerfano gamma")
     qdrant.upsert(  # idéntico a la consulta (coseno 1), pero sin fila en `fragmentos`
@@ -459,3 +468,13 @@ def test_s82_la_via_fts_por_si_sola_ignora_tildes_y_ordena_primero_la_seccion(
     assert con_tildes[0] == impulso
     assert sin_tildes == con_tildes
     assert len(sin_tildes) <= 5
+
+
+def test_fts_encuentra_por_palabras_del_documento_y_de_la_seccion(conexion, qdrant):
+    # El texto indexado en FTS es `documento > sección\ntexto`: el cuerpo no trae esas palabras.
+    fragmento = Fragmento("Manual Zorrodoc", "Sección Zorrosec", "alfa beta")
+    otro = Fragmento("Otro", "Otra", "gamma delta")
+    _indexar(conexion, qdrant, [fragmento, otro], EmbeddingsTematico())
+
+    assert buscar_fts(conexion, "zorrodoc") == [hash_normalizado(fragmento.texto)]
+    assert buscar_fts(conexion, "zorrosec") == [hash_normalizado(fragmento.texto)]

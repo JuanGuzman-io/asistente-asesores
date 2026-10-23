@@ -320,7 +320,7 @@ def test_dos_peticiones_concurrentes_registran_cada_una_su_propio_modo(arrancar,
 
 # --- Pendiente: el handler de 500 no registra la pregunta ni `repr(resultado)` -----------------
 
-SECRETO = "cliente-Zeta-4821"
+SECRETO = "cliente-Zeta-4821"  # pragma: allowlist secret
 
 
 class RedactorQueFalla:

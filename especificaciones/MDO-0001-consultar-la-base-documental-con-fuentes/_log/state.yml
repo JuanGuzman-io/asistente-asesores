@@ -2,7 +2,7 @@
 progress:
   schema_version: 1
   spec: MDO-0001-consultar-la-base-documental-con-fuentes
-  updated_at: 2026-10-23T17:11:58.047Z
+  updated_at: 2026-10-23T17:38:50.977Z
   current: null
   open_questions: []
   next_step: ""
@@ -267,6 +267,68 @@ progress:
             - test_s9_2_sin_content_type_responde_415_problema
             - test_s9_2_application_json_con_o_sin_charset_si_se_procesa
             - test_s11_1_c1_tras_413_415_y_422_la_tabla_consultas_no_tiene_filas_nuevas
+    - task: T10
+      files:
+        - path: tests/server/e2e/test_flujo_consulta.py
+          sha256: 4ce99fff14b03fcbdd8d8c4b3da0780044b93a1bc7cf374ee7cd5325d1ffff57
+          tests:
+            - test_s4_1_la_pregunta_del_pdf_responde_200_con_el_monto_su_fuente_y_queda_registrada
+            - test_el_confidencial_no_se_devuelve_ni_se_registra
+            - test_s10_1_una_pregunta_sin_soporte_responde_el_mensaje_fijo_y_queda_registrada
+            - test_s10_3_fuera_de_tema_no_es_bloqueada_por_seguridad
+            - test_s11_1_cada_consulta_procesada_tiene_su_registro_y_las_rechazadas_ninguno
+            - test_s5_2_sin_modelo_la_pregunta_de_monto_y_tasa_trae_el_fragmento_con_su_fuente
+        - path: tests/server/evals/test_evals.py
+          sha256: 72ba807c3bb751c99a6576b74b1ac9a16bedd4f8c7dadb9facdfe1946bea3bdf
+          tests:
+            - test_dataset_v1_cubre_los_cuatro_tipos_con_muestra_suficiente
+            - test_s3_1_la_pregunta_del_pdf_trae_primero_el_credito_productivo_impulso
+            - test_ev1_recuperacion_hit_at_3
+            - test_ev2_precision_de_sin_informacion
+            - test_ev3_falsos_sin_informacion
+            - test_ev4_fidelidad_de_las_cifras
+            - test_ev5_fuentes_completas
+        - path: tests/server/infraestructura/busqueda/test_buscador.py
+          sha256: b80aa3173523ccb90f94189589fb8e7de2076c6e5a2a506fcc7c3e29bfa189cf
+          tests:
+            - test_d4_umbrales_iniciales_en_configuracion
+            - test_d4_el_buscador_implementa_el_puerto_y_devuelve_resultado_de_dominio
+            - test_s31_el_primer_fragmento_es_credito_productivo_impulso
+            - test_s31_devuelve_como_maximo_tres_fragmentos_sin_repetir
+            - test_s31_el_confidencial_nunca_aparece_en_los_resultados
+            - test_s31_rrf_conserva_el_orden_y_limita_a_tres_candidatos
+            - test_s31_rrf_fusiona_ordenes_distintos_de_bm25_y_coseno
+            - test_d4_sin_candidatos_comunes_usa_el_coseno_real_del_mejor_fragmento
+            - test_d11_los_huerfanos_no_quitan_cupos_a_los_candidatos_vigentes
+            - test_s31_umbral_alto_basta_sin_coincidencia_fts
+            - test_s31_umbral_bajo_con_coincidencia_fts_da_soporte
+            - test_s32_entre_umbrales_sin_coincidencia_fts_no_hay_soporte
+            - test_s32_bajo_el_umbral_bajo_no_hay_soporte_aunque_coincida_en_fts
+            - test_s31_la_busqueda_ignora_puntos_cuyo_hash_no_esta_en_fragmentos
+            - test_s32_pregunta_sin_respuesta_en_la_base_no_supera_el_umbral
+            - test_s81_pregunta_con_signos_da_el_mismo_resultado_que_sin_ellos
+            - test_s81_consulta_fts_cita_cada_palabra_y_quita_palabras_vacias
+            - test_s81_solo_signos_o_emojis_omiten_la_via_fts
+            - test_s81_c1_ninguna_pregunta_hostil_produce_error_de_sintaxis_fts
+            - test_s81_c1_los_operadores_fts_se_tratan_como_palabras_no_como_sintaxis
+            - test_s81_c1_la_pregunta_nunca_se_interpola_en_el_sql
+            - test_s82_sin_tildes_recupera_el_mismo_fragmento_que_con_tildes
+            - test_s82_la_via_fts_por_si_sola_ignora_tildes_y_ordena_primero_la_seccion
+            - test_fts_encuentra_por_palabras_del_documento_y_de_la_seccion
+            - test_d4_umbrales_calibrados_en_configuracion
+        - path: tests/server/infraestructura/busqueda/test_indice.py
+          sha256: e7e790ce76e596359dafdcfed047bd1393fd9b3386c687339b6a0d07c58226eb
+          tests:
+            - test_s11_indexa_los_fragmentos_oficiales_en_sqlite_y_qdrant
+            - test_s11_c1_ningun_termino_ni_punto_del_confidencial_en_el_indice
+            - test_segundo_arranque_sin_cambios_calcula_cero_embeddings
+            - test_solo_se_calculan_los_embeddings_de_los_hashes_nuevos
+            - test_cambiar_el_nombre_del_modelo_recrea_la_coleccion
+            - test_el_texto_embebido_incluye_documento_y_seccion
+            - test_cambiar_la_version_del_formato_recrea_la_coleccion
+            - test_falla_sqlite_tras_upsert_qdrant_conserva_indice_anterior
+            - test_puntos_huerfanos_no_aparecen_en_busqueda
+            - test_renombrar_la_seccion_con_el_mismo_texto_vuelve_a_embeber
   pending_commits: []
   approved_manifests:
     - task: T1
@@ -598,10 +660,55 @@ progress:
         - tests/server/http/test_consultar_api.py
         - tests/server/http/test_limites.py
       receipts: []
+    - task: T10
+      attempt: 2
+      files:
+        - path: pyproject.toml
+          status: " M"
+          sha256: 13dfa6ab97f558c6777e429649d64f7bded6c0a23739dac1e3139829e004e48b
+        - path: src/server/AGENTS.md
+          status: " M"
+          sha256: a74e0d6ed65453fb0b7de7a7e848f0d717fc04b8683c3757db10aa0d07e71305
+        - path: src/server/config.py
+          status: " M"
+          sha256: c33ca1abcf098248ec3b7c06ba0e9664013e66137a7c017194a3d1904198cdab
+        - path: src/server/infraestructura/busqueda/indice.py
+          status: " M"
+          sha256: 0a62d57d3c1ee69e845702438671624ee1c42ade641925e959ef58ebb00dad9e
+        - path: tests/fixtures/consultas.json
+          status: ??
+          sha256: 243af29d871454bf48cfd1c7f36112089e25032b92dee31a8436c923a43cb870
+        - path: tests/server/e2e/test_flujo_consulta.py
+          status: ??
+          sha256: dd03df06d0273961f132c6409039c830c2c0e807b1e25469cff57ec9de9ead17
+        - path: tests/server/evals/test_evals.py
+          status: ??
+          sha256: 72ba807c3bb751c99a6576b74b1ac9a16bedd4f8c7dadb9facdfe1946bea3bdf
+        - path: tests/server/http/test_consultar_api.py
+          status: " M"
+          sha256: 27c1eba993dff4b0f858cbb2bc660170e564c16abdcfe2ce968e997bb6241148
+        - path: tests/server/infraestructura/busqueda/test_buscador.py
+          status: " M"
+          sha256: b80aa3173523ccb90f94189589fb8e7de2076c6e5a2a506fcc7c3e29bfa189cf
+        - path: tests/server/infraestructura/busqueda/test_indice.py
+          status: " M"
+          sha256: e7e790ce76e596359dafdcfed047bd1393fd9b3386c687339b6a0d07c58226eb
+      reviewed:
+        - pyproject.toml
+        - src/server/AGENTS.md
+        - src/server/config.py
+        - src/server/infraestructura/busqueda/indice.py
+        - tests/server/http/test_consultar_api.py
+        - tests/server/infraestructura/busqueda/test_buscador.py
+        - tests/server/infraestructura/busqueda/test_indice.py
+        - tests/fixtures/consultas.json
+        - tests/server/e2e/test_flujo_consulta.py
+        - tests/server/evals/test_evals.py
+      receipts: []
   loop_brake:
-    task: T9
+    task: T10
     action: commit
-    execution_rows: 63
+    execution_rows: 74
     approval_rows: 6
     repeats: 1
 approvals:
@@ -743,4 +850,12 @@ cut_estimates:
     base: 63912
     turns_left: 88
     savings: 4.78
+    decision: "go on: below 50"
+  - at: 2026-10-23T17:12:11.668Z
+    task: T10
+    boundary_id: implement:T10
+    context: 381206
+    base: 63912
+    turns_left: 73
+    savings: 4.31
     decision: "go on: below 50"

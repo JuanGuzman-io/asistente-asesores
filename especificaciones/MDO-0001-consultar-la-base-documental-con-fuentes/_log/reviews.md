@@ -486,3 +486,91 @@ Revisé T9 con el paquete `.mandao/cache/MDO-0001/reviews/T9-1-pack.md` y los ga
 {"id":"F15","status":"open","severity":"low","lens":"core","title":"El logger asistente.http tiene handler propio y también propaga","file":"src/server/http/logs.py","line":8,"evidence":"Si uvicorn o la raíz configuran un handler, cada línea JSON sale dos veces."}
 ]}
 ```
+
+## T10 — attempt 1
+
+VERDICT: FAIL
+
+## Resumen
+
+T10 no se puede aceptar todavía. Las evals cumplen los objetivos y los números de D4 coinciden con los que midió el implementador, pero hay tres hallazgos que bloquean:
+
+- **F1:** la clave del caché de embeddings no cubre lo que ahora se embebe.
+- **F2:** las evals descargan el modelo dentro del gate por defecto, contra `standards.md:39`.
+- **F3:** el gate `secrets` falla, aunque el contexto decía "los demás gates pasan".
+
+## Verificación de lo pedido
+
+**Los números de D4 coinciden** con la salida del implementador (T10-fullsuite.txt y T10-impacted.txt): EV-1 0,955, EV-2 1,000, EV-3 0,000, EV-4 1,000 y EV-5 1,000; coseno con soporte 0,556–0,667–0,881 y sin soporte 0,095–0,412–0,599; la sin soporte más alta con FTS es s06 (0,517) y la con soporte más baja es c09 (0,556). Ambas salidas dicen 59 y 228 passed.
+
+**Las evals miden la tabla EV de `requirements.md`:** EV-1 y EV-3 sobre con_respuesta y parcial (22), EV-2 sobre sin_respuesta y fuera_de_tema (10), EV-4 y EV-5 sobre las `Exitosa`. EV-6 queda fuera con justificación. EV-4 en modo extractivo se cumple casi por construcción, pero así lo define la tabla.
+
+**Sobreajuste.** El contenido del dataset no depende del umbral, pero el umbral se eligió mirando ese mismo dataset: los EV son resultados dentro de la muestra. C-5 lo permite; advertencia en F4.
+
+**Margen de 0,54:** el punto medio entre 0,517 y 0,556 es 0,5365, así que 0,54 es correcto. D4 omite márgenes más estrechos: s02 mide 0,599 contra `UMBRAL_ALTO` 0,60 (0,001), y s05 mide 0,531, 0,009 bajo `UMBRAL_BAJO`, fuera solo porque no coincide en FTS. Con 10 preguntas en EV-2, un solo cambio baja EV-2 a 0,90 (F4).
+
+**D11, segundo arranque sin recalcular.** `test_cambiar_la_version_del_formato_recrea_la_coleccion` comprueba ambos lados. El problema está en la clave del caché (F1).
+
+**El e2e cubre cada punto del "Done when"** (S-4.1; token interno y clave temporal; S-10.1; S-11.1 con 415, 413, 422 y 422 sin fila; S-5.2). **Primera corrida en verde del e2e:** revisé las aserciones de forma independiente; comparan valores concretos sobre el pipeline real y solo el embedding es un doble. Basta como evidencia del flujo.
+
+**Nada se debilitó en las pruebas:** en `test_indice.py` y `test_buscador.py` solo cambia la clave de los dobles; 0,50 → 0,56 mantiene ambos casos entre umbrales; sigue la prueba con 0,35; el renombre a `..._calibrados_...` está justificado y el rojo está registrado (`execution.md` líneas 76–80).
+
+**El confidencial no llega al dataset ni a los registros:** s04 y s05 solo contienen la pregunta; el e2e lee el confidencial al ejecutarse sin copiarlo; el reporte de las evals imprime solo id, coseno, estado y pregunta; `indice.py` registra solo conteos.
+
+## Findings (JSON)
+
+```json
+{"version":1,"findings":[
+{"id":"F1","status":"open","severity":"medium","lens":"data","title":"La clave del caché de embeddings (hash de `texto`) no cubre documento ni sección, que ahora se embeben: al renombrar quedan vectores viejos","file":"src/server/infraestructura/busqueda/indice.py","line":112,"evidence":"`con_hash = [(f, hash_normalizado(f.texto)) ...]`; `nuevos = {h: texto_indexable(f) for f, h in con_hash if h not in existentes}`. Si cambia `documento` o `seccion` con el mismo texto, el hash ya existe y no se vuelve a embeber; FTS sí se reconstruye. Incumple D4 ('lo que se embebe es documento > sección\\ntexto')."},
+{"id":"F2","status":"open","severity":"medium","lens":"performance","title":"Las evals descargan el modelo real dentro del gate de test por defecto, contra standards.md:39, sin excepción registrada","file":"pyproject.toml","line":23,"evidence":"Se registra el marker `eval` pero no hay `addopts = -m 'not eval'`; `uv run pytest` ejecuta tests/server/evals con `EmbeddingsFastembed` (0,22 GB). standards.md:39: 'Las pruebas nunca llaman a Gemini ni descargan modelos'. La excepción solo está en el docstring y no se descartó la alternativa más simple (excluir por defecto y correrlas en `verify`)."},
+{"id":"F3","status":"open","severity":"medium","lens":"core","title":"El gate secrets falla (falso positivo en una prueba de T9) y el contexto lo daba por aprobado","file":"tests/server/http/test_consultar_api.py","line":323,"evidence":"gates/T10-1.md: secrets FAIL exit 1, 'Secret Keyword' en `SECRETO = \"cliente-Zeta-4821\"`. Marcar con `pragma: allowlist secret` o actualizar .secrets.baseline."},
+{"id":"F4","status":"open","severity":"medium","lens":"performance","title":"D4 declara un margen de ≈0,02 pero omite márgenes de 0,001 (UMBRAL_ALTO) y 0,009 (UMBRAL_BAJO); la calibración es dentro de la muestra","file":"especificaciones/MDO-0001-consultar-la-base-documental-con-fuentes/design.md","line":74,"evidence":"T10-fullsuite.txt: s02 0,599 frente a 0,60 (no hay umbral más alto que lo salve); s05 0,531, 0,009 bajo 0,54, solo queda fuera porque no coincide en FTS. EV-2 tiene n=10: un solo cambio la deja en 0,90. Los umbrales se eligieron con el mismo consultas@v1 que mide los EV."},
+{"id":"F5","status":"open","severity":"low","lens":"data","title":"FTS5 de contenido externo indexa un texto distinto de la tabla de contenido, y la sección se indexa dos veces","file":"src/server/infraestructura/busqueda/indice.py","line":90,"evidence":"esquema.py: `content='fragmentos'`; se inserta `texto_indexable(fragmento)` en la columna `texto` mientras `fragmentos.texto` guarda el cuerpo. 'rebuild', 'delete' por fila, snippet o integrity-check quedarían inconsistentes; `seccion` aparece en su columna y dentro de `texto` (peso BM25)."},
+{"id":"F6","status":"open","severity":"low","lens":"core","title":"La aserción 'no afirma cubrir toda la pregunta' de S-5.2 prueba poco, y el oráculo copia el formato de texto_indexable en literal","file":"tests/server/e2e/test_flujo_consulta.py","line":1021,"evidence":"`assert \"No encontré información sobre\" not in ...` no demuestra la cláusula; C-1 lo cubre el `startswith(ENCABEZADO_EXTRACTIVO)`. `EmbeddingsOraculo` reconstruye la clave `f\"{documento} > {seccion}\\n{texto}\"` a mano."},
+{"id":"F7","status":"resolved","severity":"low","lens":"core","title":"Gate de test con exit 4 por problema de la herramienta (isTestFile trata consultas.json como prueba)","file":"tests/fixtures/consultas.json","line":1,"evidence":"gates/T10-1.md: 'ERROR: not found ... consultas.json'. Evidencia alternativa del Leader: T10-impacted.txt 59 passed, T10-fullsuite.txt 228 passed, con los EV impresos."}
+]}
+```
+
+## T10 — attempt 2
+
+VERDICT: PASS
+
+## Resumen
+
+T10, intento 2: F1 a F6 quedan resueltos, D11 se mantiene y ninguna aserción se debilitó. Doy PASS. Hay una condición antes de cerrar la tarea (F8): el paquete no trae la salida de la suite sin evals. El "223 passed" lo informa el Leader y no está en `gates/T10-2.md`, así que no lo doy por verificado.
+
+## Verificación
+
+**F1, resuelto.** En `indice.py`, la clave del caché es `clave_embedding(f) = hash_normalizado(texto_indexable(f))`, el id del punto es el UUID v5 de esa clave y el payload es `{hash, clave}`. `_claves_en_qdrant` lee `clave` y los obsoletos son `existentes - claves.keys()`: al renombrar un documento o una sección se vuelve a embeber y el punto viejo se borra después del commit. `payload.hash` y `fragmentos.hash` siguen siendo el hash de `texto`. `VERSION_FORMATO = "v3-clave-texto-indexable"` recrea las colecciones anteriores. La prueba roja `test_renombrar_la_seccion_con_el_mismo_texto_vuelve_a_embeber` cubre sección y documento; su rojo está en `execution.md:83`.
+
+**F2, resuelto.** `pyproject.toml` tiene `addopts = "-m 'not eval'"` y `.mandao/config.yml:23` define `metrics: uv run pytest -m eval`. La salida del gate confirma "collected 230 items / 223 deselected / 7 selected" y "7 passed", con EV-1 0,955, EV-2 1,000, EV-3 0,000, EV-4 1,000 y EV-5 1,000. La excepción a `standards.md:39` está justificada en D4 como decisión del PE, y el README la documenta.
+
+**F3, resuelto.** `# pragma: allowlist secret` en `test_consultar_api.py:323`; gate `secrets` PASS.
+
+**F4, resuelto.** D4 declara los márgenes de 0,001 (s02) y 0,009 (s05), n=10 en EV-2 y que la calibración es dentro de la muestra. Pendiente de commit de docs aparte.
+
+**F5, resuelto.** `src/server/AGENTS.md` documenta que FTS5 de contenido externo indexa `texto_indexable` y advierte sobre `rebuild`, `delete` por fila, `snippet` e `integrity-check`.
+
+**F6, resuelto en lo que bloqueaba.** El oráculo importa `texto_indexable`. La aserción débil sigue, pero C-1 lo cubre `startswith(ENCABEZADO_EXTRACTIVO)`.
+
+**D11 se mantiene.** `test_segundo_arranque_sin_cambios_calcula_cero_embeddings` sigue afirmando `segundo.textos == []`; `test_cambiar_la_version_del_formato_recrea_la_coleccion` comprueba ambos lados.
+
+**No se debilitó ninguna aserción.** Solo cambian claves de dobles; 0,50 → 0,56 sigue entre umbrales; el renombre `..._calibrados_...` mantiene la aserción con motivo registrado; en el e2e solo cambia el doble.
+
+**Gates.** format, lint, typecheck, secrets, audit, sast y metrics PASS. `test` FAIL con exit 4 por el defecto de la herramienta (`isTestFile` pasa `consultas.json` a pytest), no del código.
+
+## Findings (JSON)
+
+```json
+{"version":1,"findings":[
+{"id":"F1","status":"resolved","severity":"medium","lens":"data","title":"La clave del caché de embeddings ahora es el hash de texto_indexable","file":"src/server/infraestructura/busqueda/indice.py","line":430,"evidence":"`clave_embedding(f) = hash_normalizado(texto_indexable(f))`; id = UUID v5 de la clave; payload `{hash, clave}`; `obsoletos = existentes - claves.keys()`; VERSION_FORMATO v3. Prueba roja parametrizada (sección y documento) registrada en execution.md:83."},
+{"id":"F2","status":"resolved","severity":"medium","lens":"performance","title":"Las evals salen del gate por defecto y pasan al gate metrics","file":"pyproject.toml","line":23,"evidence":"`addopts = \"-m 'not eval'\"`; `.mandao/config.yml:23` `metrics: uv run pytest -m eval`; salida: '230 items / 223 deselected / 7 selected', '7 passed'. La excepción a standards.md:39 está justificada en D4 (PE 2026-10-23)."},
+{"id":"F3","status":"resolved","severity":"medium","lens":"core","title":"Falso positivo del gate secrets marcado con pragma","file":"tests/server/http/test_consultar_api.py","line":323,"evidence":"`SECRETO = \"cliente-Zeta-4821\"  # pragma: allowlist secret`; gate secrets PASS, exit 0."},
+{"id":"F4","status":"resolved","severity":"medium","lens":"performance","title":"D4 declara los márgenes reales y que la calibración es dentro de la muestra","file":"especificaciones/MDO-0001-consultar-la-base-documental-con-fuentes/design.md","line":74,"evidence":"D4: '0,001 bajo UMBRAL_ALTO (s02, 0,599...)', '0,009 bajo UMBRAL_BAJO (s05, 0,531...)', 'EV-2 tiene n = 10', 'La calibración es dentro de la muestra'. Pendiente de commit de docs, según el Leader."},
+{"id":"F5","status":"resolved","severity":"low","lens":"data","title":"AGENTS.md documenta que FTS5 de contenido externo indexa texto_indexable","file":"src/server/AGENTS.md","line":17,"evidence":"'fragmentos_fts (FTS5 de contenido externo) indexa texto_indexable... no usar rebuild, delete por fila, snippet ni integrity-check sin revisar este punto'. Sugerencia sin bloqueo: seccion sigue pesando dos veces en BM25."},
+{"id":"F6","status":"resolved","severity":"low","lens":"core","title":"El oráculo del e2e importa texto_indexable","file":"tests/server/e2e/test_flujo_consulta.py","line":900,"evidence":"`from src.server.infraestructura.busqueda.indice import texto_indexable`. Sugerencia sin bloqueo: la aserción `\"No encontré información sobre\" not in` sigue siendo débil; C-1 lo cubre `startswith(ENCABEZADO_EXTRACTIVO)`."},
+{"id":"F7","status":"resolved","severity":"low","lens":"core","title":"El gate test da exit 4 por el defecto de la herramienta (isTestFile pasa consultas.json a pytest)","file":"tests/fixtures/consultas.json","line":1,"evidence":"gates/T10-2.md: 'ERROR: not found: .../tests/fixtures/consultas.json', 'collected 0 items'. No es un defecto del código."},
+{"id":"F8","status":"open","severity":"medium","lens":"core","title":"No hay salida de la suite sin evals en este intento: '223 passed' lo informa el Leader y no está en el paquete","file":".mandao/cache/MDO-0001/gates/T10-2.md","line":38,"evidence":"El gate test falló antes de ejecutar pruebas y el paquete no incluye la salida de `uv run pytest -q`. Lo único verificable son los 223 deseleccionados del gate metrics. OPEN: adjuntar la salida tal como se ejecutó (p. ej. un T10-2-fullsuite.txt) antes de marcar T10 como hecha."},
+{"id":"F9","status":"open","severity":"low","lens":"data","title":"_claves_en_qdrant lanza KeyError si un punto no tiene payload 'clave'","file":"src/server/infraestructura/busqueda/indice.py","line":466,"evidence":"`str(p.payload[\"clave\"]) for p in puntos if p.payload`. En producción, VERSION_FORMATO recrea las colecciones anteriores; un punto insertado a mano solo con `hash` (como los huérfanos de test_buscador) rompería un reindexado posterior. Sugerencia: `.get(\"clave\")` y tratarlo como obsoleto."}
+]}
+```

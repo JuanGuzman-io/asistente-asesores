@@ -20,6 +20,10 @@ dev = [
 [tool.pytest.ini_options]
 pythonpath = ["."]
 testpaths = ["tests"]
+addopts = "-m 'not eval'"
+markers = [
+    "eval: evals EV-1..EV-5 con el modelo real de embeddings (descarga ~0,22 GB la primera vez); excluir con -m \"not eval\"",
+]
 
 [tool.mypy]
 strict = true
