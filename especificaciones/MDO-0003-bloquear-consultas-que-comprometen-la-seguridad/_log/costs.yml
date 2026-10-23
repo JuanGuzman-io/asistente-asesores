@@ -13,3 +13,16 @@ costs:
       main-session: 2.971691
     source: claude-code
     basis: equivalent
+  - at: 2026-10-23T22:56:59.865Z
+    command: tasks
+    harness: claude
+    session: 40c6cee9-e860-48b5-89e8-8a264ceee20b
+    usd: 0.427
+    roles:
+      tasks: 0.427
+    models:
+      claude-opus-5-5: 0.427
+    cumulative:
+      main-session: 3.3987
+    source: claude-code
+    basis: equivalent

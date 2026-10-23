@@ -1,0 +1,16 @@
+# Written by mandao scripts: start request, baseline, progress, approvals, session-cut estimates and the mock decision.
+approvals:
+  - step: shown
+    by: Juan D. Guzmán
+    at: 2026-10-23T22:56:11.560Z
+    sha256:
+      story.md: sha256-8i2mw7JxIPK2S5OuPIncXp6s4kEE7mcLO4TGwmu4zTk=
+      requirements.md: sha256-nnToirYtXJ9ezhmRD2cG+TWHhvwQa0PQojEf3bz0Xg0=
+      design.md: sha256-wg/MU814SwRIKy6DGPIRwzQs8Kp+bnQIqkb5djsi6TQ=
+  - step: shown
+    by: Juan D. Guzmán
+    at: 2026-10-23T22:56:59.590Z
+    sha256:
+      story.md: sha256-8i2mw7JxIPK2S5OuPIncXp6s4kEE7mcLO4TGwmu4zTk=
+      requirements.md: sha256-nnToirYtXJ9ezhmRD2cG+TWHhvwQa0PQojEf3bz0Xg0=
+      design.md: sha256-wg/MU814SwRIKy6DGPIRwzQs8Kp+bnQIqkb5djsi6TQ=

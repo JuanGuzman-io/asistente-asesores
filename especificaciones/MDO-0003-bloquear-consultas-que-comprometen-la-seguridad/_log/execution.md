@@ -16,3 +16,5 @@ spec: MDO-0003-bloquear-consultas-que-comprometen-la-seguridad
 <!-- mandao:telemetry {"id":"9bedc614-36ba-4808-bbeb-a8f3eef895c4","type":"asked","at":"2026-10-23T22:08:08.208Z","command":"specify","run":"f039e782-10dc-4434-9936-cb7803fbbced","question":"product","subject":"approve-spec"} -->
 <!-- mandao:telemetry {"id":"9bedc614-36ba-4808-bbeb-a8f3eef895c4","type":"answered","at":"2026-10-23T22:56:04.505Z","command":"specify","run":"f039e782-10dc-4434-9936-cb7803fbbced","question":"product"} -->
 <!-- mandao:telemetry {"id":"f039e782-10dc-4434-9936-cb7803fbbced","type":"command_end","at":"2026-10-23T22:56:05.230Z","command":"specify","run":"f039e782-10dc-4434-9936-cb7803fbbced"} -->
+<!-- mandao:telemetry {"id":"54401177-f91e-4383-95ae-b22e7c417a4d","type":"command_start","at":"2026-10-23T22:56:18.947Z","command":"tasks","run":"54401177-f91e-4383-95ae-b22e7c417a4d"} -->
+<!-- mandao:telemetry {"id":"54401177-f91e-4383-95ae-b22e7c417a4d","type":"command_end","at":"2026-10-23T22:57:00.222Z","command":"tasks","run":"54401177-f91e-4383-95ae-b22e7c417a4d"} -->
