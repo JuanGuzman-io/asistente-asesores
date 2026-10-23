@@ -296,3 +296,4 @@ spec: MDO-0002-consultar-desde-la-interfaz
 <!-- mandao:telemetry {"id":"50c1c1c3-29a0-432e-909a-bd1a88d80ae4","type":"agent_start","at":"2026-10-23T20:33:35.853Z","command":"verify","run":"9abcb4d4-f75b-4fcd-8bf0-4371be353945","subject":"mandao-tester"} -->
 <!-- mandao:telemetry {"id":"50c1c1c3-29a0-432e-909a-bd1a88d80ae4","type":"agent_end","at":"2026-10-23T20:34:11.144Z","command":"verify","run":"9abcb4d4-f75b-4fcd-8bf0-4371be353945"} -->
 <!-- mandao:telemetry {"id":"9abcb4d4-f75b-4fcd-8bf0-4371be353945","type":"command_end","at":"2026-10-23T20:35:03.497Z","command":"verify","run":"9abcb4d4-f75b-4fcd-8bf0-4371be353945"} -->
+<!-- mandao:telemetry {"id":"ecf15cfd-3fd2-4fa5-9900-175311a0debe","type":"command_start","at":"2026-10-23T20:38:37.412Z","command":"verify","run":"ecf15cfd-3fd2-4fa5-9900-175311a0debe"} -->
