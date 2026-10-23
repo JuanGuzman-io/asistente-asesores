@@ -16,80 +16,102 @@ tarea empieza con pruebas rojas; el modelo y los embeddings se reemplazan por do
 
 #### AC-1 — Documentos oficiales consultables
 
-- [ ] T1 [AC-1] Los documentos oficiales se cargan y fragmentan por sección, sin confidenciales — `pyproject.toml`
-- [ ] T3 [AC-1] La base documental queda indexada en SQLite FTS5 y Qdrant local al arrancar — `src/server/infraestructura/busqueda/indice.py`
+- [x] T1 [AC-1] Los documentos oficiales se cargan y fragmentan por sección, sin confidenciales — `pyproject.toml`
+- [x] T3 [AC-1] La base documental queda indexada en SQLite FTS5 y Qdrant local al arrancar — `src/server/infraestructura/busqueda/indice.py`
 
 **Checkpoint:** `uv run pytest tests/server/infraestructura/documentos -q` and `uv run pytest tests/server/infraestructura/busqueda -q` passes (T1, T3); this confirms AC-1 before the next group.
 
 #### AC-2 — Documentos duplicados
 
-- [ ] T2 [AC-2] El contenido duplicado se considera una sola vez, también en las fuentes — `src/server/infraestructura/documentos/cargador.py`
+- [x] T2 [AC-2] El contenido duplicado se considera una sola vez, también en las fuentes — `src/server/infraestructura/documentos/cargador.py`
 
 **Checkpoint:** `uv run pytest tests/server/infraestructura/documentos -q` passes (T2); this confirms AC-2 before the next group.
 
 **Delivery checkpoint:** run `mandao run verify-plan <spec> --delivery 1` before delivery 2; it passes when `scope.clear` is true.
 
-### Delivery 2 — AC-3, AC-8, AC-11, AC-6, AC-12, AC-13, AC-5, AC-4, AC-14, AC-7, AC-9, AC-10
+### Delivery 2 — AC-8, AC-11, AC-6, AC-12, AC-13, AC-14, AC-7, AC-9, AC-10
 
 #### AC-3, AC-8, AC-11 — Consulta válida con soporte documental; Caracteres especiales; Sin soporte documental
 
-- [ ] T4 [AC-3, AC-8, AC-11] La búsqueda híbrida encuentra la sección correcta o declara que no hay soporte — `src/server/dominio/puertos.py`
+- [x] T4 [AC-3, AC-8, AC-11] La búsqueda híbrida encuentra la sección correcta o declara que no hay soporte — `src/server/dominio/puertos.py`
 
 **Checkpoint:** `uv run pytest tests/server/infraestructura/busqueda -q` passes (T4); this confirms AC-3, AC-8, AC-11 before the next group.
 
 #### AC-6, AC-11, AC-12, AC-13 — Contenido de cada fuente; Sin soporte documental; Base documental vacía; Pregunta fuera de tema
 
-- [ ] T5 [AC-6, AC-11, AC-12, AC-13] El caso de uso responde con fuentes o con el mensaje fijo de falta de información — `src/server/dominio/estados.py`
+- [x] T5 [AC-6, AC-11, AC-12, AC-13] El caso de uso responde con fuentes o con el mensaje fijo de falta de información — `src/server/dominio/estados.py`
 
 **Checkpoint:** `uv run pytest tests/server/aplicacion -q` passes (T5); this confirms AC-6, AC-11, AC-12, AC-13 before the next group.
 
 #### AC-3, AC-5 — Consulta válida con soporte documental; Soporte parcial
 
-- [ ] T6 [AC-3, AC-5] [P] Sin modelo, la respuesta es extractiva y no afirma cubrir toda la pregunta — `src/server/infraestructura/redactor/extractivo.py`
+- [x] T6 [AC-3, AC-5] [P] Sin modelo, la respuesta es extractiva y no afirma cubrir toda la pregunta — `src/server/infraestructura/redactor/extractivo.py`
 
 **Checkpoint:** `uv run pytest tests/server/infraestructura/redactor -q` passes (T6); this confirms AC-3, AC-5 before the next group.
 
 #### AC-4, AC-5 — Solo información encontrada; Soporte parcial
 
-- [ ] T7 [AC-4, AC-5] Con Gemini, la respuesta solo usa los fragmentos recuperados y nombra la parte faltante — `src/server/infraestructura/redactor/gemini.py`
+- [x] T7 [AC-4, AC-5] Con Gemini, la respuesta solo usa los fragmentos recuperados y nombra la parte faltante — `src/server/infraestructura/redactor/gemini.py`
 
 **Checkpoint:** `uv run pytest tests/server/infraestructura/redactor -q` passes (T7); this confirms AC-4, AC-5 before the next group.
 
 #### AC-14 — Registro de cada consulta
 
-- [ ] T8 [AC-14] [P] Cada consulta procesada queda registrada completa — `src/server/infraestructura/persistencia/repositorio.py`
+- [x] T8 [AC-14] [P] Cada consulta procesada queda registrada completa — `src/server/infraestructura/persistencia/repositorio.py`
 
 **Checkpoint:** `uv run pytest tests/server/infraestructura/persistencia tests/server/aplicacion -q` passes (T8); this confirms AC-14 before the next group.
 
 #### AC-3, AC-7, AC-9, AC-10, AC-14 — Consulta válida con soporte documental; Pregunta vacía o cuerpo inválido; Consulta extensa; Cuerpo o tipo de contenido no admitidos; Registro de cada consulta
 
-- [ ] T9 [AC-3, AC-7, AC-9, AC-10, AC-14] La API de consulta valida la entrada y responde el contrato, con errores RFC 9457 — `src/server/http/app.py`
+- [x] T9 [AC-3, AC-7, AC-9, AC-10, AC-14] La API de consulta valida la entrada y responde el contrato, con errores RFC 9457 — `src/server/http/app.py`
 
 **Checkpoint:** `uv run pytest tests/server/http -q` passes (T9); this confirms AC-3, AC-7, AC-9, AC-10, AC-14 before the next group.
 
 #### AC-3, AC-4, AC-5, AC-6, AC-11, AC-14 — Consulta válida con soporte documental; Solo información encontrada; Soporte parcial; Contenido de cada fuente; Sin soporte documental; Registro de cada consulta
 
-- [ ] T10 [AC-3, AC-4, AC-5, AC-6, AC-11, AC-14] El flujo crítico pasa de punta a punta y los umbrales quedan calibrados con el dataset — `tests/fixtures/consultas.json`
+- [x] T10 [AC-3, AC-4, AC-5, AC-6, AC-11, AC-14] El flujo crítico pasa de punta a punta y los umbrales quedan calibrados con el dataset — `tests/fixtures/consultas.json`
 
 **Checkpoint:** `uv run pytest tests/server/e2e tests/server/evals -q` passes (T10); this confirms AC-3, AC-4, AC-5, AC-6, AC-11, AC-14 before the next group.
 
 **Delivery checkpoint:** run `mandao run verify-plan <spec> --delivery 2` before delivery 3; it passes when `scope.clear` is true.
 
-### Delivery 3 — AC-16, AC-15
+### Delivery 3 — AC-15
 
 #### AC-16 — Falla del modelo
 
-- [ ] T11 [AC-16] [P] Si Gemini falla, tarda o no está configurado, la respuesta sigue siendo extractiva — `src/server/aplicacion/consultar.py`
+- [x] T11 [AC-16] [P] Si Gemini falla, tarda o no está configurado, la respuesta sigue siendo extractiva — `src/server/aplicacion/consultar.py`
 
 **Checkpoint:** `uv run pytest tests/server/aplicacion tests/server/e2e -q` passes (T11); this confirms AC-16 before the next group.
 
 #### AC-15 — Error inesperado
 
-- [ ] T12 [AC-15] [P] Una falla inesperada responde 500 sin exponer detalles internos — `src/server/http/problemas.py`
+- [x] T12 [AC-15] [P] Una falla inesperada responde 500 sin exponer detalles internos — `src/server/http/problemas.py`
 
 **Checkpoint:** `uv run pytest tests/server/http -q` passes (T12); this confirms AC-15 before the next group.
 
-**Delivery checkpoint:** run `mandao run verify-plan <spec> --delivery 3`; it passes when `scope.clear` is true.
+**Delivery checkpoint:** run `mandao run verify-plan <spec> --delivery 3` before delivery 4; it passes when `scope.clear` is true.
+
+### Delivery 4 — AC-3, AC-5, AC-4, AC-16
+
+#### AC-16 — Falla del modelo
+
+- [ ] T13 [AC-16] Con clave real, la llamada a Gemini llega al modelo y se corta a los 5 s — `src/server/infraestructura/redactor/gemini.py`
+
+**Checkpoint:** `uv run pytest tests/server/infraestructura/redactor -q` passes (T13); this confirms AC-16 before the next group.
+
+#### AC-4, AC-5 — Solo información encontrada; Soporte parcial
+
+- [ ] T14 [AC-4, AC-5] Gemini recibe cada fragmento con su documento y sección y no mezcla productos — `src/server/infraestructura/redactor/gemini.py`
+
+**Checkpoint:** `uv run pytest tests/server/infraestructura/redactor -q` passes (T14); this confirms AC-4, AC-5 before the next group.
+
+#### AC-3, AC-16 — Consulta válida con soporte documental; Falla del modelo
+
+- [ ] T15 [AC-3, AC-16] Varias consultas con modelo en paralelo, sin pasar de 3 s de p95 — `src/server/http/rutas.py`
+
+**Checkpoint:** `uv run pytest tests/server/http -q` passes (T15); this confirms AC-3, AC-16 before the next group.
+
+**Delivery checkpoint:** run `mandao run verify-plan <spec> --delivery 4`; it passes when `scope.clear` is true.
 
 ## Details
 
@@ -448,5 +470,95 @@ decisions: [D8]
 depends_on: [T9]
 delivery: 3
 parallel_safe: true
+verify: uv run pytest tests/server/http -q
+```
+
+### [ ] T13 — Con clave real, la llamada a Gemini llega al modelo y se corta a los 5 s
+
+- **What:** el API rechaza un plazo de servidor menos de 10 s; el cliente envía `X-Server-Timeout: 10`
+  y conserva el corte local de 5 s, sin reintentos ([D9](design.md#d9), NFR-3). Hallado en verify
+  (2026-10-23): con `HttpOptions(timeout=5000)` toda llamada real devolvía 400 y caía al extractivo.
+- **Done when:**
+  - Prueba roja primero: la fábrica por defecto arma `HttpOptions` con `timeout=5000` y `headers` con `X-Server-Timeout: 10`, sin `retry_options`.
+  - S-12.1 sigue valiendo: con un doble que no responde antes de 5 s, la respuesta es extractiva (NFR-3).
+  - Prueba de humo manual con `GEMINI_API_KEY` (no en `uv run pytest`): una pregunta con soporte registra `modo` `modelo`.
+
+```yaml
+project: asistente-asesores
+kind: fix
+tier: fast
+files: [src/server/infraestructura/redactor/gemini.py, tests/server/infraestructura/redactor/test_gemini.py]
+exemplar: src/server/infraestructura/redactor/gemini.py
+ac: [AC-16]
+scenarios: [S-12.1]
+test_levels: { S-12.1: unit }
+partial_failure_tests: []
+evidence: tdd
+risk_tags: [ai-prompt]
+decisions: [D9]
+depends_on: [T11]
+delivery: 4
+parallel_safe: false
+verify: uv run pytest tests/server/infraestructura/redactor -q
+```
+
+### [ ] T14 — Gemini recibe cada fragmento con su documento y sección y no mezcla productos
+
+- **What:** `contents` lleva en cada `<fragmento id="N">` la identidad `documento > sección` además del
+  texto, neutralizada igual que el texto ([D7](design.md#d7), [D5](design.md#d5)). Hallado en verify: el
+  modelo respondió "los montos máximos son $50.000.000 y $80.000.000" a una pregunta por un solo crédito.
+- **Done when:**
+  - Prueba roja primero: el contenido enviado al cliente incluye `documento > sección` de cada fragmento, con las etiquetas `<fragmento`/`<pregunta` neutralizadas también en el documento y la sección.
+  - S-4.1 holds con dos fragmentos de créditos distintos: la respuesta validada solo cita el fragmento del crédito preguntado, y el guardrail descarta (pasa al extractivo) una salida que trae una cifra que solo está en el otro fragmento sin citarlo (AC-4).
+  - Prueba de humo manual con `GEMINI_API_KEY`: "¿Cuál es el monto máximo del Crédito Productivo Impulso?" responde $50.000.000 y no menciona $80.000.000 ni $30.000.000.
+  - Si cambia `prompt.md`, se sube `VERSION_PROMPT` y se actualiza `model-registry.md`.
+
+```yaml
+project: asistente-asesores
+kind: fix
+tier: standard
+files: [src/server/infraestructura/redactor/gemini.py, src/server/infraestructura/redactor/prompt.md, tests/server/infraestructura/redactor/test_gemini.py]
+exemplar: src/server/infraestructura/redactor/gemini.py
+ac: [AC-4, AC-4/C1, AC-5]
+scenarios: [S-4.1, S-5.1]
+test_levels: { S-4.1: unit, S-5.1: unit }
+partial_failure_tests: []
+evidence: tdd
+risk_tags: [ai-prompt, security]
+decisions: [D5, D7]
+depends_on: [T13]
+delivery: 4
+parallel_safe: false
+verify: uv run pytest tests/server/infraestructura/redactor -q
+```
+
+### [ ] T15 — Varias consultas con modelo en paralelo, sin pasar de 3 s de p95
+
+- **What:** se reemplaza el candado global de `RedactorExclusivo` (`http/rutas.py`) por un semáforo que
+  permite varias llamadas concurrentes al modelo, sin mezclar el `modo` entre peticiones (el `modo` deja de
+  ser estado compartido de la instancia). El límite del semáforo respeta el límite de solicitudes del nivel
+  gratuito de Gemini, revisado en la documentación oficial y citado en `design.md` D9 (NFR-1). Hallado en
+  verify: con el candado, 5 concurrentes con modelo dieron 0,9 / 1,7 / 2,6 / 3,6 / 4,4 s.
+- **Done when:**
+  - Prueba roja primero: con un doble de redactor que tarda 300 ms, 5 peticiones concurrentes terminan en menos de 2 × 300 ms (no se serializan) y cada una registra su propio `modo`.
+  - Con más peticiones que el límite del semáforo, las que esperan no superan el límite y el `modo` sigue sin mezclarse.
+  - Medición con `GEMINI_API_KEY` (no en `uv run pytest`): p95 con 5 concurrentes con modelo, N ≥ 5 corridas con mediana (`performance.md`), comparado con 3 s; el resultado queda en el informe de verify.
+
+```yaml
+project: asistente-asesores
+kind: fix
+tier: standard
+files: [src/server/http/rutas.py, src/server/http/app.py, src/server/infraestructura/redactor/gemini.py, src/server/dominio/puertos.py, tests/server/http/test_consultar_api.py]
+exemplar: src/server/http/rutas.py
+ac: [AC-3, AC-16]
+scenarios: [S-12.1, S-14.1]
+test_levels: { S-12.1: unit, S-14.1: unit }
+partial_failure_tests: []
+evidence: tdd
+risk_tags: [ai-prompt]
+decisions: [D9, D13]
+depends_on: [T14]
+delivery: 4
+parallel_safe: false
 verify: uv run pytest tests/server/http -q
 ```

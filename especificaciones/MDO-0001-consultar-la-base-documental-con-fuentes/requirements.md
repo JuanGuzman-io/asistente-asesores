@@ -275,17 +275,20 @@ Projects: asistente-asesores
 
 ## Eval thresholds
 
-Dataset `tests/fixtures/consultas.json@v1` (por crear en tareas): preguntas con respuesta, sin respuesta,
-fuera de tema y parciales sobre `Data/`, con el fragmento y el estado esperados.
+Dataset `tests/fixtures/consultas.json@v2` (66 preguntas; v1 tenía 32): preguntas con respuesta, sin
+respuesta, fuera de tema, parciales y de dato faltante sobre `Data/`, con el fragmento y el estado
+esperados. "Dato faltante" pregunta un dato que no está de un producto o proceso que sí existe: es
+soporte parcial (AC-5), no "sin soporte" ([C-9](#c-9)).
 
 | ID | Serves | Metric | Threshold | Tolerance vs baseline | Dataset (version) |
 |---|---|---|---|---|---|
-| EV-1 | AC-3 | Recuperación: el fragmento esperado está entre las fuentes (hit@3) | ≥ 0,90 | −0,05 | consultas@v1 |
-| EV-2 | AC-11, AC-13 | Precisión de "sin información": preguntas sin soporte con estado `Sin información suficiente` | ≥ 0,90 | −0,05 | consultas@v1 |
-| EV-3 | AC-3 | Falsos "sin información": preguntas con soporte que no responden | ≤ 0,10 | +0,05 | consultas@v1 |
-| EV-4 | AC-4 | Fidelidad: cifras de la respuesta presentes en los fragmentos citados | 1,00 | 0 | consultas@v1 |
-| EV-5 | AC-6 | Respuestas `Exitosa` con al menos una fuente completa (documento, sección, fragmento) | 1,00 | 0 | consultas@v1 |
-| EV-6 | AC-5 | Parciales que nombran la parte faltante (con modelo) | ≥ 0,80 | −0,10 | consultas@v1 |
+| EV-1 | AC-3 | Recuperación: el fragmento esperado está entre las fuentes (hit@3) | ≥ 0,90 | −0,05 | consultas@v2 |
+| EV-2 | AC-11, AC-13 | Precisión de "sin información": preguntas sin soporte con estado `Sin información suficiente` | ≥ 0,90 | −0,05 | consultas@v2 |
+| EV-3 | AC-3 | Falsos "sin información": preguntas con soporte que no responden | ≤ 0,10 | +0,05 | consultas@v2 |
+| EV-4 | AC-4 | Fidelidad: cifras de la respuesta presentes en los fragmentos citados | 1,00 | 0 | consultas@v2 |
+| EV-5 | AC-6 | Respuestas `Exitosa` con al menos una fuente completa (documento, sección, fragmento) | 1,00 | 0 | consultas@v2 |
+| EV-6 | AC-5 | Parciales y de dato faltante que nombran la parte o el dato que falta (con modelo) | ≥ 0,80 | −0,10 | consultas@v2 |
+| EV-7 | AC-5/C2 | Dato faltante en modo extractivo: `Exitosa`, con la sección esperada entre las fuentes, la frase inicial de D12 y sin cifras fuera de los fragmentos citados (no afirma el dato) | ≥ 0,90 | −0,05 | consultas@v2 |
 
 ## Non-functional requirements
 
@@ -404,6 +407,12 @@ no hacen llamadas de red (verificado ejecutándolas sin red).
 - **Answer:** son iniciales y se ajustan con el dataset en las tareas.
 - **Answered by:** PE (Product Engineer).
 - **Effect:** design.md D4 y P5; una tarea calibra contra EV-2 y EV-3.
+
+<a id="c-9"></a>
+### C-9 — ¿Qué es una pregunta por un dato que no está, de un producto que sí existe? (2026-10-23, verify)
+- **Answer:** es soporte parcial (AC-5), no "sin soporte": el producto existe y falta el dato. Va en una categoría propia, `dato_faltante`. En modo extractivo, la respuesta muestra el fragmento correcto con la frase inicial de AC-5/C2 y no afirma el dato (EV-7); con Gemini, nombra el dato que falta (EV-6). El resto se recalibra con margen. Limitación documentada en el README: el modo extractivo no detecta qué atributo falta.
+- **Answered by:** PE (Product Engineer).
+- **Effect:** dataset `consultas@v2`; tabla de evals (EV-6 amplía su base, EV-7 nueva); design.md D4 (`UMBRAL_BAJO` 0,525). Motivo: con v2 ningún par de umbrales cumplía a la vez EV-2 y EV-3 si esas preguntas contaban como "sin soporte" (recuperan la sección correcta con FTS y coseno de 0,577 a 0,604).
 
 ## Consistency Check
 
