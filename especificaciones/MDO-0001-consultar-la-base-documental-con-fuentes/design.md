@@ -59,9 +59,27 @@ la misma transacción que decide la respuesta.
   payload trae `hash`; los resultados de Qdrant se unen a `fragmentos` por `hash`. Cada búsqueda trae hasta
   5 candidatos por vía, se combinan por Reciprocal Rank Fusion (k = 60) y se quedan los 3 primeros.
 - **Umbral:** hay soporte si el mejor fragmento tiene similitud coseno ≥ `UMBRAL_ALTO` (0,60), o ≥
-  `UMBRAL_BAJO` (0,40) y además coincide en FTS. Valores iniciales en configuración, calibrados en tareas
-  contra EV-2 y EV-3 ([C-5](requirements.md#c-5), [P5](#p5)). Bajo el umbral: `Sin información
-  suficiente`, sin llamar al modelo.
+  `UMBRAL_BAJO` (0,54) y además coincide en FTS. Valores en configuración, calibrados en T10 contra EV-2 y
+  EV-3 ([C-5](requirements.md#c-5), [P5](#p5)). Bajo el umbral: `Sin información suficiente`, sin
+  llamar al modelo.
+- **Texto indexado (decisión del PE, 2026-10-23, T10):** lo que se embebe y lo que indexa FTS5 es
+  `documento > sección\ntexto` (`texto_indexable`); el hash de deduplicación sigue sobre `texto`. El
+  formato se versiona (`VERSION_FORMATO`) junto al modelo en la colección: si cambia, se recrea.
+  - Evidencia (modelo real, dataset `consultas@v1`, 32 preguntas). Mejor coseno con soporte /
+    sin soporte (mín–mediana–máx): solo `texto` 0,374–0,499–0,692 / 0,151–0,382–0,625, hit@3 vectorial
+    0,864; `documento > sección\ntexto` 0,556–0,667–0,881 / 0,095–0,412–0,599, hit@3 vectorial 1,000.
+  - Solo `texto` con 0,60 / 0,40: EV-1 0,773, EV-2 0,800, EV-3 0,182. Nuevo formato con 0,60 / 0,40:
+    EV-1 0,955, EV-2 0,600, EV-3 0,000. Nuevo formato con 0,60 / 0,54: EV-1 0,955, EV-2 1,000, EV-3
+    0,000, EV-4 1,00, EV-5 1,00.
+  - 0,54 es el punto medio entre la pregunta sin soporte más alta con coincidencia FTS (0,517) y la
+    pregunta con soporte más baja (0,556). Márgenes reales: ≈ 0,02 a cada lado de 0,54; 0,001 bajo
+    `UMBRAL_ALTO` (s02, 0,599, sin soporte); 0,009 bajo `UMBRAL_BAJO` (s05, 0,531, fuera solo porque no
+    coincide en FTS). EV-2 tiene n = 10: un solo cambio la deja en 0,90.
+  - La calibración es dentro de la muestra: los umbrales se eligieron con el mismo `consultas@v1` que
+    mide los EV ([C-5](requirements.md#c-5) lo permite). Recalibrar si cambian el modelo, el formato o
+    el dataset; ampliar el dataset antes de producción.
+  - Las evals corren con el modelo real como gate `metrics` (`uv run pytest -m eval`); `uv run pytest`
+    las excluye y no descarga modelos (`standards.md`, decisión del PE 2026-10-23).
 - Rechazadas: `sqlite-vec` (exige un Python con extensiones de SQLite cargables, que no todos los
   evaluadores tienen); coseno en memoria (no es una base vectorial); Chroma y LanceDB (sin paso directo de
   local a servidor con el mismo cliente), según `CHANGELOG.md` 2026-10-23; solo FTS (sin stemming en
@@ -306,7 +324,9 @@ modelo de embeddings ya están en `architecture.md` y `model-registry.md` (`/man
 ### P5 — Los umbrales 0,60 / 0,40 separan preguntas con y sin soporte en `Data/` (Low)
 
 - **If false:** se recalibran en la tarea de evals ([C-5](requirements.md#c-5)); no cambia el diseño.
-- **Evidence:** UNVERIFIED — se mide con EV-2 y EV-3 cuando exista el dataset.
+- **Evidence:** refuted 2026-10-23 (T10): con solo `texto` las distribuciones se solapan y 0,60 / 0,40
+  no cumple EV-1 a EV-3. Recalibrado a 0,60 / 0,54 con el texto indexado `documento > sección\ntexto`;
+  números en [D4](#d4).
 
 <a id="p6"></a>
 ### P6 — Qdrant en modo local bloquea su carpeta: un segundo cliente sobre el mismo `path` falla (High)
