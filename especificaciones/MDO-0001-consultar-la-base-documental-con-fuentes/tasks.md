@@ -154,7 +154,7 @@ parallel_safe: false
 verify: uv run pytest tests/server/infraestructura/documentos -q
 ```
 
-### [ ] T3 — La base documental queda indexada en SQLite FTS5 y Qdrant local al arrancar
+### [x] T3 — La base documental queda indexada en SQLite FTS5 y Qdrant local al arrancar
 
 - **What:** reconstruye `fragmentos` y `fragmentos_fts` en una transacción y sube a Qdrant local solo los
   embeddings nuevos, con un único cliente abierto en el `lifespan` ([D11](design.md#d11),
