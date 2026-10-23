@@ -743,3 +743,49 @@ T13 is a narrow fix and it is correct against D9 as amended. I found nothing blo
 {"id":"F3","status":"open","severity":"low","lens":"ai","title":"No recorded evidence of the real-API check","file":"src/server/infraestructura/redactor/gemini.py","line":207,"evidence":"D9 says the fix was 'Validado contra el API real', but the gate results contain no such output. Advisory: record the check (status code or mode=modelo, with no key or content) in the execution log."}
 ]}
 ```
+
+## T14 — attempt 1
+
+VERDICT: PASS
+
+T14 passes with no blocking findings. The production change is one function: each fragment sent to Gemini now carries a `documento > sección` line at the top. The other two files are small doc and test follow-ups from the T13 review.
+
+**1. Spec and decisions.**
+- **D7:** each `<fragmento id="N">` now opens with a `documento > sección` line, then the text. That is exactly what D7's T14 note asks for.
+- **AC-4/C1 and AC-5:** the output guardrail (`validar_salida`), the code-built "No encontré información sobre ..." phrase and the fallback to the extractive mode are unchanged. The `test_S_5_1_*` tests still cover them.
+- **S-4.1:** the Leader's smoke test with the real key returned `$50.000.000` with `modo=modelo` and cited only fragment 1. I am relying on what you told me here; that run's output is not in the pack.
+
+**2. Test policy.** The gates the pack reports all passed. Build and audit were skipped, and there is no shell here to check beyond that. Nothing was deleted from the test file. Two existing assertions were edited, and both edits are fine:
+- **D7 test:** the regex went from `\s*` to `\n[^\n]*\n`. The new format required the change, and it is a tighter check on structure.
+- **T13 test:** the header check is now the exact `X-Server-Timeout` key instead of a case-insensitive match. That is also stricter.
+
+The two new tests aimed at T14 are meaningful. `test_T14_D7_...` checks that each fragment's own name and section sit inside its own tag. `test_T14_D5_...` checks that injected tags in the document name or section are neutralised. Three of the new S-4.1 tests mostly re-check the existing guardrail (advisory F2 below).
+
+**3. `src/server/AGENTS.md`.** It describes the new fragment format, the neutralisation of the name/section line and the exact header. That resolves the T13 advisory.
+
+**4. Clean code.** The change follows the existing pattern in `gemini.py` and reuses `_neutralizar`. No logic is duplicated, there are no magic numbers and no errors are swallowed.
+
+**5. Lenses.**
+- **Security:** the new name/section line goes through the same tag neutralisation as the text and the question, and the test proves it. It is data in `contents`, not part of the system instruction. Logs still record only the exception type. The confidential document is still excluded at load time.
+- **AI:** the model input changed in a meaningful way while `prompt.md` stayed at v1 (advisory F1).
+
+**6. TDD.** The log has red evidence for T14 attempt 1: the tester's run of `test_gemini.py` failed with exit 1. I checked the edited tests and none were weakened to pass.
+
+**7. Module boundaries.** All changes stay inside `infraestructura/redactor`. The new test that goes through `consultar` only uses public interfaces and test doubles.
+
+## Findings (JSON)
+
+```json
+{"version":1,"findings":[
+{"id":"F1","status":"open","severity":"low","lens":"ai","title":"prompt.md v1 does not tell the model that the first line of each fragment is its document > section","file":"src/server/infraestructura/redactor/prompt.md","line":10,"evidence":"The task brief lists prompt.md, but it was not changed. The Entrada section still says only `<fragmento id=\"N\">...</fragmento>`. The fragment format changed while VERSION_PROMPT stays v1 and model-registry.md has no note. The smoke test shows the model uses the line correctly anyway. Advisory: if the prompt is changed to explain the line, raise VERSION_PROMPT to v2 and update model-registry.md, or note the contents-format change in the registry."},
+{"id":"F2","status":"open","severity":"low","lens":"core","title":"Three S-4.1 tests mostly re-check the existing guardrail or repeat what the test double returns","file":"tests/server/infraestructura/redactor/test_gemini.py","line":343,"evidence":"test_T14_S_4_1_respuesta_validada_... asserts what ClienteDoble was told to return. The ..._se_descarta_al_extractivo test and the ..._en_consultar_... test exercise the guardrail and consultar, which already behaved this way before T14. They are useful regression cases for the reported mixing bug but are not red evidence for T14. Advisory: the tests that actually drive T14 are test_T14_D7_... and test_T14_D5_...."},
+{"id":"F3","status":"resolved","severity":"low","lens":"core","title":"T13 advisory: AGENTS.md did not mention the X-Server-Timeout header","file":"src/server/AGENTS.md","line":21,"evidence":"The RedactorGemini entry now documents HttpOptions(timeout=5000, headers={\"X-Server-Timeout\": \"10\"}) and the new fragment format."},
+{"id":"F4","status":"resolved","severity":"low","lens":"core","title":"T13 advisory: the header assertion was case-insensitive","file":"tests/server/infraestructura/redactor/test_gemini.py","line":280,"evidence":"It now asserts (opciones.headers or {}).get(\"X-Server-Timeout\") == \"10\" with the exact key, which is stricter."}
+]}
+```
+
+Files reviewed:
+- /Users/jguzman/GitHub/Projects/asistente-asesores.worktrees/MDO-0001-consultar-la-base-documental-con-fuentes/src/server/infraestructura/redactor/gemini.py
+- /Users/jguzman/GitHub/Projects/asistente-asesores.worktrees/MDO-0001-consultar-la-base-documental-con-fuentes/src/server/infraestructura/redactor/prompt.md
+- /Users/jguzman/GitHub/Projects/asistente-asesores.worktrees/MDO-0001-consultar-la-base-documental-con-fuentes/tests/server/infraestructura/redactor/test_gemini.py
+- /Users/jguzman/GitHub/Projects/asistente-asesores.worktrees/MDO-0001-consultar-la-base-documental-con-fuentes/src/server/AGENTS.md

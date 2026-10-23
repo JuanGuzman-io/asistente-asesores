@@ -46,7 +46,8 @@ def _neutralizar(texto: str) -> str:
 
 def _armar_contenido(pregunta: str, fragmentos: Sequence[Fragmento]) -> str:
     bloques = [
-        f'<fragmento id="{i}">\n{_neutralizar(f.texto)}\n</fragmento>'
+        f'<fragmento id="{i}">\n{_neutralizar(f"{f.documento} > {f.seccion}")}\n'
+        f"{_neutralizar(f.texto)}\n</fragmento>"
         for i, f in enumerate(fragmentos, start=1)
     ]
     bloques.append(f"<pregunta>\n{_neutralizar(pregunta)}\n</pregunta>")

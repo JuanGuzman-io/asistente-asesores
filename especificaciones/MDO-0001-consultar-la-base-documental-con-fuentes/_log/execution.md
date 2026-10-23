@@ -104,6 +104,10 @@ spec: MDO-0001-consultar-la-base-documental-con-fuentes
 | 2026-10-23 | T13 | 1 | fast | claude | claude-sonnet-5-5 | — | RED | red tests by mandao-tester: tests/server/infraestructura/redactor/test_gemini.py; `pytest tests/server/infraestructura/redactor/test_gemini.py` failed (exit 1) |
 | 2026-10-23 | T13 | 1 | fast | claude | claude-sonnet-5-5 | — | REPORTED |  |
 | 2026-10-23 | T13 | 1 | fast | claude | — | claude-opus-5-5 | PASS | Smoke con clave real (2026-10-23): 3 consultas llegan al modelo (sin 400, 1,0-1,8 s) pero el guardrail descarta la salida -> modo extractivo; el criterio 'modo modelo' pasa a la humo de T14. Advisories F1 (AGENTS.md) y F2 se atienden en T14. |
+| 2026-10-23 | T14 | 1 | standard | claude | — | — | STARTED |  |
+| 2026-10-23 | T14 | 1 | standard | claude | claude-sonnet-5-5 | — | RED | red tests by mandao-tester: tests/server/infraestructura/redactor/test_gemini.py; `pytest tests/server/infraestructura/redactor/test_gemini.py` failed (exit 1) |
+| 2026-10-23 | T14 | 1 | standard | claude | claude-sonnet-5-5 | — | REPORTED | red test changed: tests/server/infraestructura/redactor/test_gemini.py; Humo con clave real (Leader, app aislada en carpeta temporal): CPI -> 'El monto máximo ... es $50.000.000.' modo modelo, sin 80/30; PQR -> 5 días hábiles, modo modelo. |
+| 2026-10-23 | T14 | 1 | standard | claude | — | claude-opus-5-5 | PASS | red test changed: tests/server/infraestructura/redactor/test_gemini.py; Advisories: F1 prompt.md v1 no describe la línea documento > sección (sin bump de VERSION_PROMPT); F2 tres pruebas S-4.1 son regresión del guardrail, no evidencia roja. Humo T13+T14 con clave real: modo modelo. |
 
 ## Telemetry
 
@@ -557,3 +561,17 @@ spec: MDO-0001-consultar-la-base-documental-con-fuentes
 <!-- mandao:telemetry {"id":"87cb2b3b-75e7-46a2-8e2f-8bdd02f3ad9f","type":"gate_end","at":"2026-10-23T19:19:08.993Z","command":"implement","run":"8bd2b638-6510-4fd6-958b-a73b55bc82ec","subject":"sast"} -->
 <!-- mandao:telemetry {"id":"3ddd29aa-85d9-428e-ad7c-9f616da38c54","type":"gate_start","at":"2026-10-23T19:19:09.070Z","command":"implement","run":"d13087f6-74c8-4c91-aa87-e2c8f3818fbf","subject":"metrics"} -->
 <!-- mandao:telemetry {"id":"3ddd29aa-85d9-428e-ad7c-9f616da38c54","type":"gate_end","at":"2026-10-23T19:19:12.546Z","command":"implement","run":"d13087f6-74c8-4c91-aa87-e2c8f3818fbf","subject":"metrics"} -->
+<!-- mandao:telemetry {"id":"57917bed-a458-41aa-8428-f7003f13d28a","type":"gate_start","at":"2026-10-23T19:28:20.600Z","command":"implement","run":"d9e31277-bb0d-4e80-ac76-0ace493bfce2","subject":"format"} -->
+<!-- mandao:telemetry {"id":"57917bed-a458-41aa-8428-f7003f13d28a","type":"gate_end","at":"2026-10-23T19:28:20.677Z","command":"implement","run":"d9e31277-bb0d-4e80-ac76-0ace493bfce2","subject":"format"} -->
+<!-- mandao:telemetry {"id":"0085d2f5-f9e8-4ed8-82f1-fdf4c03ef1d9","type":"gate_start","at":"2026-10-23T19:28:20.689Z","command":"implement","run":"5fd0c782-c939-4070-b8ba-f9db3080b92e","subject":"lint"} -->
+<!-- mandao:telemetry {"id":"0085d2f5-f9e8-4ed8-82f1-fdf4c03ef1d9","type":"gate_end","at":"2026-10-23T19:28:20.721Z","command":"implement","run":"5fd0c782-c939-4070-b8ba-f9db3080b92e","subject":"lint"} -->
+<!-- mandao:telemetry {"id":"25f15244-a4ff-4565-9eed-f9f4fd83a0ea","type":"gate_start","at":"2026-10-23T19:28:20.735Z","command":"implement","run":"cba45e4b-44d5-4bae-8aa5-5d60b700e613","subject":"typecheck"} -->
+<!-- mandao:telemetry {"id":"25f15244-a4ff-4565-9eed-f9f4fd83a0ea","type":"gate_end","at":"2026-10-23T19:28:21.138Z","command":"implement","run":"cba45e4b-44d5-4bae-8aa5-5d60b700e613","subject":"typecheck"} -->
+<!-- mandao:telemetry {"id":"2f7e84c0-f602-40c2-814b-fa1492540bb3","type":"gate_start","at":"2026-10-23T19:28:21.261Z","command":"implement","run":"c3d63ee6-ef3d-4384-8a36-57fba19598b6","subject":"test"} -->
+<!-- mandao:telemetry {"id":"2f7e84c0-f602-40c2-814b-fa1492540bb3","type":"gate_end","at":"2026-10-23T19:28:21.651Z","command":"implement","run":"c3d63ee6-ef3d-4384-8a36-57fba19598b6","subject":"test"} -->
+<!-- mandao:telemetry {"id":"25aff3ee-bdaf-4b0b-958a-e8b0863ffa6b","type":"gate_start","at":"2026-10-23T19:28:21.665Z","command":"implement","run":"fd25de86-44a5-4300-8223-e42196d2185f","subject":"secrets"} -->
+<!-- mandao:telemetry {"id":"25aff3ee-bdaf-4b0b-958a-e8b0863ffa6b","type":"gate_end","at":"2026-10-23T19:28:24.450Z","command":"implement","run":"fd25de86-44a5-4300-8223-e42196d2185f","subject":"secrets"} -->
+<!-- mandao:telemetry {"id":"3370cdd6-14aa-4587-8204-ee571890faa0","type":"gate_start","at":"2026-10-23T19:28:24.464Z","command":"implement","run":"465f94c5-f965-401f-90e9-f4e1c5f39572","subject":"sast"} -->
+<!-- mandao:telemetry {"id":"3370cdd6-14aa-4587-8204-ee571890faa0","type":"gate_end","at":"2026-10-23T19:28:24.698Z","command":"implement","run":"465f94c5-f965-401f-90e9-f4e1c5f39572","subject":"sast"} -->
+<!-- mandao:telemetry {"id":"adcd86e4-31f6-40c9-9781-fdb6c9d540ff","type":"gate_start","at":"2026-10-23T19:28:24.776Z","command":"implement","run":"7552682c-8f4a-4ad3-b78e-ecb48ecf9055","subject":"metrics"} -->
+<!-- mandao:telemetry {"id":"adcd86e4-31f6-40c9-9781-fdb6c9d540ff","type":"gate_end","at":"2026-10-23T19:28:28.299Z","command":"implement","run":"7552682c-8f4a-4ad3-b78e-ecb48ecf9055","subject":"metrics"} -->
