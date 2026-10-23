@@ -13,7 +13,7 @@
     { "id": "asesor", "type": "external", "label": "Asesor", "sublabel": "cliente HTTP" },
     { "id": "http", "type": "backend", "label": "http", "sublabel": "middleware + validación" },
     { "id": "app", "type": "backend", "label": "aplicacion", "sublabel": "consultar()" },
-    { "id": "busqueda", "type": "database", "label": "busqueda", "sublabel": "FTS5 + coseno en memoria" },
+    { "id": "busqueda", "type": "database", "label": "busqueda", "sublabel": "FTS5 + Qdrant local" },
     { "id": "redactor", "type": "backend", "label": "redactor", "sublabel": "Gemini o extractivo" },
     { "id": "gemini", "type": "external", "label": "Gemini", "sublabel": "opcional, 5 s" },
     { "id": "repo", "type": "database", "label": "persistencia", "sublabel": "consultas (SQLite)" }

@@ -6,10 +6,10 @@ status: draft
 
 # Data model — Consultar la base documental con fuentes
 
-Proyecto nuevo: no existe esquema. Se crea un único archivo SQLite con el registro de consultas, los
-fragmentos de la base documental, su índice de palabras (FTS5) y una caché de embeddings en BLOB, que se
-cargan en memoria para la similitud coseno ([C-3](requirements.md#c-3)) y evitan recalcular lo que no
-cambió.
+Proyecto nuevo: no existe esquema. Se crean dos almacenes locales: un archivo SQLite con el registro de
+consultas, los fragmentos y su índice de palabras (FTS5), y una carpeta de Qdrant en modo local con los
+vectores de los fragmentos ([C-3](requirements.md#c-3)), que además evita recalcular embeddings que no
+cambiaron.
 
 ## Changes
 
@@ -46,17 +46,17 @@ Nunca contiene filas de documentos confidenciales ([FR-1](requirements.md#fr1)).
 Tabla virtual FTS5 de contenido externo sobre `fragmentos(seccion, texto)`, `content_rowid=id`,
 tokenizador `unicode61 remove_diacritics 2` ([FR-8](requirements.md#fr8) S-8.2).
 
-### ADDED — Caché de embeddings (`embeddings_cache`)
+### ADDED — Colección Qdrant `fragmentos` (modo local)
 
 | Field | Type | Constraints | Classification |
 |---|---|---|---|
-| `hash` | TEXT | PK; mismo hash que `fragmentos.hash` | interna |
-| `modelo` | TEXT | NOT NULL; nombre del modelo de embeddings | interna |
-| `embedding` | BLOB | NOT NULL; 384 float32 (1.536 bytes), `paraphrase-multilingual-MiniLM-L12-v2` ([design.md#d4](design.md#d4)) | interna |
+| id del punto | UUID | UUID v5 de `fragmentos.hash` (idempotente) | interna |
+| vector | float[384] | distancia coseno; `paraphrase-multilingual-MiniLM-L12-v2` ([design.md#d4](design.md#d4)) | interna |
+| payload `hash` | keyword | igual a `fragmentos.hash`; índice de payload para filtrar | interna |
 
-Sobrevive a la reconstrucción del índice ([NFR-2](requirements.md#nfr-2--arranque)); una fila con otro
-`modelo` se ignora. Al arrancar, los embeddings de los fragmentos vigentes se cargan en una matriz en
-memoria para la similitud coseno.
+La colección guarda en su metadata el nombre del modelo de embeddings; si no coincide con la
+configuración, se recrea ([design.md#d11](design.md#d11)). Sobrevive a los reinicios y solo recibe
+embeddings de hashes nuevos ([NFR-2](requirements.md#nfr-2--arranque)). Carpeta fuera de git.
 
 ### MODIFIED — ninguno
 
@@ -65,15 +65,17 @@ memoria para la similitud coseno.
 ## Relationships and indexes
 
 - `fragmentos.id` ↔ `fragmentos_fts.rowid` (1:1).
-- `fragmentos.hash` ↔ `embeddings_cache.hash` (0..1).
+- `fragmentos.hash` ↔ payload `hash` del punto Qdrant (1:1 tras un arranque exitoso; un punto sin fila en
+  `fragmentos` se ignora en la búsqueda y se borra en el siguiente arranque).
 - `consultas` no referencia a `fragmentos`: guarda las fuentes como copia, porque el índice se reconstruye
   en cada arranque y el registro debe conservar lo que se respondió.
 - Índice sobre `consultas(fecha_hora)` para el historial de MDO-0003.
 
 ## Permissions
 
-Archivo local de un solo usuario; sin roles (`security.md`: sin autenticación en la prueba). El archivo
-queda fuera de git (`.gitignore`).
+Archivo SQLite y carpeta de Qdrant locales, de un solo usuario y un solo proceso
+([design.md#d13](design.md#d13)); sin roles (`security.md`: sin autenticación en la prueba). Ambos
+quedan fuera de git (`.gitignore`).
 
 ## State transitions
 
@@ -82,11 +84,11 @@ CHECK pero solo lo escribe MDO-0002.
 
 ## Migration
 
-- **Expand:** creación del esquema al arrancar (`CREATE TABLE IF NOT EXISTS`), versión en `PRAGMA user_version = 1`.
+- **Expand:** creación del esquema al arrancar (`CREATE TABLE IF NOT EXISTS`), versión en `PRAGMA user_version = 1`; la colección Qdrant se crea si no existe.
 - **Backfill:** no aplica; no hay datos.
 - **Contract:** no aplica.
-- **Rollback:** borrar el archivo SQLite; el índice se reconstruye desde `Data/` y las consultas
-  registradas se pierden (aceptable en la prueba local).
+- **Rollback:** borrar la carpeta de Qdrant (se recalculan los embeddings) o el archivo SQLite (el índice
+  se reconstruye desde `Data/` y las consultas registradas se pierden; aceptable en la prueba local).
 
 ## Evidence
 

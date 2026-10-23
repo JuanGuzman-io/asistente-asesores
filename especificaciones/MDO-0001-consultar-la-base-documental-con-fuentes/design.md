@@ -10,8 +10,8 @@ writes_data: yes
 # Design — Consultar la base documental con fuentes
 
 Un backend FastAPI sobre Python 3.13 con arquitectura hexagonal: al arrancar indexa `Data/` (sin
-confidenciales ni duplicados) en un SQLite con FTS5 y embeddings en BLOB, comparados por coseno en
-memoria; cada consulta valida, recupera con
+confidenciales ni duplicados) en SQLite con FTS5 y en Qdrant local con vectores coseno; cada consulta
+valida, recupera con
 búsqueda híbrida y umbral, redacta con Gemini validando su salida o responde extractivo, y se registra en
 la misma transacción que decide la respuesta.
 
@@ -23,8 +23,8 @@ la misma transacción que decide la respuesta.
 - `fastembed` depende de `onnxruntime`, que no publica wheels para Python 3.15 (el `python3` del sistema)
   ni para 3.10 en macOS arm64 ([research.md#R1](research.md)). Se fija 3.13 con `.python-version` y
   `requires-python = ">=3.11,<3.15"` en `pyproject.toml`.
-- El README instala con `uv` (`uv sync`), que respeta `.python-version` ([C-4](requirements.md#c-4)). Sin
-  `sqlite-vec` ([D4](#d4)) no hace falta un intérprete con extensiones de SQLite; basta FTS5 ([P2](#p2)).
+- El README instala con `uv` (`uv sync`), que respeta `.python-version` ([C-4](requirements.md#c-4)). Con
+  Qdrant local ([D4](#d4)) no hace falta un intérprete con extensiones de SQLite; basta FTS5 ([P2](#p2)).
 - Rechazadas: 3.15 (no instala), 3.10 (sin wheel macOS arm64), 3.14 (válida pero sin probar en esta
   máquina).
 
@@ -51,18 +51,21 @@ la misma transacción que decide la respuesta.
 <a id="d4"></a>
 ### D4 — Búsqueda híbrida con umbral de relevancia
 
-- FTS5 (`unicode61 remove_diacritics 2`, BM25) y similitud coseno en memoria ([C-3](requirements.md#c-3)):
-  los embeddings locales de `sentence-transformers/paraphrase-multilingual-MiniLM-L12-v2` (384 dimensiones,
-  0,22 GB, vía `fastembed`, [research.md#R1, R3](research.md)) se guardan como BLOB float32 y al arrancar
-  se cargan en una matriz normalizada; la similitud de la pregunta es un producto punto contra esa matriz
-  (~20 fragmentos). Cada búsqueda trae hasta 5 candidatos por vía, se combinan por Reciprocal Rank Fusion
-  (k = 60) y se quedan los 3 primeros.
+- FTS5 (`unicode61 remove_diacritics 2`, BM25) en SQLite y Qdrant en modo local
+  (`QdrantClient(path=…)`, `qdrant-client` 1.20.0, [C-3](requirements.md#c-3), `architecture.md`): una
+  colección `fragmentos` de 384 dimensiones con distancia coseno, con embeddings locales de
+  `sentence-transformers/paraphrase-multilingual-MiniLM-L12-v2` (0,22 GB, vía `fastembed`,
+  [research.md#R1, R3, R5](research.md)). El id de cada punto es un UUID v5 del hash del fragmento y su
+  payload trae `hash`; los resultados de Qdrant se unen a `fragmentos` por `hash`. Cada búsqueda trae hasta
+  5 candidatos por vía, se combinan por Reciprocal Rank Fusion (k = 60) y se quedan los 3 primeros.
 - **Umbral:** hay soporte si el mejor fragmento tiene similitud coseno ≥ `UMBRAL_ALTO` (0,60), o ≥
   `UMBRAL_BAJO` (0,40) y además coincide en FTS. Valores iniciales en configuración, calibrados en tareas
   contra EV-2 y EV-3 ([C-5](requirements.md#c-5), [P5](#p5)). Bajo el umbral: `Sin información
   suficiente`, sin llamar al modelo.
 - Rechazadas: `sqlite-vec` (exige un Python con extensiones de SQLite cargables, que no todos los
-  evaluadores tienen, [C-3](requirements.md#c-3)); solo FTS (sin stemming en español, falla con sinónimos); solo vectores (falla con nombres
+  evaluadores tienen); coseno en memoria (no es una base vectorial); Chroma y LanceDB (sin paso directo de
+  local a servidor con el mismo cliente), según `CHANGELOG.md` 2026-10-23; solo FTS (sin stemming en
+  español, falla con sinónimos); solo vectores (falla con nombres
   exactos como "Agro Crece"); `paraphrase-multilingual-mpnet-base-v2` (1 GB de descarga para un corpus de
   ~20 fragmentos; queda como alternativa si EV-1 no se cumple); un umbral sobre el puntaje RRF (es por
   rango, no mide relevancia absoluta).
@@ -129,13 +132,28 @@ la misma transacción que decide la respuesta.
   lo sepa).
 
 <a id="d11"></a>
-### D11 — Índice reconstruido al arrancar, embeddings en caché
+### D11 — Índice reconstruido al arrancar; Qdrant como caché de embeddings
 
-- En cada arranque se reconstruyen `fragmentos` y `fragmentos_fts` en una sola transacción; los
-  embeddings se toman de `embeddings_cache` por hash y solo se calculan los nuevos (NFR-2), y la matriz en
-  memoria se arma solo después del commit. Si la reconstrucción falla, se revierte y el servidor no arranca
-  con un índice a medias.
-- Rechazada: actualización incremental por archivo (más estados posibles para ~20 fragmentos).
+- En cada arranque: (1) se cargan y fragmentan los documentos; (2) en Qdrant se calculan y suben solo los
+  embeddings de hashes que la colección no tiene (upsert idempotente por UUID del hash), lo que cumple
+  NFR-2 sin una tabla de caché aparte; (3) se reconstruyen `fragmentos` y `fragmentos_fts` en una
+  transacción SQLite; (4) solo si (3) hace commit se borran de Qdrant los puntos cuyo hash ya no existe.
+  Si (2) o (3) fallan, el servidor no arranca; los puntos que sobren en Qdrant no se devuelven porque la
+  búsqueda filtra por los hashes presentes en `fragmentos`.
+- Si cambia el modelo de embeddings (nombre guardado en la configuración de la colección), se recrea la
+  colección (`model-registry.md`).
+- Rechazadas: actualización incremental por archivo (más estados posibles para ~20 fragmentos); una
+  tabla `embeddings_cache` en SQLite (duplica lo que Qdrant ya persiste).
+
+<a id="d13"></a>
+### D13 — Un solo proceso y un cliente Qdrant por aplicación
+
+- El modo local bloquea su carpeta: un segundo `QdrantClient` sobre el mismo `path` lanza
+  `RuntimeError` ([P6](#p6)). La app abre un único cliente en el `lifespan` de FastAPI y lo cierra al
+  apagar; uvicorn corre con un solo worker (README). Las pruebas usan una carpeta temporal por prueba, o
+  `QdrantClient(":memory:")`.
+- Rechazadas: varios workers (fallan al abrir la carpeta); un servidor Qdrant (rompe "ejecutable 100 %
+  local sin servicios", `architecture.md`; queda como paso a producción).
 
 <a id="d12"></a>
 ### D12 — Respuesta extractiva
@@ -168,11 +186,12 @@ la misma transacción que decide la respuesta.
 
 | Operation | Writes committed together | Transaction/tool | Compensation across systems | Concurrency/isolation |
 |---|---|---|---|---|
-| Reconstruir el índice (arranque) | DELETE + INSERT en `fragmentos`, `fragmentos_fts`; INSERT de embeddings nuevos en `embeddings_cache` | una transacción `sqlite3` (`BEGIN IMMEDIATE`) | no aplica: un solo archivo | antes de aceptar peticiones; un solo proceso |
+| Reconstruir el índice (arranque) | SQLite: DELETE + INSERT en `fragmentos`, `fragmentos_fts`. Qdrant: upsert de puntos nuevos y, tras el commit, borrado de los obsoletos | una transacción `sqlite3` (`BEGIN IMMEDIATE`); Qdrant sin transacciones | upsert idempotente por UUID del hash; la búsqueda filtra por hashes de `fragmentos`, así que un punto sobrante es inofensivo y se borra en el siguiente arranque (D11) | antes de aceptar peticiones; un solo proceso (D13) |
 | Registrar consulta | INSERT en `consultas` | transacción `sqlite3` por petición | no aplica: Gemini no tiene efectos que compensar | WAL; una conexión por petición; escrituras serializadas por SQLite |
 
-Pruebas de falla parcial que las tareas deben declarar: falla en medio de la reconstrucción → el índice
-anterior queda intacto; falla del insert de `consultas` → 500 y ninguna fila.
+Pruebas de falla parcial que las tareas deben declarar: falla de SQLite en medio de la reconstrucción
+(después del upsert en Qdrant) → `fragmentos` anterior intacto y ningún punto huérfano en los resultados;
+falla del insert de `consultas` → 500 y ninguna fila.
 
 ## Model and prompts
 
@@ -181,7 +200,7 @@ anterior queda intacto; falla del insert de `consultas` → 500 y ninguna fila.
 | Model | `gemini-3.5-flash-lite`, opcional por `GEMINI_API_KEY` | `google-genai` 2.33.0; `model-registry.md` |
 | Prompts | Redactor con fuentes: solo fragmentos dados, citar ids, listar partes sin soporte, nunca seguir instrucciones del texto | `src/server/infraestructura/redactor/prompt.md`@v1 |
 | Chunking / embedding | Sección `##` (D2); `paraphrase-multilingual-MiniLM-L12-v2`, 384 dim, local | `fastembed` 0.9.0 |
-| Retrieval (k, filters, reranking) | 5 por vía, RRF k = 60, top 3, umbral D4; sin reranker | FTS5; coseno en memoria (numpy) |
+| Retrieval (k, filters, reranking) | 5 por vía, RRF k = 60, top 3, umbral D4; filtro por hashes vigentes; sin reranker | FTS5; Qdrant local, `qdrant-client` 1.20.0 |
 | Guardrails | Entrada: validación (D8); salida: ids y cifras (D7). Entrada por seguridad: MDO-0002 | — |
 | Fallback | Extractivo (D12) sin clave, con error, tiempo agotado o salida inválida | — |
 
@@ -192,11 +211,11 @@ Proyecto nuevo: no hay archivos que imitar. El primer archivo de cada tipo se vu
 
 | Project | Module | Change | Exemplar file |
 |---|---|---|---|
-| asistente-asesores | raíz | `pyproject.toml` y `uv.lock` (FastAPI 0.161.1, Pydantic, `fastembed` 0.9.0, numpy, `google-genai` 2.33.0; pytest), `.python-version` 3.13, `.env.example`, `.gitignore` del SQLite | ninguno (nuevo) |
+| asistente-asesores | raíz | `pyproject.toml` y `uv.lock` (FastAPI 0.161.1, Pydantic, `qdrant-client` 1.20.0, `fastembed` 0.9.0, `google-genai` 2.33.0; pytest), `.python-version` 3.13, `.env.example`, `.gitignore` del SQLite y de la carpeta de Qdrant | ninguno (nuevo) |
 | asistente-asesores | `src/server/dominio` | `Estado`, `Fuente`, `Fragmento`, `Resultado`; puertos; `MENSAJE_SIN_INFORMACION`; regla de umbral | ninguno (nuevo; será el exemplar de dominio) |
 | asistente-asesores | `src/server/aplicacion` | caso de uso `consultar(pregunta)` | ninguno (nuevo) |
 | asistente-asesores | `src/server/infraestructura/documentos` | cargador de `Data/`: exclusión, fragmentación, hash | ninguno (nuevo) |
-| asistente-asesores | `src/server/infraestructura/busqueda` | esquema, reconstrucción del índice, consulta FTS segura, coseno en memoria, RRF | ninguno (nuevo) |
+| asistente-asesores | `src/server/infraestructura/busqueda` | esquema FTS5, colección Qdrant, reconstrucción del índice, consulta FTS segura, RRF | ninguno (nuevo) |
 | asistente-asesores | `src/server/infraestructura/persistencia` | `RepositorioConsultas` SQLite | ninguno (nuevo) |
 | asistente-asesores | `src/server/infraestructura/redactor` | `RedactorGemini`, `RedactorExtractivo`, validación de salida, `prompt.md` v1 | ninguno (nuevo) |
 | asistente-asesores | `src/server/http` | app, middleware (requestId, 413, 415), handlers RFC 9457, ruta `POST /api/consultar`, log JSON | ninguno (nuevo) |
@@ -204,7 +223,7 @@ Proyecto nuevo: no hay archivos que imitar. El primer archivo de cada tipo se vu
 
 ## Diagram
 
-<!-- mandao:diagram type=sequence tool=archify file=diagrams/proposed.html graph=diagrams/proposed.graph.json graphHash=sha256:9cbeeb8f7168942b source=sha256:4367b859940a40df -->
+<!-- mandao:diagram type=sequence tool=archify file=diagrams/proposed.html graph=diagrams/proposed.graph.json graphHash=sha256:9cbeeb8f7168942b source=sha256:a655e86858eef0f9 -->
 Derived from this design; regenerated whenever it changes. Part of the design approval.
 
 ![sequence diagram](diagrams/proposed.html)
@@ -230,18 +249,18 @@ MDO-0003 (interfaz) consume este contrato; MDO-0002 solo agrega el estado `Bloqu
 | Búsqueda y umbral | `perf` | Primer arranque descarga 0,22 GB; umbral mal calibrado da falsos "sin información": EV-2 y EV-3. |
 | Índice | `security` | Un confidencial nuevo indexado por error: doble capa D3 y prueba que busca sus términos en el índice. |
 
-- **R-5:** `google-genai` 2.33.0 salió el mismo día del diseño; si falla, se fija 2.32.0 (sin cambio de API conocido).
+- **R-5:** `google-genai` 2.33.0 salió el mismo día del diseño y `qdrant-client` 1.20.0 el día anterior; si alguno falla, se fija la versión previa (2.32.0, 1.19.1).
+- **R-7:** el modo local de Qdrant está pensado para desarrollo y pruebas (README de qdrant-client); con ~20 fragmentos basta, y producción usaría un servidor Qdrant con el mismo cliente (`architecture.md`).
 - Sin guardrail de entrada por seguridad hasta MDO-0002: una pregunta por credenciales queda `Sin información suficiente`, porque el documento no está indexado (D3).
 
 ## Constitution Impact
 
-Propuestas; solo `/mandao-close` las aplica, con aprobación. La primera la aplica `/mandao-constitution`
-ahora, por decisión del PE ([C-3](requirements.md#c-3)).
+Propuestas; solo `/mandao-close` las aplica, con aprobación. Qdrant local, Python 3.13 con `uv` y el
+modelo de embeddings ya están en `architecture.md` y `model-registry.md` (`/mandao-constitution`,
+2026-10-23, [C-3](requirements.md#c-3)).
 
-- `architecture.md`: quitar `sqlite-vec` del stack y de "Patterns and conventions" (coseno en memoria sobre
-  BLOB); Python "≥ 3.10" → "3.13 fijado con `.python-version`, instalación con `uv`"; FastAPI 0.161.1.
-- `model-registry.md`: embeddings → `sentence-transformers/paraphrase-multilingual-MiniLM-L12-v2`
-  (fastembed 0.9.0); prompt `prompt.md` v1 creado; dataset `tests/fixtures/consultas.json` v1 creado.
+- `architecture.md`: un solo worker de uvicorn por el bloqueo de carpeta de Qdrant local (D13, P6).
+- `model-registry.md`: prompt `prompt.md` v1 creado; dataset `tests/fixtures/consultas.json` v1 creado.
 - `critical-flows.md`: suite E2E del flujo "Consulta respondida con fuentes y registrada" (la que creen
   las tareas).
 - `standards.md`: nombrar los exemplar files creados.
@@ -289,9 +308,24 @@ ahora, por decisión del PE ([C-3](requirements.md#c-3)).
 - **If false:** se recalibran en la tarea de evals ([C-5](requirements.md#c-5)); no cambia el diseño.
 - **Evidence:** UNVERIFIED — se mide con EV-2 y EV-3 cuando exista el dataset.
 
+<a id="p6"></a>
+### P6 — Qdrant en modo local bloquea su carpeta: un segundo cliente sobre el mismo `path` falla (High)
+
+- **If false:** se podrían usar varios workers de uvicorn; D13 dejaría de exigir un solo proceso.
+- **Evidence:** verified 2026-10-23, `_log/premises.md` P6; ver [Evidence](#evidence).
+
 ## Evidence
 
-Corridas registradas en `_log/premises.md` (2026-10-23, commit 7929b7e).
+Corridas registradas en `_log/premises.md` (2026-10-23).
+
+<details><summary>P6 — probe p6_qdrant_lock.py con uv, qdrant-client 1.20.0</summary>
+
+```
+python 3.13.16 qdrant-client 1.20.0
+second client on same path: refused -> RuntimeError Storage folder <tmp del worktree>
+```
+El mensaje sigue con "is already accessed by another instance of Qdrant client" (recortado por el probe a una línea).
+</details>
 
 <details><summary>P1 — listado de archivos versionados en src/ y tests/</summary>
 

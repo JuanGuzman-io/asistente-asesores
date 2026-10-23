@@ -370,10 +370,22 @@ no hacen llamadas de red (verificado ejecutándolas sin red).
 - **Effect:** FR-2 sin cambios; FR-7 / S-7.2 normalizan a NFC; design.md D6, D8.
 
 <a id="c-3"></a>
-### C-3 — ¿Se mantiene `sqlite-vec`? (2026-10-23)
-- **Answer:** no. Similitud coseno en memoria sobre los embeddings guardados como BLOB en SQLite; FTS5 se mantiene. `architecture.md` se actualiza con `/mandao-constitution`.
+### C-3 — ¿Qué almacén de vectores se usa en lugar de `sqlite-vec`? (2026-10-23)
+- **Answer:** Qdrant en modo local (`qdrant-client` 1.20.0, `QdrantClient(path=…)`, sin servidor); SQLite queda para el registro de consultas y FTS5. Aplicado en `architecture.md` y `model-registry.md` (`/mandao-constitution`, commit 9da22a0), con verificación local en Python 3.13.16 y 3.13.4.
 - **Answered by:** PE (Product Engineer), como tech lead.
-- **Effect:** design.md D1, D4, D11, Model and prompts, Constitution Impact; data-model.md sin `fragmentos_vec`; research.md R2 queda como alternativa descartada; P2 pasa a ser solo FTS5. Basta un Python 3.13 sin extensiones de SQLite.
+- **Effect:** design.md D1, D4, D11, D13 (nueva: un solo proceso, P6), tabla ACID, Model and prompts, Constitution Impact; data-model.md con la colección Qdrant y sin tabla de caché; research.md R5; P2 solo exige FTS5.
+
+<a id="c-6"></a>
+### C-6 — ¿Cuántos procesos admite Qdrant local? (2026-10-23)
+- **Answer:** uno. Un segundo cliente sobre la misma carpeta lanza `RuntimeError` (P6, verificado); la app abre un cliente en el `lifespan` y uvicorn corre con un worker.
+- **Answered by:** resuelto técnicamente (base: `architecture.md` "ejecutable 100 % local sin servicios"; alternativas rechazadas: varios workers, servidor Qdrant).
+- **Effect:** design.md D13; README indica un solo worker.
+
+<a id="c-7"></a>
+### C-7 — ¿Se aceptan R3 y R5 sin un MCP de búsqueda web declarado? (2026-10-23)
+- **Answer:** sí, como excepción. R3 (FTS5) y R5 (Qdrant) se aceptan sin MCP de búsqueda: las premisas P2 y P6 se verificaron ejecutándolas en este entorno (Python 3.13 con `uv`), con comando y salida registrados en `_log/premises.md`; esa evidencia es más fuerte que una búsqueda web.
+- **Answered by:** PE (Product Engineer).
+- **Effect:** el research gate de `mandao run next` sigue marcando R3 y R5 (no hay `research.web_search_servers`); se aprueba igual, con esta excepción como respaldo.
 
 <a id="c-4"></a>
 ### C-4 — ¿Cómo se fija Python y se registra la hora? (2026-10-23)
@@ -391,7 +403,7 @@ no hacen llamadas de red (verificado ejecutándolas sin red).
 
 | ID | Type | Finding | Severity | Owner | Status |
 |---|---|---|---|---|---|
-| CC-1 | PREMISE | P2 decía "Python 3.13.4 de pyenv permite cargar extensiones": falso (`AttributeError`). | normal | dev | resolved 2026-10-23: se quita `sqlite-vec` (C-3); P2 solo exige FTS5, verificado con pyenv 3.13.4 |
+| CC-1 | PREMISE | P2 decía "Python 3.13.4 de pyenv permite cargar extensiones": falso (`AttributeError`). | normal | dev | resolved 2026-10-23: `sqlite-vec` reemplazado por Qdrant local (C-3); P2 solo exige FTS5, verificado con pyenv 3.13.4 |
 
 <a id="open-items"></a>
 ## Open items

@@ -28,3 +28,7 @@ spec: MDO-0001-consultar-la-base-documental-con-fuentes
 <!-- mandao:telemetry {"id":"b7ca60ac-35a5-4efa-a989-c02edd71b30a","type":"answered","at":"2026-10-23T14:59:19.585Z","command":"clarify","run":"5eaf061a-9ba3-4f3c-9d23-3e71fcf20b5b","question":"product"} -->
 <!-- mandao:telemetry {"id":"80ce8a57-c7c9-4341-b5f2-0d1092d5d8b1","type":"answered","at":"2026-10-23T14:59:20.958Z","command":"clarify","run":"5eaf061a-9ba3-4f3c-9d23-3e71fcf20b5b","question":"product"} -->
 <!-- mandao:telemetry {"id":"5eaf061a-9ba3-4f3c-9d23-3e71fcf20b5b","type":"command_end","at":"2026-10-23T15:01:57.079Z","command":"clarify","run":"5eaf061a-9ba3-4f3c-9d23-3e71fcf20b5b"} -->
+<!-- mandao:telemetry {"id":"0eb83342-71da-4ace-bf15-1ae85747f479","type":"command_start","at":"2026-10-23T15:10:36.458Z","command":"clarify","run":"0eb83342-71da-4ace-bf15-1ae85747f479"} -->
+<!-- mandao:telemetry {"id":"cced3e60-666c-484b-8b99-18ebc065f83d","type":"asked","at":"2026-10-23T15:13:35.298Z","command":"clarify","run":"0eb83342-71da-4ace-bf15-1ae85747f479","question":"external","subject":"research-gate-web-search"} -->
+<!-- mandao:telemetry {"id":"cced3e60-666c-484b-8b99-18ebc065f83d","type":"answered","at":"2026-10-23T15:16:31.557Z","command":"clarify","run":"0eb83342-71da-4ace-bf15-1ae85747f479","question":"external"} -->
+<!-- mandao:telemetry {"id":"0eb83342-71da-4ace-bf15-1ae85747f479","type":"command_end","at":"2026-10-23T15:16:36.603Z","command":"clarify","run":"0eb83342-71da-4ace-bf15-1ae85747f479"} -->

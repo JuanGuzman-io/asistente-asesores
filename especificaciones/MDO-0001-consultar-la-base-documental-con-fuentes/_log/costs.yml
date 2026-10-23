@@ -29,3 +29,17 @@ costs:
       general-purpose: 0.876325
     source: claude-code
     basis: equivalent
+  - at: 2026-10-23T15:16:35.760Z
+    command: clarify
+    harness: claude
+    session: fc281081-ac42-4b61-a02c-ba9fc903c021
+    usd: 3.9414
+    roles:
+      clarify: 3.9414
+    models:
+      claude-opus-5-5: 3.9414
+    cumulative:
+      main-session: 10.32807
+      general-purpose: 0.876325
+    source: claude-code
+    basis: equivalent
