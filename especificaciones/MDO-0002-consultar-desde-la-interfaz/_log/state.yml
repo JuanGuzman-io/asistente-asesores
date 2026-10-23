@@ -10,15 +10,23 @@ start:
 progress:
   schema_version: 1
   spec: MDO-0002-consultar-desde-la-interfaz
-  updated_at: 2026-10-23T17:01:23.282Z
-  current:
-    task: T4
-    phase: implementing
-    harness: claude
-    model: claude-opus-5-5
+  updated_at: 2026-10-23T17:08:56.834Z
+  current: null
   open_questions: []
   next_step: ""
-  deferred_to_ci: []
+  deferred_to_ci:
+    - task: T4
+      tests:
+        - tests/web/e2e/consultar.spec.ts
+      reason: MDO-0001 backend not in main and not running on :8000 (R-1); PE chose write now, run later
+    - task: T4
+      tests:
+        - tests/web/e2e/consultar.spec.ts
+      reason: MDO-0001 backend not in main and not running on :8000 (R-1); PE chose write now, run later
+    - task: T4
+      tests:
+        - tests/web/e2e/consultar.spec.ts
+      reason: MDO-0001 backend not in main and not running on :8000 (R-1); PE chose write now, run later
   red_tests:
     - task: T1
       files:
@@ -193,10 +201,43 @@ progress:
         - src/web/vite.config.ts
         - tests/web/App.test.tsx
       receipts: []
+    - task: T4
+      attempt: 2
+      files:
+        - path: .gitignore
+          status: " M"
+          sha256: fa696f3823022c9706068d7edf3720d5799105285ebc7cef4f7738db9a4a473f
+        - path: src/web/AGENTS.md
+          status: " M"
+          sha256: e4e3b2bcdbfc4be14c39709f89fc66bf11ee24284d475253f32cce0533c7c987
+        - path: src/web/package.json
+          status: " M"
+          sha256: f33e5c0b6d86d429bd3d4d121ec2b0bb070a94ce5ed815cb674e94784269cfd7
+        - path: src/web/playwright.config.ts
+          status: " A"
+          sha256: 6be2043501b79ceefb5b7fcbb6dc780871d117f2131a9478319e2752164f9d9a
+        - path: src/web/tsconfig.json
+          status: " M"
+          sha256: bfa9562d262d6b437c22a7167469f418d61d33aa0b73ee4e0d618e937a9e2e17
+        - path: tests/web/e2e/consultar.spec.ts
+          status: " A"
+          sha256: 2df819d5fb87c7cd1b409d43b38bea858543927fad10e8bb0a6c217cd4e54db2
+        - path: tests/web/e2e/tsconfig.json
+          status: " A"
+          sha256: a99cdd2843edeaf5d73fc6b4782cad80da9e5f150e86dde53ff67fca2a84525e
+      reviewed:
+        - .gitignore
+        - src/web/AGENTS.md
+        - src/web/package.json
+        - src/web/playwright.config.ts
+        - src/web/tsconfig.json
+        - tests/web/e2e/consultar.spec.ts
+        - tests/web/e2e/tsconfig.json
+      receipts: []
   loop_brake:
-    task: T3
+    task: T4
     action: commit
-    execution_rows: 22
+    execution_rows: 27
     approval_rows: 1
     repeats: 1
 approvals:
@@ -230,6 +271,14 @@ cut_estimates:
     base: 63921
     turns_left: 58
     savings: 1.04
+    decision: "go on: below 50"
+  - at: 2026-10-23T17:02:24.973Z
+    task: T4
+    boundary_id: implement:T4
+    context: 201981
+    base: 63921
+    turns_left: 43
+    savings: 0.87
     decision: "go on: below 50"
 mock:
   decision: declined

@@ -215,3 +215,108 @@ Review of MDO-0002 T3, attempt 1. I checked the pack at /Users/jguzman/GitHub/Pr
 {"id":"F3","status":"open","severity":"low","lens":"core","title":"App-level 'S-3.1' test uses a 500 fixture, not the scenario's 422 with detail","file":"tests/web/App.test.tsx","line":86,"evidence":"S-3.1's Given is 422 problem+json with detail \"La pregunta no puede estar vacía.\" and requestId abc-123. The App test uses `{requestId:\"abc-123\", detail:\"interno\"}` with status 500, which is S-3.2, and asserts the generic message. The 422 mapping is covered in tests/web/api.test.ts:47, and the T3 Done-when asks only for an error with role=alert and its reference code, which the test does check. Advisory: use the 422 fixture so the test matches its label."}
 ]}
 ```
+
+## T4 — attempt 1
+
+VERDICT: FAIL
+
+Review of MDO-0002 T4, attempt 1. I read the pack (`.mandao/cache/MDO-0002/reviews/T4-1-pack.md`) and checked it against these files: spec.md (D5, S-1.1, S-2.1, S-2.2, S-3.1, P1), tasks.md T4, `src/web/src/App.tsx`, `src/web/src/Resultado.tsx`, `src/web/src/api.ts`, `src/web/vite.config.ts`, `src/web/tsconfig.json`, `src/web/package.json`, `constitucion/business-rules.md` (BR-3) and `constitucion/model-registry.md`.
+
+As agreed, I am not failing T4 because the E2E run is missing. The run is DEFERRED by PE decision (R-1). The only evidence is `npx playwright test --list`, which found 3 tests. Nothing here claims any e2e passed. The verdict is FAIL for one reason: the S-3.1 test would pass on errors other than S-3.1 (F1). F2 and F3 are cheap changes that make the deferred run much more likely to pass on the first try. I would fix all three in the same attempt.
+
+## Would the tests prove the scenarios against the real backend?
+
+- **S-1.1:** mostly yes. The test fills "Pregunta", clicks "Consultar", expects "Procesando consulta…" to be visible, then the result region, then the processing text to be hidden. That matches App.tsx (`role="status"`) and Resultado.tsx (`aria-label="Resultado de la consulta"`).
+  - The `completado` state is only inferred from the result appearing. That is acceptable, because the state is not rendered as text.
+  - Two risks: the 5 s default `expect` timeout (F2), and a small race on "Procesando…" if the extractive mode answers in a few milliseconds (F5, advisory).
+- **S-2.1:** partly. It checks the exact "Exitosa" status, the "Respuesta" heading and the source label. None of these depends on generated wording, which is correct: the answer text is not asserted.
+  - "Exitosa" and the source label do depend on retrieval and on the output guardrail of MDO-0001. That is inherent to running against the real backend and acceptable.
+  - Gaps: the scenario says "con su fragmento", but no fragment is asserted (F4). And the source locator will hit a strict-mode error if two fragments come from the same section (F3).
+- **S-2.2:** yes. It relies on BR-3 (a fixed message) and DP-6 (below the threshold the model is not called), so it does not depend on generated wording.
+  - `getByText("Sin información suficiente")` is a case-insensitive substring match. The fixed answer "No tengo información suficiente para responder." does not contain "sin información suficiente", so there is no strict-mode collision.
+  - The scenario's "rótulo distinto del de Exitosa" is not asserted (part of F4). It is already covered by the unit tests in T2.
+- **S-3.1:** not proven (F1). The test only checks that `role="alert"` contains "Código de referencia:". In api.ts, `requestId` is passed through for every non-200 problem response. So a 500, 413 or 415 with a `requestId` would also pass, as would a backend that crashes on empty input.
+  - The assertion should pin the 422 rejection. Option A: `page.waitForResponse` on `/api/consultar` and assert `status() === 422`. Option B: assert that the alert does not show the generic message and that the reference code is not empty, for example `toContainText(/Código de referencia: \S+/)`.
+  - The backend's `detail` text is fixed contract text, not generated, so asserting it would also be valid. But I could not confirm the exact MDO-0001 wording from this worktree (ASSUMPTION; P1 only says `detail` exists), so the status check is the safer choice.
+  - The `error` processing state is not rendered, so the alert is the right proxy for it.
+
+## Type-checking decision
+
+Excluding `tests/web/e2e` from `tsc --noEmit` is acceptable:
+- The e2e suite is not a gate.
+- Playwright transpiles the spec without checking types.
+- The spec is 52 lines and only uses `@playwright/test`.
+- The reason is documented in `src/web/AGENTS.md`.
+
+A small alternative, which I have not verified because I have no shell (OPEN): add a script `"typecheck:e2e": "tsc --noEmit -p ../../tests/web/e2e/tsconfig.json"`. TypeScript maps a `paths` target ending in `.js` to the sibling `index.d.ts`, so the existing e2e tsconfig may already type-check without touching the root tsconfig, which is what broke Playwright's config loading. If that works, it can be run by hand next to `npm run e2e`. This is advisory, not a condition of PASS.
+
+## Other checks
+
+- **Scope:** all changed paths are in the amended `files`. `package.json` already has `@playwright/test` 1.64.1 and the `e2e` script, so it is not in this diff.
+- **Vitest:** `vite.config.ts` excludes `tests/web/e2e/**` and only picks up `*.test.*`, so Vitest will not try to run the Playwright spec. The test gate passed.
+- **AGENTS.md:** `src/web/AGENTS.md` describes how to run e2e, that the backend is a prerequisite, that e2e is not a gate, and the tsconfig split. Correct.
+- **Module boundaries:** the tests only drive the UI, through roles, labels and text (NFR-1). No internals are touched.
+- **Security lens (risk tag public-api):** no findings. The dev server binds to 127.0.0.1 and there are no secrets. `Data/` serving is unchanged (`fs.deny`).
+- **TDD:** `loop.tdd.required` is false and the tasks.md notes justify it. No red evidence is needed.
+
+## Findings (JSON)
+
+```json
+{"version":1,"findings":[
+{"id":"F1","status":"open","severity":"medium","lens":"core","title":"S-3.1 e2e does not prove the 422 empty-question rejection","file":"tests/web/e2e/consultar.spec.ts","line":42,"evidence":"Only asserts the alert contains 'Código de referencia:'. api.ts passes requestId through for every non-200 problem response, so a 500/413/415 with requestId, or a backend crash on empty input, also passes. Assert the 422 via page.waitForResponse(r => r.url().endsWith('/api/consultar')) with status() === 422, and/or assert the alert is not the generic message and the code is non-empty (/Código de referencia: \\S+/)."},
+{"id":"F2","status":"open","severity":"medium","lens":"core","title":"Default 5 s expect timeout and 30 s test timeout are too short for the real backend","file":"src/web/playwright.config.ts","line":4,"evidence":"The result assertions use Playwright's default 5 s expect timeout, but the backend calls Gemini plus local embeddings (model-registry.md) and the client allows 30 s (TIEMPO_LIMITE_MS). The default test timeout of 30 s equals the client timeout, so the test is killed before a client timeout error could show. Set e.g. expect: { timeout: 35_000 } and timeout: 60_000 in defineConfig. ASSUMPTION: real latency is above 5 s on a cold or first query."},
+{"id":"F3","status":"open","severity":"medium","lens":"core","title":"Source locator fails in strict mode if two fragments share a section","file":"tests/web/e2e/consultar.spec.ts","line":28,"evidence":"getByText('Productos de Crédito > Crédito Productivo Impulso') must match exactly one element. Resultado.tsx renders one <strong> per fragment, so top-k retrieval returning two fragments from the same section causes a strict-mode violation. Use .first(). OPEN: whether MDO-0001 deduplicates sources by section."},
+{"id":"F4","status":"open","severity":"low","lens":"core","title":"S-2.1 fragment and S-2.2 distinct label not asserted end to end","file":"tests/web/e2e/consultar.spec.ts","line":28,"evidence":"S-2.1 says 'con su fragmento', but there is no assertion that the source item has a non-empty blockquote. For S-2.2, a cheap check is resultado.getByText('Exitosa', { exact: true }) toHaveCount(0). Both are covered at unit level, so this is advisory."},
+{"id":"F5","status":"open","severity":"low","lens":"core","title":"Possible race on 'Procesando consulta…' with a fast extractive backend","file":"tests/web/e2e/consultar.spec.ts","line":18,"evidence":"Without a Gemini key the extractive mode may answer before the first poll sees the status text. Advisory; acceptable for a real-backend test, but note it if the run is flaky."},
+{"id":"F6","status":"open","severity":"low","lens":"core","title":"e2e spec excluded from tsc; a separate -p check may be possible","file":"src/web/tsconfig.json","line":22,"evidence":"The exclusion is acceptable and documented. An optional 'typecheck:e2e': 'tsc --noEmit -p ../../tests/web/e2e/tsconfig.json' script could type-check the spec without changing root paths. Not verified (no shell)."}
+]}
+```
+
+## T4 — attempt 2
+
+VERDICT: PASS
+
+I reviewed T4 attempt 2 against `/Users/jguzman/GitHub/Projects/asistente-asesores.worktrees/MDO-0002-consultar-desde-la-interfaz/.mandao/cache/MDO-0002/reviews/T4-2-pack.md`. F1–F4 and F6 are fixed, and nothing in the diff is blocking. F5 is low and only advisory.
+
+The e2e run is still DEFERRED by PE decision (R-1). I am not treating any e2e test as passed. The only evidence is `--list`, which found 3 tests. I also have no output for `npm run typecheck:e2e`: it is not in the pack's gate results, so it is only the Implementer's claim (ASSUMPTION). The same goes for the `--list` count after the e2e tsconfig `paths` changed to the package directory: the pack does not show it was re-run (ASSUMPTION). Re-running `npx playwright test --list` once confirms that Playwright still loads with the new mapping.
+
+## Re-check by finding
+
+- **F1, resolved.** The test starts `waitForResponse` before the click, so it cannot miss the response.
+  - It asserts `status() === 422`, the alert matches `/Código de referencia: \S+/`, and the generic message is not shown.
+  - So a 500, 413 or 415 with a `requestId` no longer passes, and the test now proves S-3.1 against the real backend.
+  - Nothing depends on the backend's `detail` wording.
+- **F2, resolved.** `timeout` is 60_000 and `expect.timeout` is 35_000. Both cover the client's 30 s limit, and AGENTS.md documents them.
+- **F3, resolved.** The source is found with `getByRole("listitem").filter({ hasText }).first()`. This avoids the strict-mode error when two fragments share a section.
+- **F4, resolved.**
+  - S-2.1 now asserts that the source's `blockquote` is not empty.
+  - S-2.2 asserts that an exact "Exitosa" appears 0 times. That assertion can't pass before the result renders, because the earlier "Sin información suficiente" and "Sin fuentes" checks wait for the result region first.
+- **F5, open (low, advisory).** Unchanged: the check that "Procesando consulta…" is visible can race if the extractive mode (no Gemini key) answers within a few milliseconds. Note it if the deferred run turns out flaky.
+- **F6, resolved.**
+  - `typecheck:e2e` runs `tsc --noEmit -p ../../tests/web/e2e/tsconfig.json`. That tsconfig maps `@playwright/test` to the package directory, relative to the e2e tsconfig itself.
+  - Its `paths` replaces the inherited ones instead of merging with them. That is fine, because the spec only imports `@playwright/test`.
+  - It is not a gate, and AGENTS.md documents it.
+
+## Other checks
+
+- **Scope:** every changed path is in T4's amended `files`. `package.json` only adds the `typecheck:e2e` script.
+- **Gates:** format, lint, typecheck, test, build and audit all passed with exit code 0.
+- **Vitest:** it still excludes `tests/web/e2e/**`.
+- **AGENTS.md:** `src/web/AGENTS.md` describes the e2e setup, its prerequisites, the timeouts and the type-check split.
+- **Generated wording:** no assertion depends on it. The assertions only use roles, labels, the status values, the source label, the fixed BR-3 "Sin fuentes" path, and the HTTP status.
+- **Security lens (risk tag public-api):** no findings.
+- **TDD:** not required, as tasks.md justifies.
+- **Module boundaries:** respected. The tests only drive the UI.
+
+## Findings (JSON)
+
+```json
+{"version":1,"findings":[
+{"id":"F1","status":"resolved","severity":"medium","lens":"core","title":"S-3.1 e2e does not prove the 422 empty-question rejection","file":"tests/web/e2e/consultar.spec.ts","line":363,"evidence":"Now starts waitForResponse before the click, asserts status() === 422, the alert matches /Código de referencia: \\S+/, and the generic message is absent."},
+{"id":"F2","status":"resolved","severity":"medium","lens":"core","title":"Default 5 s expect timeout and 30 s test timeout are too short for the real backend","file":"src/web/playwright.config.ts","line":8,"evidence":"timeout: 60_000 and expect: { timeout: 35_000 } cover the client's 30 s limit; documented in AGENTS.md."},
+{"id":"F3","status":"resolved","severity":"medium","lens":"core","title":"Source locator fails in strict mode if two fragments share a section","file":"tests/web/e2e/consultar.spec.ts","line":349,"evidence":"Uses getByRole('listitem').filter({ hasText }).first()."},
+{"id":"F4","status":"resolved","severity":"low","lens":"core","title":"S-2.1 fragment and S-2.2 distinct label not asserted end to end","file":"tests/web/e2e/consultar.spec.ts","line":354,"evidence":"Asserts the blockquote is not empty (S-2.1) and that an exact 'Exitosa' appears 0 times in the result region, after the region has rendered (S-2.2)."},
+{"id":"F5","status":"open","severity":"low","lens":"core","title":"Possible race on 'Procesando consulta…' with a fast extractive backend","file":"tests/web/e2e/consultar.spec.ts","line":340,"evidence":"Unchanged. Advisory: if the extractive mode answers within a few ms, the visibility check can miss the status text. Note it if the deferred run is flaky."},
+{"id":"F6","status":"resolved","severity":"low","lens":"core","title":"e2e spec excluded from tsc; a separate -p check may be possible","file":"src/web/package.json","line":15,"evidence":"Added 'typecheck:e2e' using tests/web/e2e/tsconfig.json, with paths pointing to the @playwright/test package dir; not a gate; documented. The pack has no run output for it: the Implementer's claim that it passes is not verified here (ASSUMPTION)."}
+]}
+```

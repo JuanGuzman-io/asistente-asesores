@@ -3,6 +3,7 @@ node_modules/
 src/web/dist/
 src/web/playwright-report/
 src/web/test-results/
+src/web/.playwright/
 
 # mandao:begin
 # Managed by mandao 0.1.0-beta.0.
