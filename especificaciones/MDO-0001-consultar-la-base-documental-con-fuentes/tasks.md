@@ -502,7 +502,7 @@ parallel_safe: false
 verify: uv run pytest tests/server/infraestructura/redactor -q
 ```
 
-### [ ] T14 — Gemini recibe cada fragmento con su documento y sección y no mezcla productos
+### [x] T14 — Gemini recibe cada fragmento con su documento y sección y no mezcla productos
 
 - **What:** `contents` lleva en cada `<fragmento id="N">` la identidad `documento > sección` además del
   texto, neutralizada igual que el texto ([D7](design.md#d7), [D5](design.md#d5)). Hallado en verify: el
