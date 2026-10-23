@@ -10,5 +10,17 @@ projects:
   - name: asistente-asesores
     path: .
     profile: ai
+    gates:
+      format: uv run ruff format --check .
+      lint: uv run ruff check .
+      typecheck: uv run mypy src
+      test: uv run pytest
+      build: none
+      secrets: git ls-files -z --cached --others --exclude-standard | xargs -0 uvx --quiet --from detect-secrets detect-secrets-hook --baseline .secrets.baseline --exclude-files '(^|/)_log/'
+      sast: uvx --quiet bandit -r src -q
+      audit: uvx --quiet pip-audit --path .venv/lib/python3.13/site-packages $(grep -v '^#' .pip-audit-ignore | sed 's/^/--ignore-vuln /')
+      # EV-1..EV-5 against the real embeddings model (PE 2026-10-23). Mandao has no `eval` gate name.
+      metrics: uv run pytest -m eval
 harnesses:
   - claude
+session: { cut_min_savings: 50 }

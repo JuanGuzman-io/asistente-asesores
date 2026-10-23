@@ -3,7 +3,7 @@ schema_version: 1
 level: workspace
 status: approved
 last_reviewed: 2026-10-23
-owner: tech lead
+owner: PE
 ---
 
 # Architecture (TRD)
@@ -14,7 +14,7 @@ Proyecto nuevo: no hay código todavía. Lo que sigue es la arquitectura elegida
 ## Stack
 | Project | Language | Frameworks (versions) | Style-defining libraries |
 |---|---|---|---|
-| backend | Python ≥ 3.10 | FastAPI (0.161.x en PyPI, 2026-10-22) | Pydantic (validación), `sqlite3` + FTS5, `sqlite-vec` 0.1.9, `fastembed` 0.9.0, `google-genai` 2.33.0 |
+| backend | Python 3.13 (fijado en `.python-version`; entorno e instalación con `uv`) | FastAPI 0.161.1 | Pydantic (validación), `sqlite3` + FTS5, `qdrant-client` 1.20.0 (modo local), `fastembed` 0.9.0, `google-genai` 2.33.0 |
 | frontend | TypeScript | React + Vite | — (el diseño visual no se evalúa) |
 | pruebas | Python / TypeScript | pytest + `TestClient` de FastAPI; Vitest + Testing Library | — |
 
@@ -36,14 +36,21 @@ SQLite, embeddings, Gemini). `dominio` no importa nada de las demás capas; `web
 | `src/server/aplicacion` | Orquestar: guardrail de entrada → búsqueda → redacción → guardrail de salida → registro | `consultar(pregunta) -> Resultado` |
 | `src/server/dominio` | Guardrails, estados, mensaje sin información, umbral de relevancia | Tipos `Estado`, `Resultado`, `Fuente`; puertos |
 | `src/server/infraestructura/documentos` | Cargar `Data/`, excluir confidenciales, deduplicar, fragmentar por sección `##` | Fragmentos con `documento > sección` |
-| `src/server/infraestructura/busqueda` | Búsqueda híbrida: FTS5 (palabras, BM25) + `sqlite-vec` (embeddings locales con `fastembed`) | Implementa `BuscadorDocumental` |
+| `src/server/infraestructura/busqueda` | Búsqueda híbrida: FTS5 (palabras, BM25) en SQLite + Qdrant local (vectores coseno de embeddings locales con `fastembed`) | Implementa `BuscadorDocumental` |
 | `src/server/infraestructura/persistencia` | Guardar cada consulta en SQLite | Implementa `RepositorioConsultas` |
 | `src/server/infraestructura/redactor` | Redactar con Gemini (`google-genai`) a partir de los fragmentos; sin clave, respuesta extractiva | Implementa `Redactor` |
 | `src/web` | Consultar y mostrar respuesta, fuentes, errores y estado de procesamiento | Consume la API |
 
 ## Patterns and conventions
-- **Un solo archivo SQLite** guarda las consultas, el índice FTS5 y los vectores (`sqlite-vec`).
-- **Recuperación híbrida:** se combinan los puntajes de FTS5 y de vectores. Si el mejor fragmento no
+- **Dos almacenes locales, sin servidores:** un archivo SQLite guarda las consultas y el índice FTS5;
+  Qdrant en modo local (`QdrantClient(path=…)`, carpeta fuera de git) guarda los vectores de los
+  fragmentos con distancia coseno. No se usan extensiones de SQLite, así que cualquier Python 3.13 sirve.
+  Al pasar a producción, el mismo código apunta a un servidor Qdrant cambiando la configuración.
+- **Un solo proceso:** uvicorn corre con `--workers 1`. Qdrant local bloquea su carpeta y un segundo
+  proceso falla al abrirla (MDO-0001 D13, P6). Dentro del proceso la ruta es síncrona (threadpool) y las
+  llamadas a Gemini se limitan con un semáforo (`GEMINI_MAX_CONCURRENCIA`, 5). Para escalar a varios
+  procesos, apuntar a un servidor Qdrant.
+- **Recuperación híbrida:** se combinan los puntajes de FTS5 y de Qdrant. Si el mejor fragmento no
   supera el umbral, el estado es `Sin información suficiente` y no se llama al modelo.
 - **Redacción:** con `GEMINI_API_KEY`, Gemini redacta solo con los fragmentos recuperados y debe citarlos.
   Sin clave, o si la API falla, la respuesta es extractiva (fragmento y fuente). Ver `model-registry.md`.
@@ -51,7 +58,8 @@ SQLite, embeddings, Gemini). `dominio` no importa nada de las demás capas; `web
 - Los guardrails son código y corren antes de buscar y antes de responder.
 
 ## Integrations
-Gemini API (Google), opcional por configuración. Nada más.
+Gemini API (Google), opcional por configuración. Qdrant corre embebido en el proceso (modo local), no
+como servicio externo.
 
 ## Quality attributes
 - Ejecutable 100 % local; sin clave de API sigue funcionando en modo extractivo (PDF, entregables 5-6).

@@ -3,13 +3,13 @@ schema_version: 1
 level: workspace
 status: approved
 last_synced: 2026-10-23
-owner: PO
+owner: PE
 ---
 
 # Business rules
 
 Every rule has a source and a date. A rule without a source is an `ASSUMPTION`; contradictory sources
-are a `CONFLICT` decided by the PO.
+are a `CONFLICT` decided by the PE.
 
 | ID | Rule | Implemented in | Source | Date | Status |
 |---|---|---|---|---|---|
@@ -21,6 +21,7 @@ are a `CONFLICT` decided by the PO.
 | BR-6 | Cada consulta se almacena con pregunta, fecha y hora, respuesta, fuentes y estado. | — | PDF p. 2 | 2026-10-23 | documented only |
 | BR-7 | Los estados posibles son `Exitosa`, `Sin información suficiente` y `Bloqueada por seguridad`. | — | PDF p. 2 | 2026-10-23 | documented only |
 | BR-8 | La información de clientes solo la consulta personal autorizado. | — | Políticas de Atención, "Protección de Información" | 2026-10-23 | documented only |
+| BR-9 | El asistente solo atiende cuatro temas: productos de crédito, microseguros, procedimientos operativos y políticas internas. Una pregunta fuera de ellos no tiene soporte documental: es `Sin información suficiente`, no se bloquea. | — | PDF p. 2; intake Q-5 (PE, 2026-10-23) | 2026-10-23 | documented only |
 
 ASSUMPTION(source: BR-5): en el asistente, "escalar" se traduce en responder `Sin información suficiente`
 y registrar el evento; no existe un canal de escalamiento al que enviar el caso.

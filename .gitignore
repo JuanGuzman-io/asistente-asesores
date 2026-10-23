@@ -1,5 +1,12 @@
 node_modules/
 .env
+.venv/
+__pycache__/
+.pytest_cache/
+.mypy_cache/
+.ruff_cache/
+# Almacenes locales del servidor: Qdrant y SQLite (src/server/config.py)
+almacen/
 
 # mandao:begin
 # Managed by mandao 0.1.0-beta.0.

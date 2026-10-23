@@ -11,5 +11,5 @@ Flows that require e2e coverage and performance budgets. AC touching them carry 
 
 | Flow | Projects | E2E suite | Budget (see performance.md) |
 |---|---|---|---|
-| Consulta respondida con fuentes y registrada | asistente-asesores | OPEN (por crear) | `POST /api/consultar` p95 |
+| Consulta respondida con fuentes y registrada | asistente-asesores | `tests/server/e2e/` (`test_flujo_consulta.py`, `test_arranque_indice.py`, `test_respaldo_e2e.py`; MDO-0001) | `POST /api/consultar` p95 |
 | Consulta bloqueada por seguridad (información restringida o prompt injection) | asistente-asesores | OPEN (por crear) | `POST /api/consultar` p95 |

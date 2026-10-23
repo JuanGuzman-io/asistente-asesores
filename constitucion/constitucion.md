@@ -3,7 +3,7 @@ schema_version: 1
 level: workspace
 status: approved
 last_reviewed: 2026-10-23
-owner: tech lead
+owner: PE
 ---
 
 # Constitución — Asistente para asesores comerciales
