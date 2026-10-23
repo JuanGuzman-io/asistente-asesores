@@ -179,7 +179,7 @@ parallel_safe: false
 verify: npm --prefix src/web test -- pregunta App
 ```
 
-### [ ] T6 — Las e2e de caja vacía y error visible reemplazan la de pregunta vacía
+### [x] T6 — Las e2e de caja vacía y error visible reemplazan la de pregunta vacía
 
 - **What:** en `tests/web/e2e/consultar.spec.ts`, la prueba de pregunta vacía se reemplaza por las dos de
   [D5](spec.md#d5) (enmienda C-9).
