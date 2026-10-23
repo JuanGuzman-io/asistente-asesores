@@ -393,7 +393,7 @@ parallel_safe: false
 verify: uv run pytest tests/server/e2e tests/server/evals -q
 ```
 
-### [ ] T11 — Si Gemini falla, tarda o no está configurado, la respuesta sigue siendo extractiva
+### [x] T11 — Si Gemini falla, tarda o no está configurado, la respuesta sigue siendo extractiva
 
 - **What:** el caso de uso pasa al `RedactorExtractivo` ante cualquier excepción, tiempo agotado de 5 s o
   ausencia de `GEMINI_API_KEY`, sin reintentos ([D9](design.md#d9), [D12](design.md#d12)).
