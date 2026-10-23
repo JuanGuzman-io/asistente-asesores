@@ -3,7 +3,7 @@ schema_version: 1
 spec: MDO-0001-consultar-la-base-documental-con-fuentes
 depth: standard
 projects: [asistente-asesores]
-status: draft
+status: approved
 writes_data: yes
 ---
 
@@ -223,7 +223,7 @@ Proyecto nuevo: no hay archivos que imitar. El primer archivo de cada tipo se vu
 
 ## Diagram
 
-<!-- mandao:diagram type=sequence tool=archify file=diagrams/proposed.html graph=diagrams/proposed.graph.json graphHash=sha256:9cbeeb8f7168942b source=sha256:a655e86858eef0f9 -->
+<!-- mandao:diagram type=sequence tool=archify file=diagrams/proposed.html graph=diagrams/proposed.graph.json graphHash=sha256:9cbeeb8f7168942b source=sha256:3b668d8001eb3ad7 -->
 Derived from this design; regenerated whenever it changes. Part of the design approval.
 
 ![sequence diagram](diagrams/proposed.html)
@@ -263,7 +263,7 @@ modelo de embeddings ya están en `architecture.md` y `model-registry.md` (`/man
 - `model-registry.md`: prompt `prompt.md` v1 creado; dataset `tests/fixtures/consultas.json` v1 creado.
 - `critical-flows.md`: suite E2E del flujo "Consulta respondida con fuentes y registrada" (la que creen
   las tareas).
-- `standards.md`: nombrar los exemplar files creados.
+- `standards.md`: nombrar los exemplar files creados; tipado con mypy en modo estricto en lugar del `OPEN` "mypy o pyright" ([C-8](requirements.md#c-8)).
 - `glossary.md`: "Modo de respuesta" (`modo`: `modelo`, `extractivo`, `ninguno`).
 
 ## Product Impact

@@ -32,3 +32,5 @@ spec: MDO-0001-consultar-la-base-documental-con-fuentes
 <!-- mandao:telemetry {"id":"cced3e60-666c-484b-8b99-18ebc065f83d","type":"asked","at":"2026-10-23T15:13:35.298Z","command":"clarify","run":"0eb83342-71da-4ace-bf15-1ae85747f479","question":"external","subject":"research-gate-web-search"} -->
 <!-- mandao:telemetry {"id":"cced3e60-666c-484b-8b99-18ebc065f83d","type":"answered","at":"2026-10-23T15:16:31.557Z","command":"clarify","run":"0eb83342-71da-4ace-bf15-1ae85747f479","question":"external"} -->
 <!-- mandao:telemetry {"id":"0eb83342-71da-4ace-bf15-1ae85747f479","type":"command_end","at":"2026-10-23T15:16:36.603Z","command":"clarify","run":"0eb83342-71da-4ace-bf15-1ae85747f479"} -->
+<!-- mandao:telemetry {"id":"c6666b21-9367-46d7-8cad-f78417603af6","type":"command_start","at":"2026-10-23T15:17:09.381Z","command":"tasks","run":"c6666b21-9367-46d7-8cad-f78417603af6"} -->
+<!-- mandao:telemetry {"id":"c6666b21-9367-46d7-8cad-f78417603af6","type":"command_end","at":"2026-10-23T15:20:14.360Z","command":"tasks","run":"c6666b21-9367-46d7-8cad-f78417603af6"} -->

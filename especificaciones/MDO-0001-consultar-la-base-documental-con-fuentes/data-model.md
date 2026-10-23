@@ -1,7 +1,7 @@
 ---
 schema_version: 1
 spec: MDO-0001-consultar-la-base-documental-con-fuentes
-status: draft
+status: approved
 ---
 
 # Data model — Consultar la base documental con fuentes

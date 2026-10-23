@@ -43,3 +43,17 @@ costs:
       general-purpose: 0.876325
     source: claude-code
     basis: equivalent
+  - at: 2026-10-23T15:20:13.362Z
+    command: tasks
+    harness: claude
+    session: fc281081-ac42-4b61-a02c-ba9fc903c021
+    usd: 1.5015
+    roles:
+      tasks: 1.5015
+    models:
+      claude-opus-5-5: 1.5015
+    cumulative:
+      main-session: 11.829588
+      general-purpose: 0.876325
+    source: claude-code
+    basis: equivalent

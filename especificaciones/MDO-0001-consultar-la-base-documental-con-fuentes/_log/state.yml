@@ -32,3 +32,19 @@ approvals:
       requirements.md: sha256-0W6tFkbZSbs78Tn3gd4QQVkwxbWGfPDAWaG/Qf/n/rU=
       design.md: sha256-sTuqbMljftdPbT+AWyOFvLIDuwQoV4/B172/1js0/VQ=
       research.md: sha256-yU0on2kPgBGftgr/cpcQprPPuMuctr2WxUzyre31DFY=
+  - step: shown
+    by: Juan D. Guzmán
+    at: 2026-10-23T15:16:38.221Z
+    sha256:
+      story.md: sha256-vuoxSZOUvnLk7tEsF/V+ByP9TzMCTSVrhOCGr8oaz9M=
+      requirements.md: sha256-OKSlYNJnHbrGdifT06fJxPyrWTDk4O6XCutr+tDxFak=
+      design.md: sha256-vb1u87Xfaff6mzp69LT5oAa8/NyzYU3N+kcE6MP3YgU=
+      research.md: sha256-zIRqEpLE7D8+hZNMwtBpylMa9qw0U68N6Y0kLbftWAQ=
+  - step: shown
+    by: Juan D. Guzmán
+    at: 2026-10-23T15:20:14.749Z
+    sha256:
+      story.md: sha256-vuoxSZOUvnLk7tEsF/V+ByP9TzMCTSVrhOCGr8oaz9M=
+      requirements.md: sha256-OKSlYNJnHbrGdifT06fJxPyrWTDk4O6XCutr+tDxFak=
+      design.md: sha256-vb1u87Xfaff6mzp69LT5oAa8/NyzYU3N+kcE6MP3YgU=
+      research.md: sha256-zIRqEpLE7D8+hZNMwtBpylMa9qw0U68N6Y0kLbftWAQ=

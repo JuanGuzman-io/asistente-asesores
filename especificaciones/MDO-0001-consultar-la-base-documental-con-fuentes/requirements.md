@@ -3,7 +3,7 @@ schema_version: 1
 spec: MDO-0001-consultar-la-base-documental-con-fuentes
 depth: standard
 projects: [asistente-asesores]
-status: draft
+status: approved
 ---
 
 # Requirements — Consultar la base documental con fuentes
@@ -386,6 +386,12 @@ no hacen llamadas de red (verificado ejecutándolas sin red).
 - **Answer:** sí, como excepción. R3 (FTS5) y R5 (Qdrant) se aceptan sin MCP de búsqueda: las premisas P2 y P6 se verificaron ejecutándolas en este entorno (Python 3.13 con `uv`), con comando y salida registrados en `_log/premises.md`; esa evidencia es más fuerte que una búsqueda web.
 - **Answered by:** PE (Product Engineer).
 - **Effect:** el research gate de `mandao run next` sigue marcando R3 y R5 (no hay `research.web_search_servers`); se aprueba igual, con esta excepción como respaldo.
+
+<a id="c-8"></a>
+### C-8 — ¿Qué gates y qué verificador de tipos usa el backend? (2026-10-23)
+- **Answer:** `format: uv run ruff format --check .`, `lint: uv run ruff check .`, `typecheck: uv run mypy src`, `test: uv run pytest`, declarados en `projects[].gates` de `.mandao/config.yml` con aprobación del PE; mypy en modo estricto.
+- **Answered by:** PE (Product Engineer).
+- **Effect:** tasks.md T1; resuelve el `OPEN` "mypy o pyright" de `standards.md` (design.md, Constitution Impact).
 
 <a id="c-4"></a>
 ### C-4 — ¿Cómo se fija Python y se registra la hora? (2026-10-23)
