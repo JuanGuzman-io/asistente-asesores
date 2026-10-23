@@ -11,8 +11,8 @@ disable-model-invocation: true
 
 # /mandao-verify
 
-Budget: follow `.mandao/templates/ai/rules/budget.md` at the start and at the end.
-Telemetry: follow `.mandao/templates/ai/rules/telemetry.md` for event calls and categories.
+Budget: follow `.mandao/templates/<profile>/rules/budget.md` at the start and at the end.
+Telemetry: follow `.mandao/templates/<profile>/rules/telemetry.md` for event calls and categories.
 
 Spec: $spec
 
@@ -57,14 +57,14 @@ For each suite, a `tester` agent in a fresh context (it did not author the code)
 
 ## 3. Report
 
-Write `verify-report.md` from `.mandao/templates/ai/spec/verify-report.md`, following
-`.mandao/templates/ai/rules/spec-docs.md` and `.mandao/templates/ai/rules/doc-verify.md`: the verdict as the summary, AC → tests clause by clause first
-(`.mandao/templates/ai/rules/traceability.md`), then suites, TDD evidence (`missingRed`, changed red tests),
+Write `verify-report.md` from `.mandao/templates/<profile>/spec/verify-report.md`, following
+`.mandao/templates/<profile>/rules/spec-docs.md` and `.mandao/templates/<profile>/rules/doc-verify.md`: the verdict as the summary, AC → tests clause by clause first
+(`.mandao/templates/<profile>/rules/traceability.md`), then suites, TDD evidence (`missingRed`, changed red tests),
 the untagged security mentions from `verify-plan` (`securityMentions`, listed verbatim per task; they do
 not block, a person reads them), product bugs, deferred runs and the remaining blockers; commands and outputs only in `## Evidence`. When
 the spec has a `quickstart.md`, bring its steps in line with what was built
-(`.mandao/templates/ai/rules/doc-quickstart.md`). Then run the semantic
-Consistency Check (`.mandao/templates/ai/rules/consistency-check.md`) over story, requirements, design and the
+(`.mandao/templates/<profile>/rules/doc-quickstart.md`). Then run the semantic
+Consistency Check (`.mandao/templates/<profile>/rules/consistency-check.md`) over story, requirements, design and the
 report.
 
 ## 4. Status

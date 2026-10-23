@@ -13,17 +13,17 @@ disable-model-invocation: true
 
 # /mandao-specify
 
-Budget: follow `.mandao/templates/ai/rules/budget.md` at the start and at the end.
-Telemetry: follow `.mandao/templates/ai/rules/telemetry.md` for event calls and categories.
+Budget: follow `.mandao/templates/<profile>/rules/budget.md` at the start and at the end.
+Telemetry: follow `.mandao/templates/<profile>/rules/telemetry.md` for event calls and categories.
 
 Arguments: $ARGUMENTS
 
-Produce `requirements.md` and `design.md` for one spec. Follow `.mandao/templates/ai/rules/context.md`,
-`.mandao/templates/ai/rules/traceability.md`, `.mandao/templates/ai/rules/test-policy.md` and, for how each document
-reads, `.mandao/templates/ai/rules/spec-docs.md`, `.mandao/templates/ai/rules/doc-requirements.md` and
-`.mandao/templates/ai/rules/doc-design.md`. Load the other document rules only when they apply:
-`.mandao/templates/ai/rules/doc-lite.md` and `.mandao/templates/ai/rules/doc-tasks.md` at lite depth,
-`.mandao/templates/ai/rules/doc-quickstart.md` when the spec has visible behavior.
+Produce `requirements.md` and `design.md` for one spec. Follow `.mandao/templates/<profile>/rules/context.md`,
+`.mandao/templates/<profile>/rules/traceability.md`, `.mandao/templates/<profile>/rules/test-policy.md` and, for how each document
+reads, `.mandao/templates/<profile>/rules/spec-docs.md`, `.mandao/templates/<profile>/rules/doc-requirements.md` and
+`.mandao/templates/<profile>/rules/doc-design.md`. Load the other document rules only when they apply:
+`.mandao/templates/<profile>/rules/doc-lite.md` and `.mandao/templates/<profile>/rules/doc-tasks.md` at lite depth,
+`.mandao/templates/<profile>/rules/doc-quickstart.md` when the spec has visible behavior.
 
 Write requirements and design content in `es` and anything addressed to the PO
 (story text, questions) in `es`. Headings and keywords stay in English.
@@ -55,18 +55,18 @@ call `EnterWorktree` with the worktree path and continue in this conversation, w
 If `EnterWorktree` is refused or fails, print the `resume` field of the `spec-new` output and stop: do not go on working in the main checkout.
 Then go on. **A story written before the worktree** (by /mandao-story,
 untracked in the current checkout) does not exist in the new worktree: move the whole spec folder into
-the worktree, check the copy is identical, then remove the original, so there is only one. With `--hotfix`, follow `.mandao/templates/ai/rules/hotfix.md`. Write every artifact inside that worktree. Install dependencies **inside the worktree** (e.g. `npm ci`), never
+the worktree, check the copy is identical, then remove the original, so there is only one. With `--hotfix`, follow `.mandao/templates/<profile>/rules/hotfix.md`. Write every artifact inside that worktree. Install dependencies **inside the worktree** (e.g. `npm ci`), never
 a symlink to another checkout. Skip this when the session already runs in the worktree. If there is no `story.md`, write one from
-`.mandao/templates/ai/spec/story.md` with what the item says, marking gaps `OPEN` (critical ones block specify).
+`.mandao/templates/<profile>/spec/story.md` with what the item says, marking gaps `OPEN` (critical ones block specify).
 
-When the story's `type` is not `story`, follow `.mandao/templates/ai/rules/spec-types.md`.
+When the story's `type` is not `story`, follow `.mandao/templates/<profile>/rules/spec-types.md`.
 
 ## 2. Research
 
 Mark open questions `[NEEDS RESEARCH: type / topic] question`. Run `node .mandao/bin/mandao.mjs run research <spec> --harness <this harness>`;
 reuse exact-topic evidence while unexpired (`research.md#R<n>`). Ask the PO to prioritize up to
 `research.max_questions` questions per dispatch batch; the cap does not limit accumulated evidence.
-Follow `.mandao/templates/ai/spec/research.md`; create one subagent task for every uncovered question, parallelize
+Follow `.mandao/templates/<profile>/spec/research.md`; create one subagent task for every uncovered question, parallelize
 independent ones, with the §20 safety rule in each brief.
 
 ## 3. Depth
@@ -79,7 +79,7 @@ independent ones, with the §20 safety rule in each brief.
 
 Use `$depth`; propose a different depth if the risk clearly calls for it. Separate specs: `spec-docs.md` principle 8.
 
-**At lite depth** the whole spec is one session: follow `.mandao/templates/ai/rules/doc-lite.md`.
+**At lite depth** the whole spec is one session: follow `.mandao/templates/<profile>/rules/doc-lite.md`.
 
 ## 4. Impact analysis
 
@@ -89,7 +89,7 @@ Read the `AGENTS.md` of each touched module and the relevant constitution docume
 
 ## 5. requirements.md
 
-From `.mandao/templates/ai/spec/requirements.md`:
+From `.mandao/templates/<profile>/spec/requirements.md`:
 
 - `FR-n` / `NFR-n` with stable IDs; every FR names the AC it serves.
 - Scenarios `S-n.m` in Given/When/Then; edges as `BUT it must NOT` / `AND IT MUST` clauses.
@@ -101,9 +101,9 @@ From `.mandao/templates/ai/spec/requirements.md`:
 
 ## 6. design.md
 
-From `.mandao/templates/ai/spec/design.md`:
+From `.mandao/templates/<profile>/spec/design.md`:
 
-- **Premise Ledger** (at the end): as `.mandao/templates/ai/rules/doc-design.md` says. A High premise is verified only
+- **Premise Ledger** (at the end): as `.mandao/templates/<profile>/rules/doc-design.md` says. A High premise is verified only
   by a run recorded with `node .mandao/bin/mandao.mjs run premise <ID> <Pn> -- <command>` (safe runs only, through
   `node .mandao/bin/mandao.mjs run resources` when it builds or tests); otherwise it is `UNVERIFIED`.
 - Decisions first, each with why and the alternatives rejected; changes per project and module, and an
@@ -115,35 +115,38 @@ From `.mandao/templates/ai/spec/design.md`:
   data writes, add the complete ACID table and ensure a task declares a partial-failure test.
 - `Constitution Impact`, `Product Impact` and `Module Docs Impact`: record, never apply. Only
   `/mandao-close` applies them.
+- **Contract** (mandatory when the spec touches more than one project): OpenAPI, shared types or
+  schema in `contract/`, referenced from the design. Requirements and design stay single; never split
+  AC by layer.
 - `ai` projects: model choice, versioned prompts, chunking/embedding/retrieval, guardrails and
   fallback, in the template's *Model and prompts* table.
 
 ## 5b. quickstart.md (only with visible behavior)
 
 When the spec has behavior a user or a PO can see, write `quickstart.md` from
-`.mandao/templates/ai/spec/quickstart.md`: prerequisites in one line, 3–6 steps (command or click, and what
+`.mandao/templates/<profile>/spec/quickstart.md`: prerequisites in one line, 3–6 steps (command or click, and what
 appears) and the expected result; about 400 tokens at most. Not for test-only specs,
 refactors or internal infrastructure.
 
 ## 5c. data-model.md (only when data changes)
 
 When the spec adds or changes entities, fields, relationships or states, write `data-model.md` from
-`.mandao/templates/ai/spec/data-model.md` following `.mandao/templates/ai/rules/doc-data-model.md`.
+`.mandao/templates/<profile>/spec/data-model.md` following `.mandao/templates/<profile>/rules/doc-data-model.md`.
 
 ## 6b. UI mock
 
-When `node .mandao/bin/mandao.mjs run mock-offer <ID>` says `suggest` (and `story` did not ask), follow `.mandao/templates/ai/rules/mockups.md`.
+When `node .mandao/bin/mandao.mjs run mock-offer <ID>` says `suggest` (and `story` did not ask), follow `.mandao/templates/<profile>/rules/mockups.md`.
 
 ## 7. Consistency Check
 
 Run `node .mandao/bin/mandao.mjs run trace <ID>` for the structural part (GAP, ORPHAN, broken references, clause coverage)
-and `.mandao/templates/ai/rules/consistency-check.md` for the semantic part, over story, requirements and design. Write the table in
+and `.mandao/templates/<profile>/rules/consistency-check.md` for the semantic part, over story, requirements and design. Write the table in
 `requirements.md` even when it is empty.
 
 ## 8. Diagram for approval
 
 When `node .mandao/bin/mandao.mjs run diagram <ID>` says the spec needs one, or it changes data, follow
-`.mandao/templates/ai/rules/diagram.md`; else skip.
+`.mandao/templates/<profile>/rules/diagram.md`; else skip.
 
 ## 9. Close
 

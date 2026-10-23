@@ -26,7 +26,7 @@ never infer it from the framework. State precedence: chosen project architecture
 framework conventions, then generic principles only where the first two are silent. In active mode,
 show this as a per-file proposal and do not add it unless the user approves.
 
-Follow `.mandao/templates/ai/rules/context.md` throughout. Product context is written in
+Follow `.mandao/templates/<profile>/rules/context.md` throughout. Product context is written in
 `es`; the technical constitution in `es`. Headings, keywords and
 markers stay in English.
 
@@ -68,14 +68,14 @@ Write the workspace level in `constitucion/` from the templates, and a project l
 
 | Document | Template |
 |---|---|
-| `architecture.md` | `.mandao/templates/ai/constitution/architecture.md` |
-| `standards.md` | `.mandao/templates/ai/constitution/standards.md` |
-| `security.md` | `.mandao/templates/ai/constitution/security.md` |
-| `performance.md` | `.mandao/templates/ai/constitution/performance.md` |
-| `ux.md` | `.mandao/templates/ai/constitution/ux.md` |
-| `infrastructure.md` | `.mandao/templates/ai/constitution/infrastructure.md` |
-| `critical-flows.md` | `.mandao/templates/ai/constitution/critical-flows.md` |
-| `CHANGELOG.md` | `.mandao/templates/ai/constitution/CHANGELOG.md` |
+| `architecture.md` | `.mandao/templates/<profile>/constitution/architecture.md` |
+| `standards.md` | `.mandao/templates/<profile>/constitution/standards.md` |
+| `security.md` | `.mandao/templates/<profile>/constitution/security.md` |
+| `performance.md` | `.mandao/templates/<profile>/constitution/performance.md` |
+| `ux.md` | `.mandao/templates/<profile>/constitution/ux.md` |
+| `infrastructure.md` | `.mandao/templates/<profile>/constitution/infrastructure.md` |
+| `critical-flows.md` | `.mandao/templates/<profile>/constitution/critical-flows.md` |
+| `CHANGELOG.md` | `.mandao/templates/<profile>/constitution/CHANGELOG.md` |
 | `model-registry.md` (ai projects) | `.mandao/templates/ai/constitution/model-registry.md` |
 
 - Derive conventions and thresholds from what the code actually does; cite files. Where the code is
@@ -101,9 +101,9 @@ Write the workspace level in `constitucion/` from the templates, and a project l
 
 | Document | Template |
 |---|---|
-| `product.md` (vision, users, capability map) | `.mandao/templates/ai/constitution/product.md` |
-| `business-rules.md` | `.mandao/templates/ai/constitution/business-rules.md` |
-| `glossary.md` | `.mandao/templates/ai/constitution/glossary.md` |
+| `product.md` (vision, users, capability map) | `.mandao/templates/<profile>/constitution/product.md` |
+| `business-rules.md` | `.mandao/templates/<profile>/constitution/business-rules.md` |
+| `glossary.md` | `.mandao/templates/<profile>/constitution/glossary.md` |
 
 - Translate code into business language ("two-level approval flow exists", "discounts capped at
   30%"), each capability with evidence in code.

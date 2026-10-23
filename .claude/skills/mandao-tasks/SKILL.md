@@ -11,8 +11,8 @@ disable-model-invocation: true
 
 # /mandao-tasks
 
-Budget: follow `.mandao/templates/ai/rules/budget.md` at the start and at the end.
-Telemetry: follow `.mandao/templates/ai/rules/telemetry.md` for event calls and categories.
+Budget: follow `.mandao/templates/<profile>/rules/budget.md` at the start and at the end.
+Telemetry: follow `.mandao/templates/<profile>/rules/telemetry.md` for event calls and categories.
 
 Spec: $spec
 
@@ -31,17 +31,17 @@ open version 1 spec it warns and does not convert it; the migration goes through
    Run
    `node .mandao/bin/mandao.mjs run trace $spec`: a critical `OPEN` or critical Consistency Check finding blocks this
    mandao — stop and recommend /mandao-clarify.
-2. **Write `## Details`** in `tasks.md` from `.mandao/templates/ai/spec/tasks.md`, following
-   `.mandao/templates/ai/rules/spec-docs.md` and `.mandao/templates/ai/rules/doc-tasks.md`. Per task: `### [ ] Tn — <result>` (never a file path), **What**
+2. **Write `## Details`** in `tasks.md` from `.mandao/templates/<profile>/spec/tasks.md`, following
+   `.mandao/templates/<profile>/rules/spec-docs.md` and `.mandao/templates/<profile>/rules/doc-tasks.md`. Per task: `### [ ] Tn — <result>` (never a file path), **What**
    (1–2 sentences, linking the design for the how), **Done when** (3–5 behavior bullets citing scenarios
    by id), **Notes** only for a visible exception, and the YAML block without prose:
    - `kind`: what the task changes, which becomes its commit type (only tests → `test`, only
      documentation → `docs`);
    - `tier` (`fast | standard | strong`), `files` and an `exemplar` from the graph, `risk_tags`
-     (`.mandao/templates/ai/rules/review.md`), the `ac` and `scenarios` it implements
-     (`.mandao/templates/ai/rules/traceability.md`);
+     (`.mandao/templates/<profile>/rules/review.md`), the `ac` and `scenarios` it implements
+     (`.mandao/templates/<profile>/rules/traceability.md`);
    - `test_levels`: the level of every scenario it cites, `unit | e2e | eval | none`, as
-     `.mandao/templates/ai/rules/test-policy.md` requires; concrete test names are chosen by whoever writes them;
+     `.mandao/templates/<profile>/rules/test-policy.md` requires; concrete test names are chosen by whoever writes them;
    - `partial_failure_tests`: concrete test names for partial-failure behavior when the design declares or implies data writes;
    - `evidence`: `tdd`, `mutation` (it only pins down existing behavior) or `none`;
    - `verify`, `decisions` (linked `D<n>` ids), `depends_on`, `parallel_safe`;
@@ -56,7 +56,7 @@ open version 1 spec it warns and does not convert it; the migration goes through
    The module `AGENTS.md` (and its `CLAUDE.md` pointer) is part of every task's definition of done; do
    not list it.
 2b. **Deliveries** (ADR 0053). Big specs split the execution, not the spec. Separate specs follow principle 8 of
-   `.mandao/templates/ai/rules/spec-docs.md`. When `node .mandao/bin/mandao.mjs run tasks $spec` reports `proposeDeliveries.propose`, propose
+   `.mandao/templates/<profile>/rules/spec-docs.md`. When `node .mandao/bin/mandao.mjs run tasks $spec` reports `proposeDeliveries.propose`, propose
    grouping the tasks by delivery with its reasons (task count or files above the limits), grouped by AC
    and never by technical layer; state that criterion and let the user decide. The proposal applies only while no task declares
    `delivery`. If they accept, give every task a `delivery: n`, numbered 1..n; each delivery meets its AC end to end and depends only on earlier ones.
@@ -66,6 +66,7 @@ open version 1 spec it warns and does not convert it; the migration goes through
    proof.
 4. **Write `## Overview`:** `node .mandao/bin/mandao.mjs run tasks $spec --index --write` generates it from the details,
    grouped by acceptance criterion (by `### Delivery n — AC…` when tasks declare `delivery`), with a checkpoint per group. Never edit it by hand.
+5. **Order across projects:** contract → back and front in parallel against a mock → integration → e2e.
 7. **Check:** `node .mandao/bin/mandao.mjs run tasks $spec` must show no issues, no cycles and no delivery issue (they are reported inside `issues`);
    `node .mandao/bin/mandao.mjs run trace $spec` must show no `UNPLANNED` or `BROKEN_REF`. Fix and re-run.
 8. **Approve:** show the overview and the first eligible task, then record what was shown with

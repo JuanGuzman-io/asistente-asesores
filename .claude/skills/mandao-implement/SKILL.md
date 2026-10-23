@@ -12,8 +12,8 @@ disable-model-invocation: true
 
 # /mandao-implement
 
-Budget: follow `.mandao/templates/ai/rules/budget.md` at the start and at the end.
-Telemetry: follow `.mandao/templates/ai/rules/telemetry.md` for event calls and categories.
+Budget: follow `.mandao/templates/<profile>/rules/budget.md` at the start and at the end.
+Telemetry: follow `.mandao/templates/<profile>/rules/telemetry.md` for event calls and categories.
 
 Spec: $spec · task: $task
 
@@ -92,7 +92,7 @@ their short JSON, and decide; never paste their full output into the conversatio
    the `mandao-implementer-<tier>` agent (or `mandao-implementer` in simple mode).
    Send only the brief. When it reports: checkpoint with `--phase awaiting-review --verdict REPORTED
    --implementer <agent>`.
-4. **Gates and impacted tests** (`.mandao/templates/ai/rules/test-policy.md`): before a build, check
+4. **Gates and impacted tests** (`.mandao/templates/<profile>/rules/test-policy.md`): before a build, check
    `node .mandao/bin/mandao.mjs run resources --project <project> --kind build`; when it says `defer`, do not force it — report
    and wait, unless the user asks (a forced run is recorded). `node .mandao/bin/mandao.mjs run gates $spec <Tn>` runs
    the project's level 0 gates and the impacted tests (never the full suite), and returns pass/fail per
@@ -103,7 +103,7 @@ their short JSON, and decide; never paste their full output into the conversatio
 5. **Review** in a separate agent or process — never in your own context — with only the diff, the brief
    (its `graph` field is the code-graph context: the Reviewer has no shell for `graphify query`), the
    step 4 results (a read-only reviewer cannot run tests) and the active lenses
-   (`.mandao/templates/ai/rules/review.md`, `.mandao/templates/ai/rules/clean-code.md`):
+   (`.mandao/templates/<profile>/rules/review.md`, `.mandao/templates/<profile>/rules/clean-code.md`):
    `node .mandao/bin/mandao.mjs run review-pack $spec <Tn>` writes all of it to one file; send the Reviewer only its
    path. Who reviews comes from `loop`:
    - `crossReview` present → another installed harness reviews, as a read-only process Mandao launches
@@ -122,7 +122,7 @@ their short JSON, and decide; never paste their full output into the conversatio
      (required: the log keeps why the task failed); back to step 3. A test the rework adds runs red
      first too (`mandao run red`), before the fix: `REPORTED` is refused for a test no red run saw. `loop`
      moves the task one tier up after 2 FAILs and returns `halt` after 3 FAILs at strong: stop, report.
-   - **The spec is wrong** → write a Pivot Record (`.mandao/templates/ai/spec/pivot-record.md`) in `_log/execution.md`,
+   - **The spec is wrong** → write a Pivot Record (`.mandao/templates/<profile>/spec/pivot-record.md`) in `_log/execution.md`,
      checkpoint `--verdict PIVOT`, and wait for the user's sign-off. No retries are consumed.
    - **PASS** → commit (step 7). Advisories go to `## Advisories` and never reopen the loop.
    Logs (`_log/`, `progress.yml`, `execution.md`) are written only by the scripts. Never edit them by
@@ -134,7 +134,7 @@ their short JSON, and decide; never paste their full output into the conversatio
    1. Checkpoint the PASS and queue the commit:
       `--verdict PASS --reviewer <agent> --done <Tn> --pending-commit "<subject>" --clear` (or
       `--next-task`). `<subject>` is **only the subject** (`add --json to mandao doctor`): the script
-      adds the emoji, type and scope itself (`.mandao/templates/ai/rules/commits.md`). When `node .mandao/bin/mandao.mjs run review` already wrote
+      adds the emoji, type and scope itself (`.mandao/templates/<profile>/rules/commits.md`). When `node .mandao/bin/mandao.mjs run review` already wrote
       the PASS row, leave out `--verdict` and `--reviewer`: `--done <Tn> --pending-commit "<subject>"`.
    Before step 2, stage with `git add --` every file of the reviewed diff outside the task's `files`:
    the commit must build on its own.

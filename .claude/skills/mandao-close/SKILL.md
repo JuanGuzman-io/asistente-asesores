@@ -11,8 +11,8 @@ disable-model-invocation: true
 
 # /mandao-close
 
-Budget: follow `.mandao/templates/ai/rules/budget.md` at the start and at the end.
-Telemetry: follow `.mandao/templates/ai/rules/telemetry.md` for event calls and categories.
+Budget: follow `.mandao/templates/<profile>/rules/budget.md` at the start and at the end.
+Telemetry: follow `.mandao/templates/<profile>/rules/telemetry.md` for event calls and categories.
 
 Spec: $spec
 
@@ -41,7 +41,7 @@ Then `node .mandao/bin/mandao.mjs run status $spec closed` must be allowed (the 
    followed, with the mean absolute error. Below the minimum (3 specs) write "insufficient data (minimum 3)" and
    propose nothing. Proposals are recommendations only: Mandao never changes the constants.
 3. **Learn:** 0–3 root-cause lessons, each with evidence. **Standardize:** 1–3 one-line edits, each for
-   approval. Version 1 spec: write `docs/kaizen/<ID>.md` from `.mandao/templates/ai/close/kaizen.md`. Version 2
+   approval. Version 1 spec: write `docs/kaizen/<ID>.md` from `.mandao/templates/<profile>/close/kaizen.md`. Version 2
    spec (`schema_version: 2` in story.md): write the `## Kaizen` section of `close-summary.md` from the same
    guide, and append one line per approved lesson to `docs/kaizen/lessons.md`; write no `docs/kaizen/<ID>.md`.
 
@@ -75,24 +75,24 @@ or edge is drift and goes, explained, into the technical notes; a relabelled box
 
 ## 5. Documents
 
-Following `.mandao/templates/ai/rules/spec-docs.md` and `.mandao/templates/ai/rules/doc-close.md` (summary first, evidence at the end).
+Following `.mandao/templates/<profile>/rules/spec-docs.md` and `.mandao/templates/<profile>/rules/doc-close.md` (summary first, evidence at the end).
 
-**Version 2 spec:** the whole close is `close-summary.md`, from `.mandao/templates/ai/close/close-summary.md`. Run
+**Version 2 spec:** the whole close is `close-summary.md`, from `.mandao/templates/<profile>/close/close-summary.md`. Run
 `node .mandao/bin/mandao.mjs run close-summary $spec` first: it writes the record, `## Outcome` (from `node .mandao/bin/mandao.mjs run release-status`)
 and `## Delivery`; never edit those two. Then write the three sections it keeps, each one only when it has
 something to say:
 - `## For the PO` in `es`: business language, no code names, what the user gets now and
-  what is still pending, from the guide `.mandao/templates/ai/close/release-notes.md`.
+  what is still pending, from the guide `.mandao/templates/<profile>/close/release-notes.md`.
 - `## For developers` in `es`: what was built per module, decisions, contract changes,
-  the drift from step 4, how to test, from the guide `.mandao/templates/ai/close/technical.md`.
+  the drift from step 4, how to test, from the guide `.mandao/templates/<profile>/close/technical.md`.
 - `## Kaizen` in `es`: the headline numbers and the lessons from step 1.
 
 Version 2 writes no `docs/releases/<ID>/` and no `docs/kaizen/<ID>.md`. Never write an empty section or
 a field with `—`: leave it out.
 
 **Version 1 spec**, in `docs/releases/<ID>/`:
-- `technical.md` from `.mandao/templates/ai/close/technical.md`, in `es`.
-- `release-notes.md` from `.mandao/templates/ai/close/release-notes.md`, in `es`, one row per
+- `technical.md` from `.mandao/templates/<profile>/close/technical.md`, in `es`.
+- `release-notes.md` from `.mandao/templates/<profile>/close/release-notes.md`, in `es`, one row per
   criterion with the status from `node .mandao/bin/mandao.mjs run release-status $spec` — never upgraded by hand.
 
 ## 6. Release and environments
