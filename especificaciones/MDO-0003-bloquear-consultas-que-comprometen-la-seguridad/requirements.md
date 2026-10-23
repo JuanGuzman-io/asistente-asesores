@@ -155,7 +155,7 @@ de prefijos de los patrones) tarda menos de 50 ms en la peor de 20 corridas, med
 Serves: AC-3/C2
 
 0 apariciones de la pregunta (ni de ninguna palabra de 5 o más letras de ella que no esté en el
-mensaje fijo) en las líneas de `asistente.http` capturadas para todas las preguntas `bloqueada` de
+mensaje fijo ni en los valores fijos de `Estado` y `CategoriaBloqueo`, que S-4.3 exige en la línea) en las líneas de `asistente.http` capturadas para todas las preguntas `bloqueada` de
 `consultas@v5`, medido con `caplog` en una prueba HTTP.
 
 ## AC → FR matrix

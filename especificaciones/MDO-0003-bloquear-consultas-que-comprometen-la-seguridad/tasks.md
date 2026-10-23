@@ -125,16 +125,17 @@ verify: uv run pytest tests/server/http -q
   - S-5.3 holds: ninguna pregunta no `bloqueada` del dataset se bloquea; S-5.2/C1 holds por e2e con "¿Va a llover mañana en Bogotá?".
   - E2E por categoría (S-1.1, S-2.1, S-3.1): 200, `Bloqueada por seguridad`, el mismo mensaje, fila registrada, y ninguna línea de `Información restringida.md` ni su nombre en la respuesta (S-1.2/C1).
   - `uv run pytest -m eval` pasa con `v5`: EV-2 sin `bloqueada` ni `sensible`, C-9 ignora las bloqueadas.
+  - NFR-2 sobre todo el dataset: por HTTP, ninguna línea de `asistente.http` de las preguntas `bloqueada` de `v5` contiene la pregunta ni sus palabras de 5 o más letras, con las palabras permitidas tomadas de `MENSAJE_BLOQUEO` y de los valores de `Estado` y `CategoriaBloqueo`.
 
 ```yaml
 project: asistente-asesores
 kind: test
 tier: standard
-files: [tests/fixtures/consultas.json, tests/server/dominio/test_guardrail_dataset.py, tests/server/e2e/test_flujo_bloqueo.py, tests/server/evals/test_evals.py]
+files: [tests/fixtures/consultas.json, tests/server/dominio/test_guardrail_dataset.py, tests/server/e2e/test_flujo_bloqueo.py, tests/server/evals/test_evals.py, tests/server/http/test_bloqueo_api.py]
 exemplar: tests/server/e2e/test_flujo_consulta.py
-ac: [AC-1, AC-1/C1, AC-2, AC-3, AC-4, AC-4/C1]
-scenarios: [S-1.1, S-1.2/C1, S-2.1, S-3.1, S-5.2/C1, S-5.3]
-test_levels: { S-1.1: e2e, S-1.2/C1: e2e, S-2.1: e2e, S-3.1: e2e, S-5.2/C1: e2e, S-5.3: eval }
+ac: [AC-1, AC-1/C1, AC-2, AC-3, AC-3/C2, AC-4, AC-4/C1]
+scenarios: [S-1.1, S-1.2/C1, S-2.1, S-3.1, S-4.3/C2, S-5.2/C1, S-5.3]
+test_levels: { S-1.1: e2e, S-1.2/C1: e2e, S-2.1: e2e, S-3.1: e2e, S-4.3/C2: unit, S-5.2/C1: e2e, S-5.3: eval }
 partial_failure_tests: []
 evidence: tdd
 risk_tags: [security]
