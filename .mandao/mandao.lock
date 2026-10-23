@@ -1,7 +1,7 @@
 # Written by mandao. Do not edit by hand.
 schema_version: 1
 mandao: 0.1.0-beta.0
-config_hash: sha256-B1zQu1KDM6SDFUpSWOpLXta3wTkcPb/SGc3Jo3mmmtg=
+config_hash: sha256-KUCkO2aarGBU0i9wEWVi2BySComL8AoENxjqopBOfsM=
 layers:
   - kind: core
     id: core
