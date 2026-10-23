@@ -159,7 +159,7 @@ button {
   flex-direction: column;
 }
 
-/* Fondo: manchas de color difuminadas, trama y (en nocturno) una línea de escaneo */
+/* Fondo: manchas de color difuminadas y trama */
 .fondo {
   position: fixed;
   inset: 0;
@@ -207,23 +207,6 @@ button {
   background-image: var(--trama);
   background-size: var(--trama-tamano);
   mask-image: radial-gradient(ellipse at center, #000 30%, transparent 80%);
-}
-
-.escaneo {
-  display: none;
-}
-
-@media (prefers-color-scheme: dark) {
-  .escaneo {
-    display: block;
-    position: absolute;
-    left: 0;
-    right: 0;
-    top: 0;
-    height: 160px;
-    background: linear-gradient(180deg, transparent, rgb(95 224 230 / 0.06), transparent);
-    transform: translateY(-100%);
-  }
 }
 
 /* Cabecera */
@@ -948,10 +931,6 @@ button {
     animation-delay: -12s;
   }
 
-  .escaneo {
-    animation: escaneo 6s linear infinite;
-  }
-
   .orbe-color {
     animation: giro 9s linear infinite;
   }
@@ -1030,15 +1009,6 @@ button {
   }
   100% {
     transform: translate(-40px, 40px) scale(0.95);
-  }
-}
-
-@keyframes escaneo {
-  from {
-    transform: translateY(-100%);
-  }
-  to {
-    transform: translateY(100vh);
   }
 }
 

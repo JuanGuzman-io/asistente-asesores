@@ -26,7 +26,6 @@ function Fondo() {
       <span className="mancha mancha-morado" />
       <span className="mancha mancha-naranja" />
       <span className="trama" />
-      <span className="escaneo" />
     </div>
   );
 }

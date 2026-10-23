@@ -37,3 +37,6 @@ CVE-2026-96643
 CVE-2026-96644
 CVE-2026-96778
 GHSA-78g4-xqwv-q3g8
+# Added by the PE on 2026-10-23 (same reason): advisories published after the first acceptance.
+CVE-2026-112398
+CVE-2026-114501
