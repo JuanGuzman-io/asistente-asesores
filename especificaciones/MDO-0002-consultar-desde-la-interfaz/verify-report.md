@@ -7,10 +7,10 @@ date: 2026-10-23
 
 # Verify — Consultar desde la interfaz
 
-Verificado. AC-1 (crítico) y AC-2 cumplen con evidencia: 67/67 pruebas de unidad, build, format, lint y
-typecheck en verde sobre HEAD (509aa7f). La CI del PR #2 corrió las e2e diferidas de T4 contra el
-backend real y pasaron 4/4 (corrida 40024670663, commit 0f66689). No hay `PRODUCT_BUG` ni bloqueos.
-Hay una salvedad: el merge local 509aa7f (renombre a W+IA, solo texto) todavía no pasó por CI.
+Verificado. AC-1 (crítico) y AC-2 cumplen con evidencia sobre 509aa7f, el último commit con código:
+67/67 pruebas de unidad, build, format, lint y typecheck en verde en local. La CI del PR #2 corrió sobre
+ese mismo commit las e2e diferidas de T4 contra el backend real y pasaron 4/4 (corrida 40025377094).
+No hay `PRODUCT_BUG` ni bloqueos.
 
 ## Acceptance criteria → tests
 
@@ -47,9 +47,9 @@ suficiente para responder.", `fuentes: []` y "Sin información suficiente".
 | web | unit (`mandao run tests`, 4 de 4 archivos impactados), HEAD 509aa7f | PASS: 67/67 |
 | web | build (`mandao run build web`), HEAD 509aa7f | PASS |
 | web | format, lint y typecheck, HEAD 509aa7f | PASS |
-| web | e2e (Playwright, backend real), CI del PR #2 sobre 0f66689 | PASS: 4/4 |
-| web | e2e local sobre HEAD 509aa7f | NOT RUN: el guardián de recursos lo bloqueó (3,5 GB libres, se piden 4,5 GB) |
-| asistente-asesores | backend, evals, secrets, sast (bandit), CI del PR #2 sobre 0f66689 | PASS |
+| web | unit, build y e2e (Playwright, backend real), CI del PR #2 sobre 509aa7f | PASS: 67/67 y 4/4 |
+| web | e2e local sobre 509aa7f | NOT RUN: el guardián de recursos lo bloqueó (3,5 GB libres, se piden 4,5 GB); la cubre CI |
+| asistente-asesores | backend, evals, secrets, sast (bandit), CI del PR #2 sobre 509aa7f | PASS |
 
 ## TDD evidence (ADR 0022)
 
@@ -77,15 +77,11 @@ None.
 
 ## Deferred to CI
 
-Las tres corridas e2e de T4 (`tests/web/e2e/consultar.spec.ts`) quedaron confirmadas por la CI del PR #2:
-el job `frontend` sobre 0f66689 dio `e2e: success` y "4 passed (12.1s)". Por eso este verify usa
-`--ci-confirmed`.
-
-**Salvedad:** HEAD es 509aa7f, un merge local todavía sin push que viene de
-`draft/quick-renombrar-w-ia`. Cambia solo textos visibles de "Bot-W" a "W+IA" en `App.tsx`,
-`Orbe.tsx`, `estilos.css`, `index.html` y `AGENTS.md`. Ninguna e2e usa esos textos: buscan por
-"Pregunta", "Procesando consulta…", "Exitosa", "Sin información suficiente" y "Sin fuentes". La unidad,
-el build y los gates estáticos pasaron sobre HEAD. Al hacer push, CI vuelve a correr la e2e sobre 509aa7f.
+Las tres corridas e2e de T4 (`tests/web/e2e/consultar.spec.ts`) quedaron confirmadas por la CI del PR #2.
+Primero pasaron sobre 0f66689 (corrida 40024670663, "4 passed (12.1s)"). Después, ya con el renombre a
+W+IA (merge de `draft/quick-renombrar-w-ia`), pasaron sobre 509aa7f (corrida 40025377094, "4 passed
+(12.0s)"). Por eso este verify usa `--ci-confirmed`. Después de 509aa7f solo cambiaron documentos del
+spec (`story.md`, `verify-report.md` y `_log/`).
 
 ## Blockers
 
@@ -125,6 +121,16 @@ $ gh run view 40024670663 --json headSha,conclusion,jobs
 frontend  test  Test Files  4 passed (4)
 frontend  test       Tests  67 passed (67)
 frontend  e2e   4 passed (12.1s)
+
+$ gh run view 40025377094 --json headSha,conclusion,jobs
+{"conclusion":"success","headSha":"509aa7fdf6fbc723b36593477c87067604bacc56","jobs":[
+ {"name":"evals","conclusion":"success"},{"name":"backend","conclusion":"success"},{"name":"frontend","conclusion":"success"}]}
+frontend  test  Test Files  4 passed (4)
+frontend  test       Tests  67 passed (67)
+frontend  e2e   4 passed (12.0s)
+
+$ git diff --stat 509aa7f HEAD   # solo documentos del spec
+_log/costs.yml | _log/execution.md | story.md | verify-report.md
 
 $ node .mandao/bin/mandao.mjs run tests web src/web/src/{App,Compositor,Resultado,Orbe,main}.tsx src/web/src/{api,pregunta}.ts   # HEAD 509aa7f
 Test Files  4 passed (4)

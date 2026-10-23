@@ -303,3 +303,5 @@ spec: MDO-0002-consultar-desde-la-interfaz
 <!-- mandao:telemetry {"id":"db702480-30bb-4474-9454-2f73702f6d81","type":"agent_end","at":"2026-10-23T21:16:14.193Z","command":"verify","run":"313c5832-6af4-4b8f-a7a3-1fbe55b96753"} -->
 <!-- mandao:telemetry {"id":"1f5955e8-4785-4e57-af0e-e59d44e6d7b1","type":"agent_end","at":"2026-10-23T21:19:16.823Z","command":"verify","run":"313c5832-6af4-4b8f-a7a3-1fbe55b96753"} -->
 <!-- mandao:telemetry {"id":"313c5832-6af4-4b8f-a7a3-1fbe55b96753","type":"command_end","at":"2026-10-23T21:20:04.703Z","command":"verify","run":"313c5832-6af4-4b8f-a7a3-1fbe55b96753"} -->
+<!-- mandao:telemetry {"id":"bea3cb5b-9118-4563-bd65-b5cc09a8743c","type":"command_start","at":"2026-10-23T21:28:13.441Z","command":"verify","run":"bea3cb5b-9118-4563-bd65-b5cc09a8743c"} -->
+<!-- mandao:telemetry {"id":"bea3cb5b-9118-4563-bd65-b5cc09a8743c","type":"command_end","at":"2026-10-23T21:28:49.080Z","command":"verify","run":"bea3cb5b-9118-4563-bd65-b5cc09a8743c"} -->
