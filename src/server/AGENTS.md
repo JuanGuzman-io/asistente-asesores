@@ -2,6 +2,7 @@
 
 Python 3.13 con `uv`. Gates: `uv run ruff format --check .`, `uv run ruff check .`, `uv run mypy src` (strict), `uv run pytest`.
 
-- `dominio/modelos.py`: `Fragmento(documento, seccion, texto)`.
+- `dominio/modelos.py`: `Fragmento(documento, seccion, texto)` y `Fuente(documento, seccion, fragmento)`.
+- `dominio/reglas.py`: `deduplicar_fuentes(fragmentos)` deja una fuente por `documento > sección`, en orden de primera aparición (D6).
 - `config.py`: directorio `Data/` y lista de excluidos (`Información restringida.md`).
-- `infraestructura/documentos/cargador.py`: `cargar_documentos(directorio, excluidos)` fragmenta por `##` (o `#` si no hay `##`). Excluye por lista y por `CONFIDENCIAL` (sin distinguir mayúsculas) en las primeras 10 líneas; el log nombra el archivo, nunca su contenido. Los nombres se normalizan a NFC.
+- `infraestructura/documentos/cargador.py`: `cargar_documentos(directorio, excluidos)` fragmenta por `##` (o `#` si no hay `##`). Excluye por lista y por `CONFIDENCIAL` (sin distinguir mayúsculas) en las primeras 10 líneas; el log nombra el archivo, nunca su contenido. Los nombres se normalizan a NFC. El contenido duplicado se descarta por sha256 del texto normalizado (minúsculas, espacios colapsados), por documento y por fragmento; gana el primer archivo en orden alfabético (D6).

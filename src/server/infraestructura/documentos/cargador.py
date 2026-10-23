@@ -1,3 +1,4 @@
+import hashlib
 import logging
 import unicodedata
 from collections.abc import Sequence
@@ -13,6 +14,11 @@ MARCA_CONFIDENCIAL = "CONFIDENCIAL"
 
 def _nfc(texto: str) -> str:
     return unicodedata.normalize("NFC", texto)
+
+
+def _hash_normalizado(texto: str) -> str:
+    normalizado = " ".join(texto.casefold().split())
+    return hashlib.sha256(normalizado.encode("utf-8")).hexdigest()
 
 
 def _es_confidencial(texto: str) -> bool:
@@ -42,6 +48,8 @@ def _fragmentar(documento: str, texto: str) -> list[Fragmento]:
 def cargar_documentos(directorio: Path, excluidos: Sequence[str]) -> list[Fragmento]:
     omitidos = {_nfc(nombre) for nombre in excluidos}
     fragmentos: list[Fragmento] = []
+    hashes_documento: set[str] = set()
+    hashes_fragmento: set[str] = set()
     for ruta in sorted(directorio.glob("*.md")):
         nombre = _nfc(ruta.name)
         if nombre in omitidos:
@@ -51,5 +59,14 @@ def cargar_documentos(directorio: Path, excluidos: Sequence[str]) -> list[Fragme
         if _es_confidencial(texto):
             registro.info("Documento excluido por CONFIDENCIAL: %s", nombre)
             continue
-        fragmentos.extend(_fragmentar(nombre.removesuffix(".md"), texto))
+        hash_documento = _hash_normalizado(texto)
+        if hash_documento in hashes_documento:
+            registro.info("Documento duplicado omitido: %s", nombre)
+            continue
+        hashes_documento.add(hash_documento)
+        for fragmento in _fragmentar(nombre.removesuffix(".md"), texto):
+            hash_fragmento = _hash_normalizado(fragmento.texto)
+            if hash_fragmento not in hashes_fragmento:
+                hashes_fragmento.add(hash_fragmento)
+                fragmentos.append(fragmento)
     return fragmentos

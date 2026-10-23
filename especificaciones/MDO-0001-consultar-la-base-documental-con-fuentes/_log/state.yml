@@ -2,9 +2,9 @@
 progress:
   schema_version: 1
   spec: MDO-0001-consultar-la-base-documental-con-fuentes
-  updated_at: 2026-10-23T15:55:25.236Z
+  updated_at: 2026-10-23T15:59:51.754Z
   current:
-    task: T2
+    task: T3
     phase: implementing
     harness: claude
     model: claude-opus-5-5
@@ -28,6 +28,22 @@ progress:
             - test_s12_documento_confidencial_por_encabezado_se_excluye_aunque_no_este_en_la_lista
             - test_s12_el_log_nombra_el_excluido_y_no_contiene_su_contenido
             - test_s12_marca_confidencial_se_detecta_sin_importar_mayusculas
+    - task: T2
+      files:
+        - path: tests/server/dominio/test_fuentes.py
+          sha256: 5c4ab1a4c9e9b37eea653e82f261cc41fa57b49b3ba6f733c4061867491e0948
+          tests:
+            - test_s22_dos_fragmentos_con_el_mismo_documento_y_seccion_dan_una_sola_fuente
+            - test_s22_conserva_el_orden_de_primera_aparicion
+            - test_s22_misma_seccion_en_documentos_distintos_son_fuentes_distintas
+        - path: tests/server/infraestructura/documentos/test_duplicados.py
+          sha256: 5ac1084de18d59d9dd35d6419c1b6db536227e6765cf060ae24c86e6d0df97c8
+          tests:
+            - test_s21_dos_archivos_con_el_mismo_contenido_normalizado_indexan_solo_el_primero
+            - test_s21_gana_el_primero_en_orden_alfabetico_aunque_se_cree_despues
+            - test_s21_c1_ninguna_fuente_repite_el_mismo_contenido
+            - test_s21_una_seccion_repetida_en_dos_documentos_se_indexa_una_sola_vez
+            - test_s21_secciones_parecidas_pero_distintas_se_conservan_ambas
   pending_commits: []
   approved_manifests:
     - task: T1
@@ -47,10 +63,39 @@ progress:
         - src/server/infraestructura/documentos/cargador.py
         - tests/server/infraestructura/documentos/test_cargador.py
       receipts: []
+    - task: T2
+      attempt: 1
+      files:
+        - path: src/server/AGENTS.md
+          status: " M"
+          sha256: df4ae26c1354c663b4d10e1fb24653a9cb30a3088dbc94831c3b7097d3701eee
+        - path: src/server/dominio/modelos.py
+          status: " M"
+          sha256: a22cb4e4e4a830f0cef5c3789cd7742e76c978492ff7fae29586d6c35c2a1c68
+        - path: src/server/dominio/reglas.py
+          status: ??
+          sha256: ea93af1d4957eb9a9337a9745ecb9088b55e7f01c90b4c6adbcdfb2c679927e7
+        - path: src/server/infraestructura/documentos/cargador.py
+          status: " M"
+          sha256: 4705a9a9afba8b58c55105cf6177d7345b6075815d6222e7dc6e8c14844293b1
+        - path: tests/server/dominio/test_fuentes.py
+          status: ??
+          sha256: 45d6a98bb2d9592efe505b765700aba65819f186745ef980e9b1338b198aba82
+        - path: tests/server/infraestructura/documentos/test_duplicados.py
+          status: ??
+          sha256: 5ac1084de18d59d9dd35d6419c1b6db536227e6765cf060ae24c86e6d0df97c8
+      reviewed:
+        - src/server/AGENTS.md
+        - src/server/dominio/modelos.py
+        - src/server/infraestructura/documentos/cargador.py
+        - src/server/dominio/reglas.py
+        - tests/server/dominio/test_fuentes.py
+        - tests/server/infraestructura/documentos/test_duplicados.py
+      receipts: []
   loop_brake:
-    task: T1
-    action: done
-    execution_rows: 13
+    task: T2
+    action: commit
+    execution_rows: 18
     approval_rows: 6
     repeats: 1
 approvals:
@@ -129,3 +174,11 @@ cut_estimates:
     turns_left: 193
     savings: 2.41
     decision: "stop: suggest a new session"
+  - at: 2026-10-23T15:55:39.127Z
+    task: T2
+    boundary_id: implement:T2
+    context: 96392
+    base: 63912
+    turns_left: 193
+    savings: 0.93
+    decision: "go on: below 50"

@@ -22,6 +22,11 @@ spec: MDO-0001-consultar-la-base-documental-con-fuentes
 | 2026-10-23 | T1 | 1 | standard | claude | claude-sonnet-5-5 | — | RED | red tests by mandao-tester: tests/server/infraestructura/documentos/test_cargador.py; `pytest tests/server/infraestructura/documentos/test_cargador.py` failed (exit 1) |
 | 2026-10-23 | T1 | 1 | standard | claude | claude-sonnet-5-5 | — | REPORTED |  |
 | 2026-10-23 | T1 | 1 | standard | claude | — | claude-opus-5-5 | PASS |  |
+| 2026-10-23 | T2 | 1 | standard | claude | — | — | STARTED |  |
+| 2026-10-23 | T2 | 1 | standard | claude | claude-sonnet-5-5 | — | RED | red tests by mandao-implementer: tests/server/infraestructura/documentos/test_duplicados.py, tests/server/dominio/test_fuentes.py; `pytest tests/server/infraestructura/documentos/test_duplicados.py tests/server/dominio/test_fuentes.py` failed (exit 2) |
+| 2026-10-23 | T2 | 1 | standard | claude | claude-sonnet-5-5 | — | RED | red tests by mandao-implementer: tests/server/infraestructura/documentos/test_duplicados.py; `pytest tests/server/infraestructura/documentos/test_duplicados.py` failed (exit 1) |
+| 2026-10-23 | T2 | 1 | standard | claude | claude-sonnet-5-5 | — | REPORTED | red test changed: tests/server/dominio/test_fuentes.py; Leader aplicó ruff --fix (I001, orden de imports) en tests/server/dominio/test_fuentes.py; sin cambio de aserciones |
+| 2026-10-23 | T2 | 1 | standard | claude | — | claude-opus-5-5 | PASS | red test changed: tests/server/dominio/test_fuentes.py |
 
 ## Telemetry
 
@@ -101,3 +106,17 @@ spec: MDO-0001-consultar-la-base-documental-con-fuentes
 <!-- mandao:telemetry {"id":"7d16aeb1-8a3f-4f5e-b2dc-87c55ade04dd","type":"gate_end","at":"2026-10-23T15:51:08.170Z","command":"implement","run":"f770871f-ae4c-4dd0-b456-e40de1cdde6f","subject":"test"} -->
 <!-- mandao:telemetry {"id":"aca618a6-267c-471d-9aaf-abbf9c326590","type":"agent_start","at":"2026-10-23T15:51:11.248Z","command":"implement","run":"c2b09326-b14e-402c-973f-825424197a47","subject":"reviewer"} -->
 <!-- mandao:telemetry {"id":"aca618a6-267c-471d-9aaf-abbf9c326590","type":"agent_end","at":"2026-10-23T15:55:08.603Z","command":"implement","run":"c2b09326-b14e-402c-973f-825424197a47"} -->
+<!-- mandao:telemetry {"id":"e12917a8-f6b5-4154-9128-7dcdd9261d78","type":"agent_start","at":"2026-10-23T15:55:45.743Z","command":"implement","run":"c2b09326-b14e-402c-973f-825424197a47","subject":"implementer"} -->
+<!-- mandao:telemetry {"id":"e12917a8-f6b5-4154-9128-7dcdd9261d78","type":"agent_end","at":"2026-10-23T15:57:24.573Z","command":"implement","run":"c2b09326-b14e-402c-973f-825424197a47"} -->
+<!-- mandao:telemetry {"id":"cc6c633e-4020-4a43-b31a-798223139fca","type":"agent_start","at":"2026-10-23T15:57:33.260Z","command":"implement","run":"c2b09326-b14e-402c-973f-825424197a47","subject":"implementer"} -->
+<!-- mandao:telemetry {"id":"cc6c633e-4020-4a43-b31a-798223139fca","type":"agent_end","at":"2026-10-23T15:58:15.838Z","command":"implement","run":"c2b09326-b14e-402c-973f-825424197a47"} -->
+<!-- mandao:telemetry {"id":"10e68ac0-5bdb-4e4a-9cee-c3d595654c48","type":"gate_start","at":"2026-10-23T15:58:21.597Z","command":"implement","run":"057d60e3-85fb-4405-963c-a0c89d12fd45","subject":"format"} -->
+<!-- mandao:telemetry {"id":"10e68ac0-5bdb-4e4a-9cee-c3d595654c48","type":"gate_end","at":"2026-10-23T15:58:21.638Z","command":"implement","run":"057d60e3-85fb-4405-963c-a0c89d12fd45","subject":"format"} -->
+<!-- mandao:telemetry {"id":"3f049535-96a2-4d7e-a359-3254a4b72e6e","type":"gate_start","at":"2026-10-23T15:58:21.650Z","command":"implement","run":"6ac977b8-3940-46d6-bc8b-5f164147d953","subject":"lint"} -->
+<!-- mandao:telemetry {"id":"3f049535-96a2-4d7e-a359-3254a4b72e6e","type":"gate_end","at":"2026-10-23T15:58:21.679Z","command":"implement","run":"6ac977b8-3940-46d6-bc8b-5f164147d953","subject":"lint"} -->
+<!-- mandao:telemetry {"id":"e3709ce3-01ba-422b-947a-5144bf0e2c9a","type":"gate_start","at":"2026-10-23T15:58:21.691Z","command":"implement","run":"578a782b-ee0e-4630-a21f-91c4f36626b8","subject":"typecheck"} -->
+<!-- mandao:telemetry {"id":"e3709ce3-01ba-422b-947a-5144bf0e2c9a","type":"gate_end","at":"2026-10-23T15:58:21.891Z","command":"implement","run":"578a782b-ee0e-4630-a21f-91c4f36626b8","subject":"typecheck"} -->
+<!-- mandao:telemetry {"id":"aa1e3d0a-0a55-4666-8ebe-521235c3ce83","type":"gate_start","at":"2026-10-23T15:58:21.998Z","command":"implement","run":"7972982f-e209-4902-b06c-b118df845a11","subject":"test"} -->
+<!-- mandao:telemetry {"id":"aa1e3d0a-0a55-4666-8ebe-521235c3ce83","type":"gate_end","at":"2026-10-23T15:58:22.397Z","command":"implement","run":"7972982f-e209-4902-b06c-b118df845a11","subject":"test"} -->
+<!-- mandao:telemetry {"id":"4be011dc-6b0e-4af2-b622-237f6f85273b","type":"agent_start","at":"2026-10-23T15:58:27.219Z","command":"implement","run":"c2b09326-b14e-402c-973f-825424197a47","subject":"reviewer"} -->
+<!-- mandao:telemetry {"id":"4be011dc-6b0e-4af2-b622-237f6f85273b","type":"agent_end","at":"2026-10-23T15:59:51.268Z","command":"implement","run":"c2b09326-b14e-402c-973f-825424197a47"} -->
