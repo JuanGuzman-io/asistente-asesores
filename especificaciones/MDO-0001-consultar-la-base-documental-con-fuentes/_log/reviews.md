@@ -390,3 +390,49 @@ El intento 2 de T8 pasa. Los dos hallazgos que bloqueaban o había que corregir 
 {"id":"F7","status":"open","severity":"low","lens":"core","title":"El docstring de test_repositorio.py describe la API anterior (repositorio=None opcional)","file":"tests/server/infraestructura/persistencia/test_repositorio.py","line":758,"evidence":"`consultar(pregunta, *, buscador, redactor, repositorio=None, request_id=None)` y '`repositorio` es opcional para no romper las pruebas de T5/T6' contradicen la implementación corregida en F1 y src/server/AGENTS.md. Es solo documentación; conviene actualizar el texto."}
 ]}
 ```
+
+## T7 — attempt 1
+
+VERDICT: PASS
+
+## Resumen
+
+T7 cumple su "Done when" (tasks.md:280-285) y las cláusulas de D7 y D9. Ningún hallazgo bloquea. Dejo cinco avisos. Uno de severidad media debe resolverse en T9: `modo` es estado compartido y puede quedar mal registrado con peticiones concurrentes.
+
+## Comprobaciones pedidas
+
+**Pruebas rojas.** Fallaron con exit 2 en la recolección porque faltaban los módulos; rojo legítimo. Los 20 nombres de `test_validacion.py` y los 23 de `test_gemini.py` registrados en `state.yml:192-240` coinciden con los actuales; no se eliminó ningún caso. ASSUMPTION: el único cambio es I001 (sin shell ni versión roja para diff byte a byte); las aserciones siguen siendo estrictas.
+
+**Guardrail D7** (`validacion.py`): ids exigidos en `1..len(fragmentos)` (cubiertos 0, -1, len+1, 99 y sin fragmentos); cifras como tokens completos (`\d+(?:[.,]\d+)*%?`) solo contra los fragmentos citados, también en `partes_sin_soporte`; la frase "No encontré información sobre …" la arma el código, en orden y al final.
+
+**`fragmentos_usados` vacío (cambio en `consultar.py`).** D7 dice a la vez "se descarta si está vacío" y "si el modelo declara que ninguna parte tiene soporte → `Sin información suficiente`". Sin partes declaradas, se descarta y se usa el extractivo; con partes declaradas, `consultar` devuelve `MENSAJE_SIN_INFORMACION` sin fuentes. En ningún camino se entrega texto del modelo sin respaldo. Hace falta dejar esta lectura escrita en D7 (F1).
+
+**`contents`.** Fragmentos y pregunta solo en `contents`, en `<fragmento id="N">` y `<pregunta>`; etiquetas neutralizadas sin distinguir mayúsculas, con espacios y `/`. `system_instruction` es `prompt.md` íntegro. Pruebas de inyección en dos variantes. El D5 real trata de FTS; la regla es D7/DP-1 (F5).
+
+**Clave.** `__repr__` solo muestra `con_clave=bool`; los logs solo llevan `type(error).__name__`; `SalidaInvalida ... from None` corta el `ValidationError`; las pruebas meten clave y pregunta en el mensaje de error del cliente y de la fábrica.
+
+**Respaldo extractivo.** Probado en todos los fallos (sin clave, API, timeout, fábrica, JSON inválido, esquema incompleto, tipos incorrectos, `SalidaInvalida`), un solo intento con `HttpOptions(timeout=5000)`. Se registra un warning; D9 lo manda.
+
+**Prompt v1.** Coherente con D7. Aviso: `model-registry.md:51` dice "(por crear)" (F4).
+
+**Import diferido.** Justificado y documentado en `AGENTS.md`.
+
+**Dependencia y MIT-0.** `google-genai==2.33.0` fijada, nombrada en `architecture.md` y `standards.md`. MIT-0 es permisiva; no bloquea.
+
+**Hilos y T9** (F2). Con ruta `def` síncrona en threadpool y una sola instancia de `RedactorGemini`, una petición puede leer el `modo` de otra y `consultar` registraría un `modo` equivocado (D10). Opciones: `modo` en `RespuestaRedactada` o un redactor por petición. No bloquea T7; T9 debe resolverlo.
+
+**Gates.** Todos PASS; suite completa `170 passed, 2 warnings` (GC conocido de `QdrantClient`). `AGENTS.md` refleja los módulos nuevos y el cambio en `consultar.py`.
+
+## Findings (JSON)
+
+```json
+{"version":1,"findings":[
+{"id":"F1","status":"open","severity":"low","lens":"ai","title":"La lectura de D7 sobre 'fragmentos_usados vacío' no está escrita en design.md","file":"especificaciones/MDO-0001-consultar-la-base-documental-con-fuentes/design.md","line":96,"evidence":"D7 dice que se descarta si fragmentos_usados está vacío y, a la vez, que una declaración de 'ninguna parte con soporte' da Sin información suficiente. El código descarta un [] sin partes y trata [] con partes como esa declaración (validacion.py:32, consultar.py:39-42). Es coherente y no entrega texto del modelo, pero es un ASSUMPTION del tester: conviene registrarlo en D7."},
+{"id":"F2","status":"open","severity":"medium","lens":"data","title":"`modo` es estado de instancia compartido: puede registrar un modo equivocado con peticiones concurrentes (T9)","file":"src/server/infraestructura/redactor/gemini.py","line":84,"evidence":"redactar() asigna self.modo y consultar lo lee después (consultar.py:42,46). Una ruta `def` de FastAPI corre en un threadpool, así que entre la escritura y la lectura puede colarse otra petición y el registro D10 quedaría con un modo erróneo. Hay que resolverlo en T9: modo en RespuestaRedactada o un redactor por petición."},
+{"id":"F3","status":"open","severity":"medium","lens":"ai","title":"S-5.1 y S-4.2/C1 son de nivel eval, pero ninguna tarea evalúa el modelo real","file":"especificaciones/MDO-0001-consultar-la-base-documental-con-fuentes/tasks.md","line":295,"evidence":"test_levels marca S-4.2/C1 y S-5.1 como eval. T7 solo usa dobles, como pide standards.md:39, y las evals de T10 corren 'en modo extractivo' (tasks.md:375). OPEN para el Leader o el PE: no hay medición del comportamiento real de Gemini ante datos inventados no numéricos, que el guardrail de cifras no detecta."},
+{"id":"F4","status":"open","severity":"low","lens":"ai","title":"model-registry.md todavía marca el prompt como '(por crear)'","file":"constitucion/model-registry.md","line":51,"evidence":"prompt.md v1 ya existe y AGENTS.md exige mantener model-registry.md al día. Habría que quitar '(por crear)' de la fila del prompt."},
+{"id":"F5","status":"open","severity":"low","lens":"core","title":"Las pruebas de inyección se nombran D5, pero D5 es la decisión de FTS","file":"tests/server/infraestructura/redactor/test_gemini.py","line":389,"evidence":"design.md:74 define D5 como 'La pregunta es datos en la búsqueda' (FTS). La regla que verifican estas pruebas es D7/DP-1. Sería un renombrado en la siguiente tarea que toque el archivo; no bloquea."},
+{"id":"F6","status":"resolved","severity":"low","lens":"core","title":"Pruebas rojas modificadas por ruff I001","file":"tests/server/infraestructura/redactor/test_gemini.py","line":44,"evidence":"Los 43 nombres de prueba registrados en rojo (state.yml:192-240) siguen presentes y no se eliminó ningún caso. No hubo diff byte a byte (ASSUMPTION): imports ordenados y aserciones estrictas sin señales de debilitamiento."},
+{"id":"F7","status":"resolved","severity":"low","lens":"security","title":"Licencia MIT-0 de la transitiva cffi","file":"uv.lock","line":1,"evidence":"standards.md:62 permite 'solo licencias permisivas'. MIT-0 es permisiva (MIT sin la cláusula de atribución). No hace falta una decisión nueva del PE; se recomienda añadirla a la excepción ya aprobada para trazabilidad."}
+]}
+```

@@ -2,7 +2,7 @@
 progress:
   schema_version: 1
   spec: MDO-0001-consultar-la-base-documental-con-fuentes
-  updated_at: 2026-10-23T16:48:39.521Z
+  updated_at: 2026-10-23T16:59:52.086Z
   current: null
   open_questions: []
   next_step: ""
@@ -183,6 +183,57 @@ progress:
             - test_s111_consultar_usa_el_request_id_recibido_o_genera_un_uuid_v4
             - test_s112_si_el_repositorio_falla_consultar_propaga_el_error_sin_devolver_respuesta
             - test_d10_consultar_exige_repositorio
+    - task: T7
+      files:
+        - path: tests/server/infraestructura/redactor/test_validacion.py
+          sha256: 0cedaec4e279c1879d5f6bfde9d1aff60bd5cbdc517988efaf3e4d4c6593ebbf
+          tests:
+            - test_S_4_2_salida_valida_con_cifras_en_el_fragmento_citado_se_acepta
+            - test_S_4_2_respuesta_sin_cifras_con_ids_validos_se_acepta
+            - test_S_4_2_id_fuera_de_rango_o_no_recuperado_se_descarta
+            - test_D7_fragmentos_usados_vacio_sin_partes_sin_soporte_se_descarta
+            - test_D7_fragmentos_usados_vacio_y_respuesta_sin_datos_se_descarta_si_no_declara_partes
+            - test_AC_4_cifra_inventada_que_no_esta_en_ningun_fragmento_se_descarta
+            - test_AC_4_cifra_presente_solo_en_fragmento_no_citado_se_descarta
+            - test_AC_4_cifra_se_compara_completa_y_no_como_subcadena
+            - test_AC_4_cifra_con_separador_de_miles_y_simbolo_de_moneda_coincide
+            - test_AC_4_cifra_decimal_con_coma_del_fragmento_citado_coincide
+            - test_AC_4_cifras_de_varios_fragmentos_citados_se_aceptan
+            - test_S_5_1_el_codigo_agrega_la_frase_no_encontre_informacion_sobre_la_parte
+            - test_S_5_1_cada_parte_sin_soporte_agrega_su_frase_en_orden
+            - test_S_5_1_sin_partes_sin_soporte_no_se_agrega_ninguna_frase
+            - test_S_5_1_ninguna_parte_con_soporte_se_acepta_con_fragmentos_usados_vacio
+            - test_S_5_1_C1_declaracion_sin_soporte_con_cifra_en_la_respuesta_se_descarta
+            - test_S_5_1_C1_cifra_inventada_dentro_de_una_parte_sin_soporte_se_descarta
+            - test_S_5_1_C1_tasa_inventada_junto_a_un_monto_valido_se_descarta
+            - test_D7_respuesta_vacia_o_en_blanco_se_descarta
+            - test_D7_sin_fragmentos_recuperados_cualquier_id_es_invalido
+        - path: tests/server/infraestructura/redactor/test_gemini.py
+          sha256: e7eea94efd3b03291a618d20d4806909018a89b4046b9f7e78cb8b03acc1ddc7
+          tests:
+            - test_D7_salida_valida_se_entrega_con_modo_modelo
+            - test_D9_una_sola_llamada_al_modelo_registrado_en_el_registry
+            - test_D7_pide_json_con_esquema_estructurado
+            - test_S_5_1_parte_sin_soporte_agrega_la_frase_del_codigo_y_conserva_el_monto
+            - test_S_5_1_C1_no_da_ni_estima_una_tasa_si_el_modelo_la_inventa
+            - test_S_5_1_parcial_con_soporte_termina_exitosa_con_la_fuente_citada
+            - test_D7_ninguna_parte_con_soporte_termina_sin_informacion_suficiente_y_sin_fuentes
+            - test_S_4_2_salida_invalida_se_descarta_y_se_entrega_el_extractivo
+            - test_D9_fallo_del_modelo_o_salida_ilegible_pasa_al_extractivo_sin_propagar
+            - test_D9_sin_clave_no_se_crea_el_cliente_y_se_usa_el_extractivo
+            - test_D9_la_fabrica_recibe_la_clave_configurada
+            - test_D9_si_la_fabrica_del_cliente_falla_pasa_al_extractivo
+            - test_D9_modo_refleja_la_ultima_llamada_extractivo_y_luego_modelo
+            - test_D9_el_respaldo_queda_registrado_como_modo_extractivo_en_consultar
+            - test_D7_fragmentos_y_pregunta_viajan_en_contents_delimitados_no_en_system_instruction
+            - test_D5_una_instruccion_dentro_de_un_fragmento_no_cambia_el_comportamiento
+            - test_D5_si_el_modelo_obedece_la_instruccion_inyectada_el_guardrail_la_descarta
+            - test_D5_un_fragmento_con_etiquetas_delimitadoras_no_puede_cerrar_su_bloque
+            - test_D5_una_pregunta_con_etiquetas_delimitadoras_no_puede_cerrar_su_bloque
+            - test_D7_system_instruction_es_el_texto_de_prompt_md_v1
+            - test_D7_prompt_dice_que_los_fragmentos_son_datos_y_pide_listar_partes_sin_soporte
+            - test_D9_la_clave_y_la_pregunta_no_aparecen_en_logs_ni_en_excepciones
+            - test_D9_la_clave_no_aparece_en_logs_con_salida_valida
   pending_commits: []
   approved_manifests:
     - task: T1
@@ -428,10 +479,51 @@ progress:
         - src/server/infraestructura/persistencia/repositorio.py
         - tests/server/infraestructura/persistencia/test_repositorio.py
       receipts: []
+    - task: T7
+      attempt: 1
+      files:
+        - path: pyproject.toml
+          status: " M"
+          sha256: 03375ef048c825759023767db97e243b86e6db2dff56b3ff7007049e3636cb57
+        - path: src/server/AGENTS.md
+          status: " M"
+          sha256: a0957074f945c2ad35883f1d45d0a9476b636d16fe1276b50e926a00e6560b33
+        - path: src/server/aplicacion/consultar.py
+          status: " M"
+          sha256: 1ba248ab0b0d0a35bd5570c91ec357e1677cb178b93a2703bb9aea3e31496954
+        - path: src/server/infraestructura/redactor/gemini.py
+          status: ??
+          sha256: 8efa71d57132517598785e658d3346ab542c2bf6e46bc4b064c1d3c839133465
+        - path: src/server/infraestructura/redactor/prompt.md
+          status: ??
+          sha256: ee7b80300575c9a5f89f5b345c940182995adec6eeb8978fb5f380c8fcebbf9b
+        - path: src/server/infraestructura/redactor/validacion.py
+          status: ??
+          sha256: 74b181fc52f7715fc396dfd898542c8f8318ace357680ea369bd008d9d0cecb6
+        - path: tests/server/infraestructura/redactor/test_gemini.py
+          status: ??
+          sha256: f2c8827be0cba279e2a76219408e848c5a709321ff26a03620d9fa08315e527f
+        - path: tests/server/infraestructura/redactor/test_validacion.py
+          status: ??
+          sha256: ea83108feb68aba442db557b5501dc438357af5b9f9e7728f12d795ceda329dc
+        - path: uv.lock
+          status: " M"
+          sha256: 9d310442d649718c0b53fedf8101f3ef21e5c97573d8e70936e7a05d66d0bcb9
+      reviewed:
+        - pyproject.toml
+        - src/server/AGENTS.md
+        - src/server/aplicacion/consultar.py
+        - uv.lock
+        - src/server/infraestructura/redactor/gemini.py
+        - src/server/infraestructura/redactor/prompt.md
+        - src/server/infraestructura/redactor/validacion.py
+        - tests/server/infraestructura/redactor/test_gemini.py
+        - tests/server/infraestructura/redactor/test_validacion.py
+      receipts: []
   loop_brake:
-    task: T8
+    task: T7
     action: commit
-    execution_rows: 53
+    execution_rows: 58
     approval_rows: 6
     repeats: 1
 approvals:
@@ -557,4 +649,12 @@ cut_estimates:
     base: 63912
     turns_left: 118
     savings: 4.88
+    decision: "go on: below 50"
+  - at: 2026-10-23T16:48:53.374Z
+    task: T7
+    boundary_id: implement:T7
+    context: 322229
+    base: 63912
+    turns_left: 103
+    savings: 5
     decision: "go on: below 50"
