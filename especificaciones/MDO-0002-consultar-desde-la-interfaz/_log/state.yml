@@ -357,6 +357,10 @@ approvals:
       mockups/Pensando.html: sha256-IhAwKi0Vyzgg645didw5dqC8Zz1sgU+EsHk+PXecwMk=
       mockups/README.md: sha256-ZcALtVAEqA8fgwnWhTCIxScR53SdDpUZvsIJBV35j4I=
       mockups/Respuesta.html: sha256-1TKb9IuztLULKIaFEB5ZbhKS3w1eZgJQTx+JRBZfiiM=
+  - step: security-gaps
+    by: Juan D. Guzmán
+    at: 2026-10-23T20:30:44.949Z
+    note: "SAST (PE, 2026-10-23): frontend sin código de servidor ni secretos, que muestra el texto sin interpretar HTML ni enlaces (aba941b), con datos irreales. Secretos cubiertos con detect-secrets (00f6c57). Mejora futura: SAST para TypeScript en CI."
 cut_estimates:
   - at: 2026-10-23T16:31:31.274Z
     task: T1
@@ -415,6 +419,14 @@ cut_estimates:
     turns_left: 43
     savings: 3.39
     decision: "go on: below 50"
+  - at: 2026-10-23T20:26:11.733Z
+    task: verify
+    boundary_id: verify
+    context: 512826
+    base: 59024
+    turns_left: 28
+    savings: 2.25
+    decision: "go on: suggestion already shown at boundary"
 mock:
   decision: accepted
   source: design
