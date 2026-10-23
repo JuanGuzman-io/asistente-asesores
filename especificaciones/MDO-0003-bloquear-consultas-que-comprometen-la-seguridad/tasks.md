@@ -14,7 +14,7 @@ crítico. Cada tarea empieza con pruebas rojas.
 
 ### AC-1, AC-2, AC-3, AC-4 — Información restringida o técnica reservada; Prompt injection; Datos de otros clientes; Sin falsos positivos
 
-- [ ] T1 [AC-1, AC-2, AC-3, AC-4] El guardrail de entrada reconoce las tres categorías sin bloquear preguntas legítimas — `src/server/dominio/estados.py`
+- [x] T1 [AC-1, AC-2, AC-3, AC-4] El guardrail de entrada reconoce las tres categorías sin bloquear preguntas legítimas — `src/server/dominio/estados.py`
 - [ ] T2 [AC-1, AC-2, AC-3, AC-4] La consulta bloqueada responde el mensaje fijo sin buscar y queda registrada — `src/server/dominio/reglas.py`
 - [ ] T4 [AC-1, AC-2, AC-3, AC-4] El flujo crítico de bloqueo pasa de punta a punta y el dataset mide bloqueos y falsos positivos — `tests/fixtures/consultas.json`
 
@@ -28,7 +28,7 @@ crítico. Cada tarea empieza con pruebas rojas.
 
 ## Details
 
-### [ ] T1 — El guardrail de entrada reconoce las tres categorías sin bloquear preguntas legítimas
+### [x] T1 — El guardrail de entrada reconoce las tres categorías sin bloquear preguntas legítimas
 
 - **What:** `CategoriaBloqueo`, `normalizar` y `evaluar_entrada` en `dominio`, con las tres familias de
   patrones en el orden fijo de [D2](design.md#d2) y la normalización de [D4](design.md#d4).
