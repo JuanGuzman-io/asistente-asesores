@@ -7,7 +7,7 @@ url:
 parent:
 projects: [asistente-asesores]
 lane: normal
-status: verified
+status: closed
 sources:
   - { ref: "Prueba técnica.pdf (sha256 ea559182d0cbe46540d0bbd994fa163b6633b42d03100c29632446a0267746b7), p. 1, p. 2", kind: document, date: 2026-10-23 }
   - { ref: "docs/product/intake/prueba-tecnica-2026-10-23.md#I-4; Q-5", kind: intake, date: 2026-10-23 }
@@ -111,7 +111,5 @@ lleva la categoría, nunca la pregunta (`security.md`).
 <a id="assumptions"></a>
 ## Assumptions and open questions
 
-- ASSUMPTION(source: intake Q-5 y PE 2026-10-23, "mensaje fijo y genérico"): el texto exacto del mensaje
-  lo fija el diseño ([design.md#d3](design.md#d3)); el PE puede cambiarlo sin cambiar el comportamiento.
-- ASSUMPTION(source: PE 2026-10-23, "la categoría va en el log"): "log" es la línea JSON por petición
-  del logger `asistente.http`; la base de consultas no gana columna. Confirma: PE.
+- ASSUMPTION(source: intake Q-5 y PE 2026-10-23, "mensaje fijo y genérico"): el texto exacto del mensaje lo fija el diseño ([design.md#d3](design.md#d3)); el PE puede cambiarlo sin cambiar el comportamiento. — resolved 2026-10-23: el PE aprobó requirements y design con este texto (`MENSAJE_BLOQUEO`, D3); implementado y verificado.
+- ASSUMPTION(source: PE 2026-10-23, "la categoría va en el log"): "log" es la línea JSON por petición del logger `asistente.http`; la base de consultas no gana columna. Confirma: PE. — resolved 2026-10-23: el PE aprobó requirements y design con la categoría solo en la línea JSON de `asistente.http` (D5); sin columna nueva.

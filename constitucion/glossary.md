@@ -15,6 +15,7 @@ Business language ↔ names in code. Names that contradict this glossary are blo
 | Consulta | `Consulta`, `pregunta` | Pregunta de un asesor y su registro (fecha y hora, respuesta, fuentes, estado). | PDF p. 2 |
 | Respuesta | `respuesta` | Texto que responde la consulta usando solo información encontrada. | PDF p. 5 |
 | Fuente | `Fuente`, `fuentes` | Documento, sección y fragmento de `Data/` que sustentan la respuesta. | PDF p. 5; Política de Citas; PE 2026-10-23 (MDO-0001) |
+| Categoría de bloqueo | `CategoriaBloqueo`: `informacion_restringida`, `prompt_injection`, `datos_de_clientes` | Motivo por el que una consulta queda `Bloqueada por seguridad`. Va solo en el log, nunca en la respuesta. | intake Q-5; MDO-0003 |
 | Estado de la respuesta | `Estado`: `EXITOSA`, `SIN_INFORMACION`, `BLOQUEADA` | Exitosa, Sin información suficiente, Bloqueada por seguridad. | PDF p. 2 |
 | Modo de respuesta | `modo`: `modelo`, `extractivo`, `ninguno` | Cómo se redactó la respuesta registrada: con Gemini, extractiva (sin modelo) o sin redacción (sin información suficiente). | MDO-0001 D10, D12 |
 | Procesamiento | — | Estado de la interfaz mientras una consulta está en curso (cargando, listo, error de red). No es el estado de la respuesta, que viene de la API. | PDF p. 5 |

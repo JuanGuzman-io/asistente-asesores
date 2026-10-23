@@ -6,3 +6,4 @@ One line per closed spec, newest last.
 |---|---|---|---|---|
 | MDO-0001 | Consultar la base documental con fuentes | story | 2026-10-23 | [spec](../especificaciones/MDO-0001-consultar-la-base-documental-con-fuentes/) |
 | MDO-0002 | Consultar desde la interfaz | story | 2026-10-23 | [spec](../especificaciones/MDO-0002-consultar-desde-la-interfaz/) |
+| MDO-0003 | Bloquear consultas que comprometen la seguridad | story | 2026-10-23 | [spec](../especificaciones/MDO-0003-bloquear-consultas-que-comprometen-la-seguridad/) |

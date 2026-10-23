@@ -39,8 +39,15 @@ No hay secretos en el código. `GEMINI_API_KEY` vive en `.env` (ignorado por git
 
 | Asset | Threat | Mitigation | Owner |
 |---|---|---|---|
-| Información confidencial | Una pregunta pide credenciales, tokens o "información restringida" | Guardrail de entrada por reglas → `Bloqueada por seguridad`; el documento no está indexado | Backend |
-| Comportamiento del asistente | Prompt injection en la pregunta ("ignora tus instrucciones…") | Guardrail de entrada; la pregunta nunca se concatena como instrucción | Backend |
+| Información confidencial | Una pregunta pide credenciales, tokens, configuraciones internas o "información restringida" | Guardrail de entrada por reglas, categoría `informacion_restringida` → `Bloqueada por seguridad`; el documento no está indexado | Backend |
+| Datos de clientes | Una pregunta pide datos de otro cliente o de uno identificado (BR-4, BR-8) | Guardrail de entrada, categoría `datos_de_clientes` → `Bloqueada por seguridad`; la base no tiene datos de clientes | Backend |
+| Comportamiento del asistente | Prompt injection en la pregunta ("ignora tus instrucciones…") | Guardrail de entrada, categoría `prompt_injection`; la pregunta nunca se concatena como instrucción | Backend |
 | Comportamiento del asistente | Instrucción embebida en un documento (p. ej. la de `Información restringida.md`) | Los documentos son datos; los confidenciales no se indexan; guardrail de salida | Backend |
 | Respuesta | El modelo opcional inventa o filtra datos | Guardrail de salida: solo fuentes recuperadas, sin patrones de credenciales | Backend |
 | Disponibilidad | Consultas extensas | Límite de longitud validado en entrada (ver `performance.md`) | Backend |
+
+El guardrail de entrada (`src/server/dominio/guardrail_entrada.py`, MDO-0003 D2) son reglas deterministas
+sobre el texto normalizado, evaluadas antes de buscar; el mensaje de bloqueo es fijo y la categoría va
+solo en el log. Limitación aceptada: no detecta ofuscación (letras separadas, homoglifos, idiomas distintos
+del español y el inglés) ni un cliente nombrado sin tratamiento ni número; la cubren el índice sin
+confidenciales ni datos de clientes, el prompt que trata la pregunta como datos y el guardrail de salida.

@@ -185,7 +185,5 @@ Sin preguntas: las decisiones del PE (2026-10-23) llegaron con el pedido de la s
 
 ## Open items
 
-- ASSUMPTION(source: story.md#assumptions): texto del mensaje fijo y "log" = línea JSON de
-  `asistente.http`. Confirma: PE.
-- ASSUMPTION(source: design.md#d2): las reglas buscan pedidos (verbo de pedido o calificador interno),
-  no palabras sueltas; una pregunta ambigua no bloqueada sigue protegida por la segunda capa. Confirma: PE.
+- ASSUMPTION(source: story.md#assumptions): texto del mensaje fijo y "log" = línea JSON de `asistente.http`. Confirma: PE. — resolved 2026-10-23: el PE aprobó requirements y design con este texto (`MENSAJE_BLOQUEO`, D3); implementado y verificado; el PE aprobó requirements y design con la categoría solo en la línea JSON de `asistente.http` (D5); sin columna nueva.
+- ASSUMPTION(source: design.md#d2): las reglas buscan pedidos (verbo de pedido o calificador interno), no palabras sueltas; una pregunta ambigua no bloqueada sigue protegida por la segunda capa. Confirma: PE. — resolved 2026-10-23: el PE aprobó D2 con esta limitación; quedó escrita en `security.md` al cierre y pasa al README (intake I-9).

@@ -54,4 +54,4 @@ Riesgo: dependencia de un proveedor externo. Mitigación: el modelo está detrá
 | Name | Purpose | Version | Location | Contains personal data |
 |---|---|---|---|---|
 | Base documental | Fuente de las respuestas | v1 (datos irreales del PDF) | `Data/` | No |
-| Casos de prueba de consultas | Validar respuestas, estados y fuentes (EV-1 a EV-7) | v3 (80 preguntas, MDO-0001 C-10; v2: 66, C-9) | `tests/fixtures/consultas.json` | No |
+| Casos de prueba de consultas | Validar respuestas, estados y fuentes (EV-1 a EV-7) y bloqueos sin falsos positivos (EV-8, EV-9) | v5 (MDO-0003: tipos `bloqueada`, 25 preguntas en tres categorías, y `sensible`) | `tests/fixtures/consultas.json` | No |

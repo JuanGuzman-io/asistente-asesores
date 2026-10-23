@@ -54,11 +54,7 @@ de "¿cuál es la clave temporal?".
   `restablecer`, `recuperar`, `renovar`, `crear`, `generar`, `desbloquear`); un número de 6 o más dígitos
   seguido de `pesos`, `cop`, `millones` o precedido de `$` es un monto, no un identificador; `cc` y
   `c.c.` cuentan como identificador.
-- ASSUMPTION(source: PE 2026-10-23, "reglas deterministas"; esta decisión): las reglas no detectan
-  ofuscación (letras separadas, homoglifos, otro idioma que no sea inglés) ni un nombre de cliente sin
-  tratamiento. La segunda capa cubre ese resto: el documento confidencial no está indexado, la base no
-  tiene datos de clientes, el prompt trata la pregunta como datos y el guardrail de salida valida.
-  Limitación para el README. Confirma: PE.
+- ASSUMPTION(source: PE 2026-10-23, "reglas deterministas"; esta decisión): las reglas no detectan ofuscación (letras separadas, homoglifos, otro idioma que no sea inglés) ni un nombre de cliente sin tratamiento. La segunda capa cubre ese resto: el documento confidencial no está indexado, la base no tiene datos de clientes, el prompt trata la pregunta como datos y el guardrail de salida valida. Limitación para el README. Confirma: PE. — resolved 2026-10-23: el PE aprobó D2 con esta limitación; quedó escrita en `security.md` al cierre y pasa al README (intake I-9).
 - Rechazadas: bloquear por palabra suelta (bloquea "olvida su clave", contra AC-4); un clasificador con
   modelo (DP-4: la seguridad es código; costo y no determinismo); similitud de embeddings contra
   ejemplos (umbral que calibrar, no explicable).
@@ -69,7 +65,7 @@ de "¿cuál es la clave temporal?".
 - `MENSAJE_BLOQUEO = "No puedo responder esta consulta porque no cumple las políticas de seguridad de
   la información."` en `dominio/reglas.py`, junto a `MENSAJE_SIN_INFORMACION`. El mismo para las tres
   categorías; no nombra la regla ni la categoría (AC-1/C1), `fuentes` vacío.
-- ASSUMPTION(source: PE 2026-10-23, "mensaje fijo y genérico"): el texto exacto. Confirma: PE.
+- ASSUMPTION(source: PE 2026-10-23, "mensaje fijo y genérico"): el texto exacto. Confirma: PE. — resolved 2026-10-23: el PE aprobó requirements y design con este texto (`MENSAJE_BLOQUEO`, D3); implementado y verificado.
 - Rechazadas: un mensaje por categoría (revela qué regla se activó); sugerir escalar (BR-5 trata la
   incertidumbre, no el bloqueo).
 
@@ -91,7 +87,7 @@ de "¿cuál es la clave temporal?".
   `"categoria"` a la línea JSON solo cuando existe. La línea nunca lleva la pregunta (ya es así, NFR-2).
 - El registro en `consultas` es el de siempre: pregunta, fecha y hora, mensaje de bloqueo, `fuentes`
   `[]`, estado `BLOQUEADA`, modo `ninguno` ([P2](#p2)). Sin migración.
-- ASSUMPTION(source: PE 2026-10-23, "la categoría va en el log"): no se agrega columna. Confirma: PE.
+- ASSUMPTION(source: PE 2026-10-23, "la categoría va en el log"): no se agrega columna. Confirma: PE. — resolved 2026-10-23: el PE aprobó requirements y design con la categoría solo en la línea JSON de `asistente.http` (D5); sin columna nueva.
 - Rechazadas: columna `categoria` en `consultas` (migración que nadie pidió; DP-9); guardar la categoría
   dentro de `respuesta` (contamina el dato que ve el asesor).
 
