@@ -39,8 +39,8 @@ def _resolver(
     if not redactada.fragmentos_usados and redactada.partes_sin_soporte:
         # D7: el modelo declara que ninguna parte tiene soporte.
         sin_soporte = Resultado(MENSAJE_SIN_INFORMACION, [], Estado.SIN_INFORMACION)
-        return sin_soporte, redactor.modo
+        return sin_soporte, redactada.modo or redactor.modo
     usados = set(redactada.fragmentos_usados)
     citados = [f for posicion, f in enumerate(fragmentos, start=1) if posicion in usados]
     resultado = Resultado(redactada.respuesta, deduplicar_fuentes(citados), Estado.EXITOSA)
-    return resultado, redactor.modo
+    return resultado, redactada.modo or redactor.modo

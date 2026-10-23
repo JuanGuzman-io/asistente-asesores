@@ -789,3 +789,41 @@ Files reviewed:
 - /Users/jguzman/GitHub/Projects/asistente-asesores.worktrees/MDO-0001-consultar-la-base-documental-con-fuentes/src/server/infraestructura/redactor/prompt.md
 - /Users/jguzman/GitHub/Projects/asistente-asesores.worktrees/MDO-0001-consultar-la-base-documental-con-fuentes/tests/server/infraestructura/redactor/test_gemini.py
 - /Users/jguzman/GitHub/Projects/asistente-asesores.worktrees/MDO-0001-consultar-la-base-documental-con-fuentes/src/server/AGENTS.md
+
+## T15 — attempt 1
+
+**VERDICT: PASS**
+
+The change does what D9 now asks for. The global lock is gone, and a `threading.BoundedSemaphore` built from `GEMINI_MAX_CONCURRENCIA` caps simultaneous calls, default 5. An invalid value raises `ValueError` when `crear_app` runs, so the app does not start. Each call's `modo` now comes back in `RespuestaRedactada.modo`. A 429 falls back to extractive with a 200, and the log records only the exception type and the integer code. D13 holds: still one worker and one Qdrant client.
+
+**Evidence**
+- **Gates:** all configured gates passed in `.mandao/cache/MDO-0001/gates/T15-1.md` (32 passed in the gate run, 9 passed for metrics); build and audit were skipped. For the 3 s p95 target I only have the Leader's real-key measurement (median p95 1.02 s, 19 `modelo` / 7 `extractivo`, all 200). It is recorded in `execution.md` but no gate output shows it, so I take it as reported and have not verified it.
+- **TDD:** the red run is recorded (`execution.md` line 112: tester's tests, pytest exit 1). The one changed red test, `test_dos_peticiones_concurrentes_registran_cada_una_su_propio_modo`, was not weakened. It still forces the interleaving that corrupts `self.modo`, and its assertion is unchanged. The only edit is that each call also returns its own `modo`, which is the contract D9 introduces. Without the lock, an implementation that still read `redactor.modo` would fail it.
+- **Contract:** `extractivo.py` and `gemini.py` both fill `modo` on every path. `consultar.py` prefers `redactada.modo` and falls back to `redactor.modo`. Logs never carry the key, the question, the SDK message or `RESOURCE_EXHAUSTED`, and the 429 test asserts this.
+- **Module boundaries:** the dataclass field is added on the domain side, the route reads only public contracts, and only `gemini.py` imports `google-genai`. No violations.
+- **AI lens:** the prompt is unchanged, there are no retries (consistent with the rejected-alternative note in D9), and the fallback is extractive.
+
+The Implementer's three flags are all acceptable. The `consultar.py` edit is the minimal change the D9 contract needs. Keeping `RedactorGemini.modo` is harmless because the route never reads it when the response carries `modo`. The `ValueError` on an invalid limit matches D9's "detiene el arranque". I also noticed `extractivo.py` was changed outside the task's `files` and was not flagged (F1).
+
+None of the findings below blocks. F2 is the one worth fixing before the commit.
+
+## Findings (JSON)
+
+```json
+{"version":1,"findings":[
+{"id":"F1","status":"open","severity":"low","lens":"core","title":"Two source files changed outside the task's declared files","file":"src/server/infraestructura/redactor/extractivo.py","line":22,"evidence":"Brief files list rutas.py, app.py, gemini.py, puertos.py and the test. aplicacion/consultar.py (flagged by the Implementer) and redactor/extractivo.py (not flagged) were also changed. Both are minimal and required by D9's 'El modo viaja en RespuestaRedactada.modo'. Record both in the task's files at close."},
+{"id":"F2","status":"open","severity":"medium","lens":"core","title":"AGENTS.md entries for consultar.py and extractivo.py were not updated","file":"src/server/AGENTS.md","line":272,"evidence":"The aplicacion/consultar.py entry still says it registers 'con el modo del redactor' and that 'modo es ninguno sin redacción, o el modo del redactor'. It should say it prefers RespuestaRedactada.modo and falls back to Redactor.modo. The extractivo.py entry does not mention that it now fills modo='extractivo' in the response. The rutas.py and puertos.py entries do describe the new flow, so this is imprecise rather than contradictory."},
+{"id":"F3","status":"open","severity":"low","lens":"core","title":"Startup failure on an invalid GEMINI_MAX_CONCURRENCIA has no test","file":"src/server/http/app.py","line":336,"evidence":"D9 says 'un valor no entero o menor que 1 detiene el arranque'. _limite_concurrencia raises ValueError for both, but no test covers 'abc', '0' or max_concurrencia=0."},
+{"id":"F4","status":"open","severity":"low","lens":"core","title":"Concurrency-limit test is named for S-14.1 but does not exercise S-14.1","file":"tests/server/http/test_consultar_api.py","line":632,"evidence":"test_s14_1_con_mas_consultas_que_el_limite_nunca_hay_mas_en_vuelo_que_el_limite checks the semaphore peak. S-14.1 is about the body having exactly respuesta/fuentes/estado plus X-Request-Id, which the existing s14_1 tests already cover. The name misleads traceability."},
+{"id":"F5","status":"open","severity":"low","lens":"core","title":"Stale type-ignore and a tight timing assertion in the new tests","file":"tests/server/http/test_consultar_api.py","line":577,"evidence":"'# type: ignore[call-arg]' is now unnecessary because RespuestaRedactada has modo; mypy only covers src, so nothing flags it. 'assert duracion < 2 * ESPERA_S' (0.6 s for 5 requests with real search) could flake on a slow CI runner; the redactor.pico == 5 assertion already proves the calls overlap."},
+{"id":"F6","status":"open","severity":"low","lens":"performance","title":"Requests waiting on the semaphore are not bounded by the 3 s target","file":"src/server/http/rutas.py","line":409,"evidence":"With 5 calls in flight, each with a 5 s local timeout, a 6th request can wait about 5 s for a permit and then up to 5 s more for its own call. This follows the PE decision (cap of 5), and the Leader's measurement used exactly 5 concurrent requests. Waits beyond the cap are not measured. A timed acquire that falls back to extractive is a possible follow-up, not required by D9."}
+]}
+```
+
+Files referenced:
+- /Users/jguzman/GitHub/Projects/asistente-asesores.worktrees/MDO-0001-consultar-la-base-documental-con-fuentes/.mandao/cache/MDO-0001/reviews/T15-1-pack.md
+- /Users/jguzman/GitHub/Projects/asistente-asesores.worktrees/MDO-0001-consultar-la-base-documental-con-fuentes/src/server/AGENTS.md
+- /Users/jguzman/GitHub/Projects/asistente-asesores.worktrees/MDO-0001-consultar-la-base-documental-con-fuentes/src/server/http/app.py
+- /Users/jguzman/GitHub/Projects/asistente-asesores.worktrees/MDO-0001-consultar-la-base-documental-con-fuentes/src/server/http/rutas.py
+- /Users/jguzman/GitHub/Projects/asistente-asesores.worktrees/MDO-0001-consultar-la-base-documental-con-fuentes/tests/server/http/test_consultar_api.py
+- /Users/jguzman/GitHub/Projects/asistente-asesores.worktrees/MDO-0001-consultar-la-base-documental-con-fuentes/especificaciones/MDO-0001-consultar-la-base-documental-con-fuentes/_log/execution.md

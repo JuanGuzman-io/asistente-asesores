@@ -16,16 +16,23 @@ JSON): `requestId`, `codigo` (HTTP, entero), `latenciaMs` (número >= 0), `fuent
 import logging
 import sqlite3
 import threading
+import time
 import unicodedata
 import uuid
 from collections.abc import Sequence
 from concurrent.futures import ThreadPoolExecutor
+from contextlib import contextmanager
+from types import SimpleNamespace
 
 import pytest
+from fastapi.testclient import TestClient
 
+from src.server.config import DIRECTORIO_DATOS, DOCUMENTOS_EXCLUIDOS
 from src.server.dominio.modelos import Fragmento
 from src.server.dominio.puertos import RespuestaRedactada
+from src.server.http.app import crear_app
 from src.server.infraestructura.redactor.extractivo import RedactorExtractivo
+from src.server.infraestructura.redactor.gemini import RedactorGemini
 
 RUTA = "/api/consultar"
 PREGUNTA_VALIDA = "¿Cuál es el monto máximo del Crédito Productivo Impulso?"
@@ -293,14 +300,15 @@ class RedactorCarrera:
 
     def redactar(self, pregunta: str, fragmentos: Sequence[Fragmento]) -> RespuestaRedactada:
         if "ALFA" in pregunta:
-            self.modo = "extractivo"
+            modo = self.modo = "extractivo"
             self.alfa_escribio.set()
             self.beta_escribio.wait(1.0)
         else:
             self.alfa_escribio.wait(1.0)
-            self.modo = "modelo"
+            modo = self.modo = "modelo"
             self.beta_escribio.set()
-        return RespuestaRedactada("Respuesta de la carrera.", [1])
+        # T15: el modo de cada llamada viaja en la respuesta; el atributo sigue corrompiéndose.
+        return RespuestaRedactada("Respuesta de la carrera.", [1], modo=modo)
 
 
 def test_dos_peticiones_concurrentes_registran_cada_una_su_propio_modo(arrancar, entorno):
@@ -406,3 +414,163 @@ def test_nfr4_una_peticion_rechazada_emite_su_linea_json_sin_el_texto_de_la_preg
     assert linea["fuentes"] == 0
     assert isinstance(linea["latenciaMs"], int | float)
     assert SECRETO not in caplog.text  # tampoco por los errores de validación de Pydantic
+
+
+# --- T15 (D9, D13): llamadas al modelo en paralelo, limitadas por un semáforo -------------------
+#
+# Costuras que asumen estas pruebas (las sigue la implementación):
+#   1. `crear_app(..., max_concurrencia: int | None = None)`: tope de llamadas simultáneas al
+#      redactor. `None` lee la variable de entorno `GEMINI_MAX_CONCURRENCIA` (por defecto 5).
+#      Sustituye al candado global `RedactorExclusivo`: las llamadas ya no se serializan.
+#   2. `RespuestaRedactada` gana el campo opcional `modo: str | None = None`. Un redactor que lo
+#      llena declara el modo de ESA llamada, y la ruta lo registra en `consultas.modo`: el
+#      atributo de instancia `redactor.modo` es estado compartido y no se lee cuando la
+#      respuesta trae `modo` (con varias llamadas simultáneas se corrompería).
+#   3. Un 429 del SDK (`google.genai.errors.ClientError(429, ...)`) hace que `RedactorGemini` use
+#      el extractivo y registre en el log el código 429 (solo el código, sin mensaje ni clave).
+
+ESPERA_S = 0.3
+BASE_PREGUNTA = "monto maximo del credito impulso"
+
+
+class RedactorConcurrente:
+    """Tarda `ESPERA_S`, mide el pico de llamadas simultáneas y declara el modo por llamada.
+
+    Si la pregunta lleva EXTRACTIVO responde en modo extractivo; si no, en `modelo`. El atributo
+    `modo` queda fijo en un valor engañoso: leerlo en lugar del modo de la respuesta falla.
+    """
+
+    modo = "modelo"
+
+    def __init__(self, espera: float = ESPERA_S) -> None:
+        self.espera = espera
+        self._candado = threading.Lock()
+        self.en_vuelo = 0
+        self.pico = 0
+
+    def redactar(self, pregunta: str, fragmentos: Sequence[Fragmento]) -> RespuestaRedactada:
+        with self._candado:
+            self.en_vuelo += 1
+            self.pico = max(self.pico, self.en_vuelo)
+        try:
+            time.sleep(self.espera)
+        finally:
+            with self._candado:
+                self.en_vuelo -= 1
+        modo = "extractivo" if "EXTRACTIVO" in pregunta else "modelo"
+        return RespuestaRedactada(f"Respuesta {modo}.", [1], modo=modo)  # type: ignore[call-arg]
+
+
+def _preguntas(n: int) -> list[str]:
+    # Índices pares: modelo; impares: extractivo.
+    return [f"{'EXTRACTIVO' if i % 2 else 'MODELO'} {i} {BASE_PREGUNTA}" for i in range(n)]
+
+
+@contextmanager
+def _app_concurrente(entorno, redactor, **opciones):
+    app = crear_app(
+        directorio_datos=DIRECTORIO_DATOS,
+        excluidos=DOCUMENTOS_EXCLUIDOS,
+        directorio_qdrant=entorno.directorio_qdrant,
+        ruta_sqlite=entorno.ruta_sqlite,
+        embeddings=entorno.embeddings,
+        redactor=redactor,
+        **opciones,
+    )
+    with TestClient(app, raise_server_exceptions=False) as cliente:
+        cliente.post(RUTA, json={"pregunta": f"CALENTAMIENTO {BASE_PREGUNTA}"})
+        yield cliente
+
+
+def _disparar(cliente, preguntas):
+    inicio = time.perf_counter()
+    with ThreadPoolExecutor(max_workers=len(preguntas)) as pool:
+        futuros = [pool.submit(cliente.post, RUTA, json={"pregunta": q}) for q in preguntas]
+        respuestas = [f.result() for f in futuros]
+    return respuestas, time.perf_counter() - inicio
+
+
+def _afirmar_modos_por_peticion(entorno, preguntas, respuestas):
+    esperado = {q: ("extractivo" if "EXTRACTIVO" in q else "modelo") for q in preguntas}
+    assert all(r.status_code == 200 for r in respuestas)
+    for q, r in zip(preguntas, respuestas, strict=True):
+        assert r.json()["respuesta"] == f"Respuesta {esperado[q]}."  # el modo de su llamada
+    filas = {f["pregunta"]: f for f in entorno.filas() if f["pregunta"] in esperado}
+    assert {q: f["modo"] for q, f in filas.items()} == esperado
+    for q, r in zip(preguntas, respuestas, strict=True):
+        assert filas[q]["request_id"] == r.headers["X-Request-Id"]
+
+
+def test_s12_1_cinco_consultas_con_modelo_no_se_serializan_y_cada_una_registra_su_modo(entorno):
+    redactor = RedactorConcurrente()
+    preguntas = _preguntas(5)
+
+    with _app_concurrente(entorno, redactor) as cliente:  # límite por defecto: 5
+        respuestas, duracion = _disparar(cliente, preguntas)
+
+    assert duracion < 2 * ESPERA_S  # en serie serían >= 5 x 0,3 s
+    assert redactor.pico == 5
+    _afirmar_modos_por_peticion(entorno, preguntas, respuestas)
+
+
+def test_s14_1_con_mas_consultas_que_el_limite_nunca_hay_mas_en_vuelo_que_el_limite(entorno):
+    redactor = RedactorConcurrente(espera=0.2)
+    preguntas = _preguntas(5)
+
+    with _app_concurrente(entorno, redactor, max_concurrencia=2) as cliente:
+        respuestas, _ = _disparar(cliente, preguntas)
+
+    assert redactor.pico == 2  # el semáforo limita a 2, y no serializa a 1
+    _afirmar_modos_por_peticion(entorno, preguntas, respuestas)
+
+
+def test_la_variable_gemini_max_concurrencia_fija_el_limite_cuando_no_se_pasa_parametro(
+    entorno, monkeypatch
+):
+    monkeypatch.setenv("GEMINI_MAX_CONCURRENCIA", "2")
+    redactor = RedactorConcurrente(espera=0.2)
+    preguntas = _preguntas(5)
+
+    with _app_concurrente(entorno, redactor) as cliente:
+        respuestas, _ = _disparar(cliente, preguntas)
+
+    assert redactor.pico == 2
+    _afirmar_modos_por_peticion(entorno, preguntas, respuestas)
+
+
+# --- S-12.1: 429 del API -> extractivo con 200 y el 429 en el log, sin contenido ----------------
+
+CLAVE_429 = "AIzaSyFAKE-clave-429-no-debe-filtrarse"  # pragma: allowlist secret
+MENSAJE_429 = "cuota agotada para el proyecto zeta-9917"
+
+
+class _ModelosCon429:
+    def generate_content(self, *, model, contents, config):
+        from google.genai import errors
+
+        raise errors.ClientError(
+            429,
+            {"error": {"code": 429, "status": "RESOURCE_EXHAUSTED", "message": MENSAJE_429}},
+        )
+
+
+def test_s12_1_un_429_del_api_responde_200_extractivo_y_el_log_lleva_el_429_sin_contenido(
+    arrancar, entorno, caplog
+):
+    caplog.set_level(logging.DEBUG)
+    cliente_sdk = SimpleNamespace(models=_ModelosCon429())
+    redactor = RedactorGemini(api_key=CLAVE_429, fabrica_cliente=lambda clave: cliente_sdk)
+    pregunta = f"{SECRETO} {BASE_PREGUNTA}"
+
+    with arrancar(redactor=redactor) as cliente:
+        respuesta = cliente.post(RUTA, json={"pregunta": pregunta})
+
+    assert respuesta.status_code == 200
+    cuerpo = respuesta.json()
+    assert cuerpo["estado"] == "Exitosa"
+    assert len(cuerpo["fuentes"]) >= 1
+    (fila,) = entorno.filas()
+    assert fila["modo"] == "extractivo"
+    assert "429" in caplog.text  # solo el estado
+    for prohibido in (pregunta, SECRETO, CLAVE_429, MENSAJE_429, "RESOURCE_EXHAUSTED"):
+        assert prohibido not in caplog.text

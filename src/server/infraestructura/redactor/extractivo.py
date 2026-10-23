@@ -19,4 +19,5 @@ class RedactorExtractivo:
         return RespuestaRedactada(
             respuesta=respuesta,
             fragmentos_usados=list(range(1, len(usados) + 1)),
+            modo=self.modo,
         )

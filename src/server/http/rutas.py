@@ -16,23 +16,22 @@ from src.server.infraestructura.persistencia.repositorio import RepositorioConsu
 router = APIRouter()
 
 
-class RedactorExclusivo:
-    """Aísla el `modo` de cada petición sobre un redactor compartido.
+class RedactorLimitado:
+    """Limita con un semáforo las llamadas simultáneas al redactor compartido (D9).
 
-    `RedactorGemini.modo` es estado de instancia: se escribe en `redactar`. El candado cubre la
-    llamada y la lectura del `modo`, que se copia a esta instancia, propia de la petición.
+    No guarda estado entre llamadas: el `modo` de cada una viaja en `RespuestaRedactada.modo`.
     """
 
-    def __init__(self, redactor: Redactor, candado: threading.Lock) -> None:
+    modo: str
+
+    def __init__(self, redactor: Redactor, semaforo: threading.BoundedSemaphore) -> None:
         self._redactor = redactor
-        self._candado = candado
-        self.modo = redactor.modo
+        self._semaforo = semaforo
+        self.modo = redactor.modo  # solo por si la respuesta no trae `modo`
 
     def redactar(self, pregunta: str, fragmentos: Sequence[Fragmento]) -> RespuestaRedactada:
-        with self._candado:
-            respuesta = self._redactor.redactar(pregunta, fragmentos)
-            self.modo = self._redactor.modo
-        return respuesta
+        with self._semaforo:
+            return self._redactor.redactar(pregunta, fragmentos)
 
 
 @router.post("/api/consultar")
@@ -50,7 +49,7 @@ def consultar_api(entrada: ConsultaEntrada, request: Request) -> ConsultaSalida:
         resultado = consultar(
             entrada.pregunta,
             buscador=buscador,
-            redactor=RedactorExclusivo(app.state.redactor, app.state.candado_redactor),
+            redactor=RedactorLimitado(app.state.redactor, app.state.semaforo_redactor),
             repositorio=RepositorioConsultasSqlite(conexion),
             request_id=request.state.request_id,
         )

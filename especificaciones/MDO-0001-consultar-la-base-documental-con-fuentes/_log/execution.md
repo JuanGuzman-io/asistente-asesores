@@ -108,6 +108,10 @@ spec: MDO-0001-consultar-la-base-documental-con-fuentes
 | 2026-10-23 | T14 | 1 | standard | claude | claude-sonnet-5-5 | — | RED | red tests by mandao-tester: tests/server/infraestructura/redactor/test_gemini.py; `pytest tests/server/infraestructura/redactor/test_gemini.py` failed (exit 1) |
 | 2026-10-23 | T14 | 1 | standard | claude | claude-sonnet-5-5 | — | REPORTED | red test changed: tests/server/infraestructura/redactor/test_gemini.py; Humo con clave real (Leader, app aislada en carpeta temporal): CPI -> 'El monto máximo ... es $50.000.000.' modo modelo, sin 80/30; PQR -> 5 días hábiles, modo modelo. |
 | 2026-10-23 | T14 | 1 | standard | claude | — | claude-opus-5-5 | PASS | red test changed: tests/server/infraestructura/redactor/test_gemini.py; Advisories: F1 prompt.md v1 no describe la línea documento > sección (sin bump de VERSION_PROMPT); F2 tres pruebas S-4.1 son regresión del guardrail, no evidencia roja. Humo T13+T14 con clave real: modo modelo. |
+| 2026-10-23 | T15 | 1 | standard | claude | — | — | STARTED |  |
+| 2026-10-23 | T15 | 1 | standard | claude | claude-sonnet-5-5 | — | RED | red tests by mandao-tester: tests/server/http/test_consultar_api.py; `pytest tests/server/http/test_consultar_api.py` failed (exit 1) |
+| 2026-10-23 | T15 | 1 | standard | claude | claude-sonnet-5-5 | — | REPORTED | red test changed: tests/server/http/test_consultar_api.py; Medición con clave real (Leader, app aislada): 5 concurrentes x 5 corridas, p95 por corrida 1,73/1,08/1,02/0,86/0,78 s, mediana 1,02 s (< 3 s). 19 modelo / 7 extractivo por 429 del nivel gratuito (log: ClientError, código 429; 200 en todas). |
+| 2026-10-23 | T15 | 1 | standard | claude | — | claude-opus-5-5 | PASS | red test changed: tests/server/http/test_consultar_api.py; Advisories: F2 AGENTS.md (consultar/extractivo) y F1 files de la tarea, para el cierre; F3 sin prueba del ValueError; F4 nombre s14_1; F5 type-ignore y aserción de tiempo; F6 espera en el semáforo fuera del p95. |
 
 ## Telemetry
 
@@ -575,3 +579,18 @@ spec: MDO-0001-consultar-la-base-documental-con-fuentes
 <!-- mandao:telemetry {"id":"3370cdd6-14aa-4587-8204-ee571890faa0","type":"gate_end","at":"2026-10-23T19:28:24.698Z","command":"implement","run":"465f94c5-f965-401f-90e9-f4e1c5f39572","subject":"sast"} -->
 <!-- mandao:telemetry {"id":"adcd86e4-31f6-40c9-9781-fdb6c9d540ff","type":"gate_start","at":"2026-10-23T19:28:24.776Z","command":"implement","run":"7552682c-8f4a-4ad3-b78e-ecb48ecf9055","subject":"metrics"} -->
 <!-- mandao:telemetry {"id":"adcd86e4-31f6-40c9-9781-fdb6c9d540ff","type":"gate_end","at":"2026-10-23T19:28:28.299Z","command":"implement","run":"7552682c-8f4a-4ad3-b78e-ecb48ecf9055","subject":"metrics"} -->
+<!-- mandao:telemetry {"id":"33387616-4b4d-4997-8e71-7c61357cb86d","type":"gate_start","at":"2026-10-23T19:36:23.761Z","command":"implement","run":"b07595b8-445e-40d0-8a24-9ae29df956b9","subject":"format"} -->
+<!-- mandao:telemetry {"id":"33387616-4b4d-4997-8e71-7c61357cb86d","type":"gate_end","at":"2026-10-23T19:36:23.839Z","command":"implement","run":"b07595b8-445e-40d0-8a24-9ae29df956b9","subject":"format"} -->
+<!-- mandao:telemetry {"id":"53fd1353-d37f-4c0c-b09d-f11d0e06bbe0","type":"gate_start","at":"2026-10-23T19:36:23.852Z","command":"implement","run":"a570369e-5961-41cc-94fc-50b0b9f4705a","subject":"lint"} -->
+<!-- mandao:telemetry {"id":"53fd1353-d37f-4c0c-b09d-f11d0e06bbe0","type":"gate_end","at":"2026-10-23T19:36:23.882Z","command":"implement","run":"a570369e-5961-41cc-94fc-50b0b9f4705a","subject":"lint"} -->
+<!-- mandao:telemetry {"id":"cb221bde-08a8-4d34-a9b1-8fbce9666ecd","type":"gate_start","at":"2026-10-23T19:36:23.895Z","command":"implement","run":"34efef07-5a61-4109-a434-c11cb3b799dd","subject":"typecheck"} -->
+<!-- mandao:telemetry {"id":"cb221bde-08a8-4d34-a9b1-8fbce9666ecd","type":"gate_end","at":"2026-10-23T19:36:24.290Z","command":"implement","run":"34efef07-5a61-4109-a434-c11cb3b799dd","subject":"typecheck"} -->
+<!-- mandao:telemetry {"id":"d29f0cdb-074c-4e42-a2a7-26a18496cb71","type":"gate_start","at":"2026-10-23T19:36:24.424Z","command":"implement","run":"7a60dfd7-da59-4ebe-b09b-5e87ec885296","subject":"test"} -->
+<!-- mandao:telemetry {"id":"d29f0cdb-074c-4e42-a2a7-26a18496cb71","type":"gate_end","at":"2026-10-23T19:36:28.538Z","command":"implement","run":"7a60dfd7-da59-4ebe-b09b-5e87ec885296","subject":"test"} -->
+<!-- mandao:telemetry {"id":"58c086e4-4cce-4b04-90cb-8fb42f5c5d51","type":"gate_start","at":"2026-10-23T19:36:28.551Z","command":"implement","run":"ba33ff35-5bb2-4e02-b823-8f4143991148","subject":"secrets"} -->
+<!-- mandao:telemetry {"id":"58c086e4-4cce-4b04-90cb-8fb42f5c5d51","type":"gate_end","at":"2026-10-23T19:36:31.169Z","command":"implement","run":"ba33ff35-5bb2-4e02-b823-8f4143991148","subject":"secrets"} -->
+<!-- mandao:telemetry {"id":"3bdb489d-cff9-4c7d-a59d-86792ee06bd7","type":"gate_start","at":"2026-10-23T19:36:31.181Z","command":"implement","run":"ae039b95-c05c-4e06-9648-f378dd74173b","subject":"sast"} -->
+<!-- mandao:telemetry {"id":"3bdb489d-cff9-4c7d-a59d-86792ee06bd7","type":"gate_end","at":"2026-10-23T19:36:31.337Z","command":"implement","run":"ae039b95-c05c-4e06-9648-f378dd74173b","subject":"sast"} -->
+<!-- mandao:telemetry {"id":"a0d1b957-2457-413d-b897-5a3c76ae0bc2","type":"gate_start","at":"2026-10-23T19:36:31.412Z","command":"implement","run":"9df14b2f-9396-41f0-9228-82dd45f068b5","subject":"metrics"} -->
+<!-- mandao:telemetry {"id":"a0d1b957-2457-413d-b897-5a3c76ae0bc2","type":"gate_end","at":"2026-10-23T19:36:34.856Z","command":"implement","run":"9df14b2f-9396-41f0-9228-82dd45f068b5","subject":"metrics"} -->
+<!-- mandao:telemetry {"id":"233e0b3e-5243-40df-affa-1a6be1f98511","type":"command_end","at":"2026-10-23T19:38:28.456Z","command":"implement","run":"233e0b3e-5243-40df-affa-1a6be1f98511"} -->

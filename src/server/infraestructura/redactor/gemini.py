@@ -1,6 +1,7 @@
 import logging
 import re
 from collections.abc import Callable, Sequence
+from dataclasses import replace
 from pathlib import Path
 from typing import Any
 
@@ -57,6 +58,9 @@ def _armar_contenido(pregunta: str, fragmentos: Sequence[Fragmento]) -> str:
 class RedactorGemini:
     """Redacta con Gemini y valida la salida (D7); ante cualquier fallo usa el extractivo (D9)."""
 
+    # Solo informativo ("última llamada", lo leen las pruebas unitarias): bajo concurrencia es una
+    # carrera inofensiva porque nada lo lee en la ruta. El modo fiable de cada llamada va en la
+    # respuesta (`RespuestaRedactada.modo`).
     modo: str = MODO_EXTRACTIVO
 
     def __init__(
@@ -82,12 +86,15 @@ class RedactorGemini:
         except SalidaInvalida:
             return self._respaldar("salida descartada por el guardrail", pregunta, fragmentos)
         except Exception as error:  # cualquier fallo pasa al extractivo (AC-16)
-            # Solo el tipo: el mensaje del SDK puede traer la clave o la pregunta.
-            return self._respaldar(
-                f"fallo del modelo ({type(error).__name__})", pregunta, fragmentos
-            )
+            # Solo el tipo y el código HTTP (p. ej. 429): el mensaje del SDK puede traer la clave
+            # o la pregunta. `APIError.code` es un entero; se lee sin importar el SDK aquí.
+            codigo = getattr(error, "code", None)
+            detalle = type(error).__name__
+            if isinstance(codigo, int):
+                detalle += f", código {codigo}"
+            return self._respaldar(f"fallo del modelo ({detalle})", pregunta, fragmentos)
         self.modo = MODO_MODELO
-        return respuesta
+        return replace(respuesta, modo=MODO_MODELO)
 
     def _llamar(self, pregunta: str, fragmentos: Sequence[Fragmento]) -> SalidaModelo:
         if self._cliente is None:
@@ -112,4 +119,4 @@ class RedactorGemini:
     ) -> RespuestaRedactada:
         logger.warning("Redactor con modelo no disponible, se usa el extractivo: %s", motivo)
         self.modo = MODO_EXTRACTIVO
-        return self._respaldo.redactar(pregunta, fragmentos)
+        return replace(self._respaldo.redactar(pregunta, fragmentos), modo=MODO_EXTRACTIVO)

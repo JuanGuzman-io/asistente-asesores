@@ -2,12 +2,8 @@
 progress:
   schema_version: 1
   spec: MDO-0001-consultar-la-base-documental-con-fuentes
-  updated_at: 2026-10-23T19:29:41.926Z
-  current:
-    task: T15
-    phase: implementing
-    harness: claude
-    model: claude-opus-5-5
+  updated_at: 2026-10-23T19:38:12.918Z
+  current: null
   open_questions: []
   next_step: ""
   deferred_to_ci: []
@@ -429,6 +425,32 @@ progress:
             - test_T14_S_4_1_respuesta_validada_cita_solo_el_fragmento_del_credito_preguntado
             - test_T14_S_4_1_cifra_solo_del_otro_fragmento_sin_citarlo_se_descarta_al_extractivo
             - test_T14_S_4_1_en_consultar_solo_la_fuente_del_credito_preguntado
+    - task: T15
+      files:
+        - path: tests/server/http/test_consultar_api.py
+          sha256: 4d0941049cde724f008b58d06edc6fa951a1d88a90b83b72a9dd3e8be3189102
+          tests:
+            - test_s14_1_consulta_valida_responde_200_con_exactamente_respuesta_fuentes_estado
+            - test_s14_1_la_respuesta_lleva_x_request_id_uuid_v4_distinto_en_cada_peticion
+            - test_ac3_monto_maximo_del_credito_impulso_cita_el_documento_con_el_monto_que_dice
+            - test_s14_1_una_consulta_valida_queda_registrada_con_el_request_id_de_la_cabecera
+            - test_una_ruta_inexistente_o_con_metodo_no_permitido_responde_problema_con_request_id
+            - test_s7_1_cuerpo_invalido_responde_422_problema_sin_consultar_ni_registrar
+            - test_s7_2_1001_puntos_de_codigo_responde_422_con_el_limite_sin_consultar_ni_registrar
+            - test_s7_2_1001_tras_quitar_espacios_exteriores_tambien_se_rechaza
+            - test_s7_2_1001_en_nfc_enviada_en_nfd_con_mas_puntos_de_codigo_se_rechaza
+            - test_s7_2_c1_mil_puntos_de_codigo_tras_normalizar_se_procesa_con_la_pregunta_normalizada
+            - test_el_arranque_crea_la_tabla_consultas_vacia_con_wal
+            - test_acid_cada_peticion_abre_su_propia_conexion_sqlite_y_la_cierra
+            - test_dos_peticiones_concurrentes_registran_cada_una_su_propio_modo
+            - test_500_inesperado_responde_problema_sin_detalles_y_sin_la_pregunta_en_logs
+            - test_500_por_fallo_al_registrar_no_deja_pregunta_ni_resultado_en_logs
+            - test_nfr4_cada_peticion_valida_emite_una_linea_json_sin_el_texto_de_la_pregunta
+            - test_nfr4_una_peticion_rechazada_emite_su_linea_json_sin_el_texto_de_la_pregunta
+            - test_s12_1_cinco_consultas_con_modelo_no_se_serializan_y_cada_una_registra_su_modo
+            - test_s14_1_con_mas_consultas_que_el_limite_nunca_hay_mas_en_vuelo_que_el_limite
+            - test_la_variable_gemini_max_concurrencia_fija_el_limite_cuando_no_se_pasa_parametro
+            - test_s12_1_un_429_del_api_responde_200_extractivo_y_el_log_lleva_el_429_sin_contenido
   pending_commits: []
   approved_manifests:
     - task: T1
@@ -861,6 +883,47 @@ progress:
         - src/server/infraestructura/redactor/gemini.py
         - tests/server/infraestructura/redactor/test_gemini.py
       receipts: []
+    - task: T15
+      attempt: 1
+      files:
+        - path: .env.example
+          status: " M"
+          sha256: 358918488426286525e5b9a870036eeaad4733127704fdf1f7786e5dd049dd8f
+        - path: src/server/AGENTS.md
+          status: " M"
+          sha256: ef14c736d53743fe5da642f304372931ef6e5d45ac616dec6c37f390ccb7c388
+        - path: src/server/aplicacion/consultar.py
+          status: " M"
+          sha256: 35f4e6f738f423a61d05fa543f2437ec37a352d1e71d78d6c80c1ea19f4ef263
+        - path: src/server/dominio/puertos.py
+          status: " M"
+          sha256: a0de9be92b89c7ace5750b5c5b1a2c42dccae46add185a0a6418482ef93fe1c5
+        - path: src/server/http/app.py
+          status: " M"
+          sha256: 8a3bd166dbe1974301dee8482357361925914efefd16f8b0b1802b95b5c2b8a0
+        - path: src/server/http/rutas.py
+          status: " M"
+          sha256: e5318e2f29561a809a26a34d48e1e572a22b3133f31eecca56c1eff2b610b885
+        - path: src/server/infraestructura/redactor/extractivo.py
+          status: " M"
+          sha256: 545141018ffa8d527ce096901555e7b4f41c771b1609878cee32b03696b7af08
+        - path: src/server/infraestructura/redactor/gemini.py
+          status: " M"
+          sha256: a9e4051b41d5e8a69f698861d518df7d884d2f7ce3bc10ab7f38f443d4148c7a
+        - path: tests/server/http/test_consultar_api.py
+          status: " M"
+          sha256: c5bf43717ea730d5aa9a625c3733a23b43f26d17b6f9cc91117ae329ee829d1f
+      reviewed:
+        - .env.example
+        - src/server/AGENTS.md
+        - src/server/aplicacion/consultar.py
+        - src/server/dominio/puertos.py
+        - src/server/http/app.py
+        - src/server/http/rutas.py
+        - src/server/infraestructura/redactor/extractivo.py
+        - src/server/infraestructura/redactor/gemini.py
+        - tests/server/http/test_consultar_api.py
+      receipts: []
 approvals:
   - step: shown
     by: Juan D. Guzmán
@@ -1049,4 +1112,12 @@ cut_estimates:
     base: 64632
     turns_left: 58
     savings: 0.17
+    decision: "go on: below 50"
+  - at: 2026-10-23T19:32:24.458Z
+    task: T15
+    boundary_id: implement:T15
+    context: 144673
+    base: 64632
+    turns_left: 43
+    savings: 0.37
     decision: "go on: below 50"

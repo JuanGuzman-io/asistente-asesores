@@ -21,6 +21,25 @@ from src.server.infraestructura.documentos.cargador import cargar_documentos
 from src.server.infraestructura.persistencia.esquema import crear_esquema
 from src.server.infraestructura.redactor.gemini import RedactorGemini
 
+MAX_CONCURRENCIA_POR_DEFECTO = 5
+
+
+def _limite_concurrencia(valor: int | None) -> int:
+    """Tope de llamadas simultáneas al modelo: parámetro, o `GEMINI_MAX_CONCURRENCIA`, o 5."""
+    if valor is None:
+        crudo = os.environ.get("GEMINI_MAX_CONCURRENCIA", "").strip()
+        if not crudo:
+            return MAX_CONCURRENCIA_POR_DEFECTO
+        try:
+            valor = int(crudo)
+        except ValueError:
+            raise ValueError(
+                f"GEMINI_MAX_CONCURRENCIA debe ser un entero positivo, no {crudo!r}"
+            ) from None
+    if valor < 1:
+        raise ValueError(f"El límite de concurrencia debe ser un entero positivo, no {valor}")
+    return valor
+
 
 def crear_app(
     *,
@@ -30,8 +49,11 @@ def crear_app(
     ruta_sqlite: Path,
     embeddings: Embeddings,
     redactor: Redactor | None = None,
+    max_concurrencia: int | None = None,
 ) -> FastAPI:
     configurar_logs()
+    # Falla al arrancar, con un mensaje claro, si el límite no es un entero positivo.
+    limite = _limite_concurrencia(max_concurrencia)
 
     @asynccontextmanager
     async def lifespan(app: FastAPI) -> AsyncIterator[None]:
@@ -52,7 +74,7 @@ def crear_app(
             app.state.redactor = redactor or RedactorGemini(
                 api_key=os.environ.get("GEMINI_API_KEY")
             )
-            app.state.candado_redactor = threading.Lock()
+            app.state.semaforo_redactor = threading.BoundedSemaphore(limite)
             yield
         finally:
             qdrant.close()
