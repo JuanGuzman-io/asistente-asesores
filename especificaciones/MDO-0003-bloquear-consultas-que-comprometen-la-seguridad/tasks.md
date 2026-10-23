@@ -16,7 +16,7 @@ crítico. Cada tarea empieza con pruebas rojas.
 
 - [x] T1 [AC-1, AC-2, AC-3, AC-4] El guardrail de entrada reconoce las tres categorías sin bloquear preguntas legítimas — `src/server/dominio/estados.py`
 - [x] T2 [AC-1, AC-2, AC-3, AC-4] La consulta bloqueada responde el mensaje fijo sin buscar y queda registrada — `src/server/dominio/reglas.py`
-- [ ] T4 [AC-1, AC-2, AC-3, AC-4] El flujo crítico de bloqueo pasa de punta a punta y el dataset mide bloqueos y falsos positivos — `tests/fixtures/consultas.json`
+- [x] T4 [AC-1, AC-2, AC-3, AC-4] El flujo crítico de bloqueo pasa de punta a punta y el dataset mide bloqueos y falsos positivos — `tests/fixtures/consultas.json`
 
 **Checkpoint:** `uv run pytest tests/server/dominio -q` and `uv run pytest tests/server/aplicacion -q` and `uv run pytest tests/server/dominio tests/server/e2e -q` passes (T1, T2, T4); this confirms AC-1, AC-2, AC-3, AC-4 before the next group.
 
@@ -115,7 +115,7 @@ parallel_safe: false
 verify: uv run pytest tests/server/http -q
 ```
 
-### [ ] T4 — El flujo crítico de bloqueo pasa de punta a punta y el dataset mide bloqueos y falsos positivos
+### [x] T4 — El flujo crítico de bloqueo pasa de punta a punta y el dataset mide bloqueos y falsos positivos
 
 - **What:** completa `consultas@v5` según [D6](design.md#d6) (preguntas `bloqueada` por categoría y
   `sensible`), EV-8 y EV-9 deterministas en la suite normal y por HTTP en `-m eval`, y la e2e
