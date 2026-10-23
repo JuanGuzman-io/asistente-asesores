@@ -6,7 +6,8 @@ last_reviewed: 2026-10-23
 security_scanning:
   secrets:
     local: []
-    ci: []
+    ci:
+      - detect-secrets (.github/workflows/ci.yml, job backend)
     provider: []
     declared:
       local: []
@@ -20,7 +21,8 @@ security_scanning:
       provider: false
   sast:
     local: []
-    ci: []
+    ci:
+      - bandit (.github/workflows/ci.yml, job backend)
     provider: []
     declared:
       local: []
@@ -44,8 +46,15 @@ security_scanning:
 Solo local (PDF, entregable 6). Sin despliegue.
 
 ## CI/CD
-Propuesta: GitHub Actions en cada PR con lint, typecheck, pruebas y escaneo de secretos (herramientas
-gratuitas). Aún no existe.
+GitHub Actions (`.github/workflows/ci.yml`, PE 2026-10-23) en cada PR y en cada push a `main`, con las
+acciones fijadas por SHA. Tres jobs:
+
+- `backend`: `uv sync` y los gates de `.mandao/config.yml`: format, lint, typecheck, test (sin red, en
+  un namespace de red vacío), secrets (detect-secrets), sast (bandit) y audit (pip-audit).
+- `evals`: `uv run pytest -m eval`, con el modelo de embeddings en caché (`FASTEMBED_CACHE_PATH`).
+- `frontend`: solo si la rama tiene `src/web`. `npm ci`, sus gates (format, lint, typecheck, test,
+  build, `npm audit`) y las e2e de Playwright contra el backend levantado con un worker y sin clave de
+  Gemini.
 
 ## Security scanning
 `security_scanning` in this document's frontmatter records secrets and SAST independently.
@@ -54,8 +63,8 @@ gratuitas). Aún no existe.
 detected evidence. `unknown` names sources that could not be verified. Empty lists mean `none` only
 when all corresponding `checked` locations are true; otherwise the state is `unknown`.
 
-Estado detectado (2026-10-23, `run security-scanning`): sin escáner de secretos ni SAST local o en CI;
-el del proveedor no es verificable desde el repositorio → `unknown`.
+Estado (2026-10-23): en CI corren detect-secrets (secretos) y bandit (SAST) en el job `backend`; el
+escaneo del proveedor no es verificable desde el repositorio → `unknown`.
 
 ## Cloud and services
 Gemini API (Google), activada con `GEMINI_API_KEY`; sin clave, modo extractivo local
