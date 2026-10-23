@@ -10,9 +10,9 @@ start:
 progress:
   schema_version: 1
   spec: MDO-0002-consultar-desde-la-interfaz
-  updated_at: 2026-10-23T16:46:54.207Z
+  updated_at: 2026-10-23T16:57:21.480Z
   current:
-    task: T2
+    task: T3
     phase: implementing
     harness: claude
     model: claude-opus-5-5
@@ -41,6 +41,20 @@ progress:
             - "S-3.4: 200 con cuerpo que no es JSON da el mensaje genérico"
             - "S-3.4/C1: un 500 problem+json no filtra su detail ni otros campos"
             - "D3: un error inesperado de fetch se devuelve como resultado de error"
+    - task: T2
+      files:
+        - path: tests/web/Resultado.test.tsx
+          sha256: d27e836711c19e9f8d12f540de4f7f2738d7de4b9aec1ad39b3904c062129342
+          tests:
+            - "S-2.1: muestra la respuesta y el estado Exitosa"
+            - "S-2.1: muestra la fuente como 'documento > sección' con su fragmento"
+            - "S-2.2: sin información suficiente muestra mensaje, 'Sin fuentes' y su rótulo"
+            - "S-2.2/C2: el rótulo de Sin información suficiente difiere del de Exitosa"
+            - "S-2.3: Bloqueada por seguridad muestra la respuesta, su rótulo y 'Sin fuentes'"
+            - "S-2.3/C2: cada estado muestra únicamente su propio rótulo, también sin fuentes"
+            - "S-2.4: respuesta y fragmento con <b> y <a> aparecen literales"
+            - "S-2.4/C3: no se crean elementos b ni a"
+            - "S-2.4/C3: documento y sección con HTML tampoco crean elementos"
   pending_commits: []
   approved_manifests:
     - task: T1
@@ -107,10 +121,42 @@ progress:
         - src/web/vite.config.ts
         - tests/web/api.test.ts
       receipts: []
+    - task: T2
+      attempt: 2
+      files:
+        - path: .mandao/config.yml
+          status: " M"
+          sha256: 6c358345f5fcd5166fd96eb3ceae2b532c9f3ad8cb6f27ea071b4cbca2ac4a21
+        - path: .mandao/mandao.lock
+          status: " M"
+          sha256: d064a4449376dbb626d8e3119429dbe37a4194cac6110421ff98854d92e7969b
+        - path: src/web/AGENTS.md
+          status: " M"
+          sha256: 2b7d4e05a7978572d84005a6fcf432e0a43690ffb86189d48c9931fc66df1b35
+        - path: src/web/src/Resultado.tsx
+          status: " A"
+          sha256: fabca93505654de7963fa6c8846f2c86c8346f7b02f43f2445558734dc8316f6
+        - path: src/web/tsconfig.json
+          status: " M"
+          sha256: 0fa1bea67a93462c59ca12454dd79298886c86162e6f5f17160c892b7d5e18e9
+        - path: src/web/vite.config.ts
+          status: " M"
+          sha256: e93015541a286d50199184235bd4efec723b70ece483bb272abaf51d597619c9
+        - path: tests/web/Resultado.test.tsx
+          status: " A"
+          sha256: d27e836711c19e9f8d12f540de4f7f2738d7de4b9aec1ad39b3904c062129342
+      reviewed:
+        - .mandao/config.yml
+        - src/web/AGENTS.md
+        - src/web/src/Resultado.tsx
+        - src/web/tsconfig.json
+        - src/web/vite.config.ts
+        - tests/web/Resultado.test.tsx
+      receipts: []
   loop_brake:
-    task: T1
+    task: T2
     action: commit
-    execution_rows: 6
+    execution_rows: 18
     approval_rows: 1
     repeats: 1
 approvals:
@@ -129,6 +175,14 @@ cut_estimates:
     turns_left: 88
     savings: 0
     decision: stay
+  - at: 2026-10-23T16:47:52.483Z
+    task: T2
+    boundary_id: implement:T2
+    context: 129866
+    base: 63921
+    turns_left: 73
+    savings: 0.64
+    decision: "go on: below 50"
 mock:
   decision: declined
   at: 2026-10-23T16:21:14.616Z

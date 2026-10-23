@@ -21,3 +21,6 @@ Interfaz para que el asesor consulte al asistente y vea la respuesta, las fuente
 - `/api` es un proxy de Vite hacia `http://127.0.0.1:8000`; `API_URL` lo cambia. Mismo origen, sin CORS.
 - `src/api.ts` es el cliente de la API y el exemplar: `consultar()` nunca lanza y no devuelve el cuerpo recibido.
 - `Data/` no se sirve nunca: `vite.config.ts` lo niega en `server.fs.deny` y `server.fs.allow` solo admite `src/web` y `tests/web`. `Información restringida.md` es confidencial.
+
+- `src/Resultado.tsx` pinta la respuesta, el estado y las fuentes. Todo texto del servicio se muestra solo como texto de React (nunca HTML) y con `white-space: pre-wrap` para conservar los saltos de línea (D4).
+- Los paquetes importados desde `tests/web` se resuelven solo mediante `test.alias` en `vite.config.ts` y `paths` en `tsconfig.json`. Una dependencia de prueba nueva (p. ej. `@testing-library/user-event` en T3) debe agregarse en ambos.
