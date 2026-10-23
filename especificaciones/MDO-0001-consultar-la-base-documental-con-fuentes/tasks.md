@@ -185,7 +185,7 @@ parallel_safe: false
 verify: uv run pytest tests/server/infraestructura/busqueda -q
 ```
 
-### [ ] T4 — La búsqueda híbrida encuentra la sección correcta o declara que no hay soporte
+### [x] T4 — La búsqueda híbrida encuentra la sección correcta o declara que no hay soporte
 
 - **What:** combina FTS5 (consulta con comillas, sin palabras vacías) y Qdrant por RRF, filtra por hashes
   vigentes y aplica el umbral 0,60 / 0,40 ([D4](design.md#d4), [D5](design.md#d5)).
