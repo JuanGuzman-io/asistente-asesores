@@ -3,7 +3,7 @@ schema_version: 1
 source: { path: "/Users/jguzman/Downloads/Docs - BW/Prueba técnica.pdf", sha256: "ea559182d0cbe46540d0bbd994fa163b6633b42d03100c29632446a0267746b7", extractor: native }
 doc: prueba-tecnica
 date: 2026-10-23
-status: proposed
+status: closed
 ---
 
 # Intake: Prueba técnica — Desarrollador de IA
