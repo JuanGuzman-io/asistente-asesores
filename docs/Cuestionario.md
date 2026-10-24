@@ -25,14 +25,53 @@
 
 ## Qué actividades realicé manualmente
 
-- Decidir el alcance, el stack, la arquitectura y cada pregunta abierta (contrato de respuesta, códigos
-  HTTP, límite de 1.000 caracteres, categorías de bloqueo, mensajes de error exactos).
-- Aprobar cada documento antes de implementar y aceptar o rechazar cada riesgo (licencias de
-  dependencias transitivas, vulnerabilidades de pillow no alcanzables, hueco de SAST en el frontend).
-- Probar la aplicación a mano en el navegador con una lista de preguntas: válidas, parafraseadas, sin
-  información, fuera de tema y de seguridad. Así encontré dos fallos de búsqueda que las pruebas no
-  cubrían ("pequeño comerciante" y "¿Qué dice la política de…?").
-- Crear el repositorio, revisar los PRs y hacer los merges.
+La IA escribió; yo decidí qué se construía, cómo y cuándo estaba bien. En concreto:
+
+**Interpretación del enunciado y producto**
+- Leí el PDF contra la base documental y resolví sus ambigüedades y contradicciones antes de
+  especificar. Las seis quedaron registradas con su decisión en la propuesta del intake:
+  - **el mensaje de "sin información":** el PDF y el Manual del Asesor dan textos distintos; elegí el del
+    PDF, porque es el contrato evaluado;
+  - **el campo `estado` en la respuesta:** compatible con el contrato y necesario para el registro y la
+    interfaz;
+  - **el límite de 1.000 caracteres** y cómo se cuentan (puntos de código tras normalizar a NFC);
+  - **qué consultas se bloquean,** en tres categorías, con su lista de falsos positivos;
+  - **mantener `Políticas de Atención.md`** aunque no aparezca en el árbol del enunciado;
+  - **los códigos HTTP:** `422` para toda la validación, y RFC 9457.
+- Recorté alcance para cumplir el plazo. El LLM quedó opcional, porque el enunciado no lo exige, y dejé
+  como mejoras futuras el proveedor configurable y el mensaje de ayuda redactado por el modelo.
+
+**Arquitectura y stack**
+- Elegí el stack (Python con FastAPI, React con TypeScript) y la arquitectura hexagonal, con una regla
+  explícita: las decisiones son código determinista y el modelo solo redacta.
+- Exigí una base vectorial real cuando la propuesta fue quitarla. Rechacé `sqlite-vec` cuando falló en
+  otro Python, y aprobé Qdrant en modo local solo después de verlo funcionar en dos versiones de Python.
+- Elegí Gemini 3.5 Flash-Lite con su justificación de costo y de política de datos (nivel gratuito solo
+  con datos irreales).
+
+**Calidad y seguridad**
+- Exigí que todo se probara siempre: pruebas sin red en cada tarea y evaluaciones de calidad con el
+  modelo real como gate obligatorio, no opcional.
+- Definí los gates (formato, lint, tipos, pruebas, secretos, SAST, auditoría y build) y acepté o rechacé
+  cada riesgo con su motivo: licencias de dependencias transitivas, vulnerabilidades de pillow no
+  alcanzables y el hueco de SAST en el frontend.
+- Revisé los mensajes que ve el asesor y pedí cambios de experiencia que las pruebas no exigían: no
+  permitir enviar una pregunta vacía, un contador de caracteres y errores sin detalles internos.
+
+**Verificación manual**
+- Probé la aplicación en el navegador con una batería de preguntas: válidas, parafraseadas, con soporte
+  parcial, sin información, fuera de tema y de seguridad, incluidas preguntas legítimas con palabras
+  sensibles. Así encontré dos fallos de recuperación que las pruebas no cubrían: "¿Cuánto le prestan a un
+  pequeño comerciante?" (faltaba stemming en español) y "¿Qué dice la política de…?" (la decisión de
+  soporte). Los dos se corrigieron con prueba roja primero y se sumaron al dataset de evaluación.
+
+**Orquestación y entrega**
+- Coordiné varias sesiones de agentes en paralelo (backend, frontend, seguridad, CI y correcciones),
+  cada una en su rama. Ordené los merges y resolví sus cruces: la constitución compartida, la
+  configuración y el uso del puerto del backend.
+- Ajusté el proceso para ganar velocidad sin quitar controles, por ejemplo evitando cortes de sesión
+  innecesarios entre tareas.
+- Creé el repositorio, revisé los PRs, decidí el orden de merge y llevé el CI a verde en cada uno.
 
 ## Qué sugerencias rechacé de la IA
 
