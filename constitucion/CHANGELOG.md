@@ -6,6 +6,18 @@ schema_version: 1
 
 <!-- Newest first. Only /mandao-close (or /mandao-constitution in active mode, with approval) writes here. -->
 
+## 2026-10-23 — Cierre de MDO-0003: bloqueo de consultas que comprometen la seguridad
+
+- **Cambio:** `critical-flows.md` nombra la suite e2e `tests/server/e2e/test_flujo_bloqueo.py` del flujo
+  "Consulta bloqueada por seguridad" y le suma los datos de otros clientes. `business-rules.md` marca BR-4 y
+  BR-8 como implementadas en `src/server/dominio/guardrail_entrada.py`. `security.md` nombra las tres
+  categorías en el threat model y la limitación del guardrail por reglas. `model-registry.md` registra el
+  dataset `consultas@v5` (EV-1 a EV-9). `glossary.md` agrega "Categoría de bloqueo".
+- **Motivo:** Constitution Impact de `design.md` de MDO-0003; intake I-4 y Q-5.
+- **Verificación:** MDO-0003 verificado (`verify-report.md`: 527 pruebas unitarias, 11 e2e y 11 evals en PASS;
+  EV-8 = 1,00 y EV-9 = 0).
+- **Origen:** MDO-0003, aprobado por el PE (2026-10-23).
+
 ## 2026-10-23 — Cierre de MDO-0002: interfaz para consultar
 
 - **Cambio:** `standards.md` cierra los OPEN del frontend: lint con ESLint y typescript-eslint (complejidad,

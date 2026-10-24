@@ -20,6 +20,7 @@ def registrar_peticion(
     fuentes: int,
     estado: str | None,
     error: str | None = None,
+    categoria: str | None = None,
 ) -> None:
     """Una línea JSON por petición (NFR-4). Nunca lleva la pregunta ni el resultado."""
     linea: dict[str, object] = {
@@ -33,4 +34,7 @@ def registrar_peticion(
     if error is not None:
         # Solo el tipo de la excepción: su mensaje puede traer la pregunta o el resultado (PII).
         linea["error"] = error
+    if categoria is not None:
+        # Solo la categoría del bloqueo (valor fijo del enum), nunca la pregunta.
+        linea["categoria"] = categoria
     logger.info(json.dumps(linea, ensure_ascii=False))

@@ -95,6 +95,7 @@ TDD y uso responsable de IA; refs: [p. 1, p. 2, p. 3, p. 4, p. 6, p. 7, p. 8]
 - priority: Must
 - depends_on: [I-2]
 - invest: cumple; es el flujo crítico "Consulta bloqueada por seguridad".
+- opened: MDO-0003
 #### AC-1 — Información restringida o técnica reservada
 - GIVEN una pregunta que pide credenciales, configuraciones internas o información restringida / WHEN se consulta / THEN, antes de buscar, responde 200 con un mensaje fijo y genérico, estado `Bloqueada por seguridad`, y no revela nada del documento confidencial.
 #### AC-2 — Prompt injection
@@ -146,6 +147,7 @@ TDD y uso responsable de IA; refs: [p. 1, p. 2, p. 3, p. 4, p. 6, p. 7, p. 8]
 - priority: Must
 - depends_on: [I-1]
 - invest: cumple; ejecutable de forma local, el diseño visual no se evalúa.
+- opened: MDO-0002
 #### AC-1 — Realizar consulta y ver la respuesta
 - GIVEN la interfaz local abierta / WHEN el asesor escribe una pregunta y la envía / THEN ve el estado de procesamiento mientras espera y luego la respuesta, sus fuentes y el estado de la respuesta.
 #### AC-2 — Ver errores
