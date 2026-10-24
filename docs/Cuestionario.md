@@ -3,7 +3,10 @@
 ## Herramientas utilizadas
 
 - **Claude Code** como entorno de agentes, con **[Mandao](https://www.npmjs.com/package/mandao)** como
-  proceso de desarrollo guiado por especificaciones (SDD) y TDD.
+  proceso de desarrollo guiado por especificaciones (SDD) y TDD. Mandao es un CLI de mi autoría
+  ([github.com/JuanGuzman-io/mandao](https://github.com/JuanGuzman-io/mandao)); esta prueba fue también un
+  uso real de su versión beta, adaptada a la estructura que pide el enunciado. Lo que encontré en el
+  camino (pasos manuales, flujos que se podían simplificar) quedó registrado en el backlog de Mandao.
 - **Modelos:** Claude Opus 5.5 (líder y revisor) y Claude Sonnet 5.5 (implementación y pruebas) para
   desarrollar; Gemini 3.5 Flash-Lite como modelo opcional del producto.
 - **Stack:** Python 3.13 con `uv`, FastAPI, SQLite + FTS5, Qdrant en modo local, `fastembed`; React +

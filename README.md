@@ -20,7 +20,8 @@ microseguros, procedimientos operativos y políticas internas, **usando solo la 
 ### Cómo se construyó: SDD con Mandao
 
 El proyecto se desarrolló con **[Mandao](https://www.npmjs.com/package/mandao)**, un CLI de desarrollo
-guiado por especificaciones (SDD) para agentes de código. Mandao llevó cada característica por el mismo
+guiado por especificaciones (SDD) para agentes de código, **de mi autoría** (código en
+[github.com/JuanGuzman-io/mandao](https://github.com/JuanGuzman-io/mandao)). Mandao llevó cada característica por el mismo
 ciclo: constitución → historia → especificación → tareas → implementación con TDD → verificación →
 cierre. Cada criterio de aceptación se traza hasta sus pruebas y sus commits.
 
@@ -254,7 +255,8 @@ evaluaciones y las e2e con el backend levantado.
 
 ## Uso de IA
 
-- **Desarrollo:** Claude Code con Mandao. Un agente líder (Claude Opus 5.5) orquestó cada tarea, un
+- **Desarrollo:** Claude Code con Mandao, el CLI de SDD que desarrollé y que usé aquí sobre un proyecto
+  real. Un agente líder (Claude Opus 5.5) orquestó cada tarea, un
   *tester* escribió las pruebas en rojo, un *implementer* (Claude Sonnet 5.5) escribió el código y un
   *reviewer* independiente (Claude Opus 5.5, otro modelo) aprobó o rechazó cada tarea contra la spec y
   la constitución.
