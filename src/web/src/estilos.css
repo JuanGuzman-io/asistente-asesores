@@ -209,8 +209,14 @@ button {
   mask-image: radial-gradient(ellipse at center, #000 30%, transparent 80%);
 }
 
-/* Cabecera */
+/* Cabecera: fija arriba al desplazarse; el vidrio deja leer lo que pasa por debajo */
 .cabecera {
+  position: sticky;
+  top: 0;
+  z-index: 2;
+  background: var(--vidrio-suave);
+  backdrop-filter: blur(20px);
+  -webkit-backdrop-filter: blur(20px);
   display: flex;
   flex-wrap: wrap;
   align-items: center;
