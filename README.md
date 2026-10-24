@@ -1,6 +1,6 @@
 # Asistente para asesores comerciales
 
-Prueba técnica de **Desarrollador de IA** (Laboratorio Digital, Vicepresidencia de Innovación y Mercadeo).
+Prueba técnica de **Desarrollador de IA**.
 
 ## Descripción
 

@@ -8,11 +8,10 @@ status: closed
 
 # Intake: Prueba técnica — Desarrollador de IA
 
-Enunciado de la prueba técnica del Laboratorio Digital (Vicepresidencia de Innovación y Mercadeo) para un
-asistente interno de asesores comerciales; propone 11 historias en 3 épicas. Gran parte del documento ya
-está recogida en la constitución aprobada (`constitucion/`, 2026-10-23): aquí solo se proponen los
-elementos de contexto que aún no están. Prioridad con MoSCoW (`product-manager-toolkit`); todo lo que el
-documento exige como entregable es `Must`.
+Enunciado de la prueba técnica para un asistente interno de asesores comerciales; propone 11 historias
+en 3 épicas. Gran parte del documento ya está recogida en la constitución aprobada (`constitucion/`,
+2026-10-23): aquí solo se proponen los elementos de contexto que aún no están. Prioridad con MoSCoW
+(`product-manager-toolkit`); todo lo que el documento exige como entregable es `Must`.
 
 ## Business context
 
