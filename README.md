@@ -93,11 +93,12 @@ Recorrido de una pregunta:
 Los documentos se fragmentan por sección y se vectorizan **al arrancar** el servidor; solo se recalculan
 los fragmentos nuevos o modificados. `Información restringida.md` nunca entra al índice.
 
-### Por qué así: RAG con la generación opcional
+### Por qué así: recuperación primero, generación opcional
 
-La solución es un RAG. La **R** es la búsqueda híbrida, la **A** son los fragmentos con su documento y
-sección, y la **G** es Gemini. La generación está apagada por defecto porque el enunciado no la exige ni
-pide herramientas pagas, y el modo extractivo es local, gratis, reproducible y no puede alucinar. Las
+Por defecto, la solución recupera los fragmentos con la búsqueda híbrida y responde con ellos, citando su
+documento y sección. Es una respuesta extractiva: local, gratis, reproducible y sin riesgo de inventar
+datos. La generación quedó como opción porque el enunciado no la exige ni pide herramientas pagas: con
+`GEMINI_API_KEY`, el modelo redacta a partir de esos mismos fragmentos, que es el paso hacia un RAG. Las
 decisiones (validar, bloquear, decidir si hay soporte, aceptar la salida del modelo) son siempre código
 determinista; el modelo solo redacta.
 
