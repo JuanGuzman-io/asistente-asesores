@@ -1,7 +1,5 @@
 # Asistente para asesores comerciales
 
-Prueba técnica de **Desarrollador de IA**.
-
 ## Descripción
 
 Asistente interno que responde a los asesores comerciales preguntas sobre productos de crédito,
