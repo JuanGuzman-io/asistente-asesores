@@ -3,7 +3,10 @@
 ## Herramientas utilizadas
 
 - **Claude Code** como entorno de agentes, con **[Mandao](https://www.npmjs.com/package/mandao)** como
-  proceso de desarrollo guiado por especificaciones (SDD) y TDD.
+  proceso de desarrollo guiado por especificaciones (SDD) y TDD. Mandao es un CLI de mi autoría
+  ([github.com/JuanGuzman-io/mandao](https://github.com/JuanGuzman-io/mandao)); esta prueba fue también un
+  uso real de su versión beta, adaptada a la estructura que pide el enunciado. Lo que encontré en el
+  camino (pasos manuales, flujos que se podían simplificar) quedó registrado en el backlog de Mandao.
 - **Modelos:** Claude Opus 5.5 (líder y revisor) y Claude Sonnet 5.5 (implementación y pruebas) para
   desarrollar; Gemini 3.5 Flash-Lite como modelo opcional del producto.
 - **Stack:** Python 3.13 con `uv`, FastAPI, SQLite + FTS5, Qdrant en modo local, `fastembed`; React +
@@ -22,28 +25,97 @@
 
 ## Qué actividades realicé manualmente
 
-- Decidir el alcance, el stack, la arquitectura y cada pregunta abierta (contrato de respuesta, códigos
-  HTTP, límite de 1.000 caracteres, categorías de bloqueo, mensajes de error exactos).
-- Aprobar cada documento antes de implementar y aceptar o rechazar cada riesgo (licencias de
-  dependencias transitivas, vulnerabilidades de pillow no alcanzables, hueco de SAST en el frontend).
-- Probar la aplicación a mano en el navegador con una lista de preguntas: válidas, parafraseadas, sin
-  información, fuera de tema y de seguridad. Así encontré dos fallos de búsqueda que las pruebas no
-  cubrían ("pequeño comerciante" y "¿Qué dice la política de…?").
-- Crear el repositorio, revisar los PRs y hacer los merges.
+La IA escribió; yo decidí qué se construía, cómo y cuándo estaba bien. En concreto:
+
+**Interpretación del enunciado y producto**
+- Leí el PDF contra la base documental y resolví sus ambigüedades y contradicciones antes de
+  especificar. Las seis quedaron registradas con su decisión en la propuesta del intake:
+  - **el mensaje de "sin información":** el PDF y el Manual del Asesor dan textos distintos; elegí el del
+    PDF, porque es el contrato evaluado;
+  - **el campo `estado` en la respuesta:** compatible con el contrato y necesario para el registro y la
+    interfaz;
+  - **el límite de 1.000 caracteres** y cómo se cuentan (puntos de código tras normalizar a NFC);
+  - **qué consultas se bloquean,** en tres categorías, con su lista de falsos positivos;
+  - **mantener `Políticas de Atención.md`** aunque no aparezca en el árbol del enunciado;
+  - **los códigos HTTP:** `422` para toda la validación, y RFC 9457.
+- Recorté alcance para cumplir el plazo. El LLM quedó opcional, porque el enunciado no lo exige, y dejé
+  como mejoras futuras el proveedor configurable y el mensaje de ayuda redactado por el modelo.
+
+**Arquitectura y stack**
+- Elegí el stack (Python con FastAPI, React con TypeScript) y la arquitectura hexagonal, con una regla
+  explícita: las decisiones son código determinista y el modelo solo redacta.
+- Exigí una base vectorial real cuando la propuesta fue quitarla. Rechacé `sqlite-vec` cuando falló en
+  otro Python, y aprobé Qdrant en modo local solo después de verlo funcionar en dos versiones de Python.
+- Elegí Gemini 3.5 Flash-Lite con su justificación de costo y de política de datos (nivel gratuito solo
+  con datos irreales).
+
+**Calidad y seguridad**
+- Exigí que todo se probara siempre: pruebas sin red en cada tarea y evaluaciones de calidad con el
+  modelo real como gate obligatorio, no opcional.
+- Definí los gates (formato, lint, tipos, pruebas, secretos, SAST, auditoría y build) y acepté o rechacé
+  cada riesgo con su motivo: licencias de dependencias transitivas, vulnerabilidades de pillow no
+  alcanzables y el hueco de SAST en el frontend.
+- Revisé los mensajes que ve el asesor y pedí cambios de experiencia que las pruebas no exigían: no
+  permitir enviar una pregunta vacía, un contador de caracteres y errores sin detalles internos.
+
+**Verificación manual**
+- Probé la aplicación en el navegador con una batería de preguntas: válidas, parafraseadas, con soporte
+  parcial, sin información, fuera de tema y de seguridad, incluidas preguntas legítimas con palabras
+  sensibles. Así encontré dos fallos de recuperación que las pruebas no cubrían: "¿Cuánto le prestan a un
+  pequeño comerciante?" (faltaba stemming en español) y "¿Qué dice la política de…?" (la decisión de
+  soporte). Los dos se corrigieron con prueba roja primero y se sumaron al dataset de evaluación.
+
+**Orquestación y entrega**
+- Coordiné varias sesiones de agentes en paralelo (backend, frontend, seguridad, CI y correcciones),
+  cada una en su rama. Ordené los merges y resolví sus cruces: la constitución compartida, la
+  configuración y el uso del puerto del backend.
+- Ajusté el proceso para ganar velocidad sin quitar controles, por ejemplo evitando cortes de sesión
+  innecesarios entre tareas.
+- Creé el repositorio, revisé los PRs, decidí el orden de merge y llevé el CI a verde en cada uno.
 
 ## Qué sugerencias rechacé de la IA
 
-- **`sqlite-vec` como base vectorial.** Se propuso al definir la arquitectura y no funcionó en un
-  Python sin soporte de extensiones de SQLite. Un evaluador con otro Python no podría arrancar el
-  servidor. Lo cambié por Qdrant en modo local, verificado en dos versiones de Python antes de aprobarlo.
-- **Quitar la base vectorial** y calcular la similitud en memoria. La rechacé porque no muestra el
-  camino hacia un RAG real.
-- **Hacer configurable el proveedor de LLM y redactar con el modelo un mensaje de ayuda** cuando no hay
-  información. Los dejé como mejora futura: el enunciado no los pide.
-- **Filtrar fragmentos por un porcentaje del mejor puntaje.** Las mediciones mostraron que hacía perder
-  secciones correctas; preferí mostrar un fragmento relacionado de más.
-- **Reemplazar el mensaje fijo de "sin información"** por un texto del LLM. Lo descarté porque rompe el
-  contrato del enunciado.
+Algunas fueron propuestas directas de la IA; otras, opciones que me ofreció junto a su recomendación.
+Las que descarté, y por qué:
+
+**Arquitectura**
+- **`sqlite-vec` como base vectorial.** La propuso la IA al definir la arquitectura. Cuando se verificó
+  en el entorno, no cargó en un Python sin soporte de extensiones de SQLite: un evaluador con ese Python
+  no podría arrancar el servidor. La cambié por Qdrant en modo local, verificado en dos versiones de
+  Python antes de aprobarlo.
+- **Quitar la base vectorial** y calcular la similitud en memoria, como salida a ese problema. La
+  rechacé: con este volumen funcionaba, pero no muestra el camino hacia un RAG real.
+- **Profundidad "lite" para la primera especificación,** que el flujo sugirió por defecto. Elegí la
+  profundidad estándar, porque el enunciado pide especificación y plan por separado, y el backend tenía
+  búsqueda, modelo y persistencia.
+
+**Calidad de la búsqueda**
+- **Recalibrar solo los umbrales** cuando las evaluaciones no llegaban a los objetivos. Los números
+  mostraban que las preguntas con y sin soporte se solapaban; en su lugar se incluyó el título de la
+  sección en lo que se vectoriza, y la separación mejoró de forma medible.
+- **Sacar del dataset de evaluación las preguntas que fallaban.** Era la forma más rápida de cumplir la
+  métrica, pero escondía una limitación real. Las reclasifiqué como "dato faltante de un producto
+  existente" y se miden con su propia métrica.
+- **Filtrar fragmentos por un porcentaje del mejor puntaje** para reducir ruido en el modo extractivo. Lo
+  propuso la IA, con un ejemplo concreto; las mediciones mostraron que hacía perder secciones correctas,
+  así que preferí mostrar un fragmento relacionado de más.
+- **Considerar duplicados los textos "casi idénticos".** Lo descarté porque podía fusionar las
+  condiciones de dos créditos distintos; solo se deduplica el contenido idéntico tras normalizar.
+
+**Proceso y seguridad**
+- **Corregir los defectos de Gemini "aquí mismo"** durante la verificación, sin pasar por el ciclo de
+  tareas. Exigí abrirlos como tareas con prueba roja primero y revisión, justo en el componente de IA.
+- **Forzar pillow 13** sobre el límite que declara `fastembed` para cerrar sus vulnerabilidades. Quedaba
+  fuera de la combinación soportada; acepté el riesgo documentado, porque no es alcanzable.
+- **Commitear directamente en `main`** para rehacer un worktree, una de las opciones que ofreció un
+  agente. `main` está protegida en la constitución; todo llegó a `main` por PR.
+- **Varios PRs apilados por especificación,** que el plan de entrega propuso por tamaño. El tamaño era
+  sobre todo `package-lock.json`; entregué un PR por característica, más fácil de revisar.
+- **Un mock visual antes de construir la interfaz.** El enunciado no evalúa diseño visual, así que no
+  valía el tiempo.
+- **Ampliar el alcance con el LLM:** un proveedor configurable y un mensaje de ayuda redactado por el
+  modelo. Llegaron a estar en curso; los detuve y quedaron como mejoras futuras, porque el enunciado no
+  los pide.
 
 ## Cómo validé las respuestas de IA
 
